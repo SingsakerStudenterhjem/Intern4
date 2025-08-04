@@ -116,7 +116,7 @@ import {
             errorMessage = 'Passordet er for svakt';
             break;
           default:
-            errorMessage = error.message;
+            errorMessage += ": " + error.message;
         }
         
         return { success: false, error: errorMessage };

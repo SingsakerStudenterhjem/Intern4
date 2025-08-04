@@ -40,38 +40,42 @@ const LoginForm = () => {
 
   return (
     <div>
-      {error && <div>{error}</div>}
+      {error && <div className="text-red-500 mb-4">{error}</div>}
 
       <div>
-        <div>
-          <label>E-post</label>
+        <div className="mb-4">
+          <label className="block mb-1">E-post</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
             placeholder="epost"
+            className="w-full border border-gray-300 rounded px-3 py-2 disabled:opacity-50"
           />
         </div>
 
-        <div>
-          <label>Passord</label>
+        <div className="mb-6">
+          <label className="block mb-1">Passord</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
+            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
             disabled={loading}
             placeholder="passord"
+            className="w-full border border-gray-300 rounded px-3 py-2 disabled:opacity-50"
+
           />
         </div>
 
-        <button
-          onClick={handleSubmit}
-          disabled={loading || !email || !password}
-        >
-          {loading ? "Laster..." : "Logg inn"}
-        </button>
+          <button
+              onClick={handleSubmit}
+              disabled={loading || !email || !password}
+              className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+          >
+              {loading ? "Laster..." : "Logg inn"}
+          </button>
       </div>
     </div>
   );
