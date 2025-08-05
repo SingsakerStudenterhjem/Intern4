@@ -15,8 +15,12 @@ const Navbar = () => {
     const toggleSection = key =>
         setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
-    const handleLogout = () => {
-        loggUt();
+    const handleLogout = async () => {
+        try {
+            await loggUt();
+        } catch (error) {
+            console.error("Logout failed:", error);
+        }
         setMobileOpen(false);
     };
 
