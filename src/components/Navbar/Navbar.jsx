@@ -5,7 +5,7 @@ import { ROUTES } from "../../constants/routes";
 import { USER_ROLES } from "../../constants/userRoles";
 import DropdownMenu from "./DropdownMenu";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { loggUt } from "../../backend/src/authentication";
+import { logOut } from "../../backend/src/authentication";
 
 const Navbar = () => {
     const user = useAuth();
@@ -17,7 +17,7 @@ const Navbar = () => {
 
     const handleLogout = async () => {
         try {
-            await loggUt();
+            await logOut();
         } catch (error) {
             console.error("Logout failed:", error);
         }

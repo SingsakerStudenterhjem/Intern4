@@ -34,7 +34,7 @@ const addNewUser = async (
             profilePicture: application.profilePicture || "",
             seniority: 0, // Default value
             roomNumber: 0, // Default value
-            role: 'Half/Half', // Default value
+            role: 'Halv/Halv', // Default value
             onLeave: false, // Default value
             leadershipRoles: [],
             tasks: [],

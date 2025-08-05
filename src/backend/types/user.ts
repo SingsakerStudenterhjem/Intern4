@@ -21,7 +21,7 @@ const UserSchema = z.object({
     seniority: z.number().int(),
     roomNumber: z.number().int(),
     role: z.string().refine(
-        (value) => ['Halv/Halv', 'Full Regi', 'Full Vakt', 'Utvalgsmeldem', 'Daglig leder'].includes(value),
+        (value) => ['Halv/Halv', 'Full Regi', 'Full Vakt', 'Utvalgsmedlem', 'Daglig leder'].includes(value),
     ),
     onLeave: z.boolean(),
     leadershipRoles: z.array(z.string()).optional(),
