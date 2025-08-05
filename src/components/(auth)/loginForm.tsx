@@ -22,6 +22,7 @@ const LoginForm = () => {
 
     try {
       const userID = await logIn(email, password);
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const user = await getUser(userID); // If getUser fails, it will throw an error
 
       router("/dashboard");
