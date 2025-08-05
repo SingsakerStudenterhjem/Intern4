@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { authService } from "../../services/api/authService";
 import { useAuth } from "../../hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 const LoginForm = () => {
+  const router = useNavigate();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -65,17 +68,16 @@ const LoginForm = () => {
             disabled={loading}
             placeholder="passord"
             className="w-full border border-gray-300 rounded px-3 py-2 disabled:opacity-50"
-
           />
         </div>
 
-          <button
-              onClick={handleSubmit}
-              disabled={loading || !email || !password}
-              className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
-          >
-              {loading ? "Laster..." : "Logg inn"}
-          </button>
+        <button
+          onClick={handleSubmit}
+          disabled={loading || !email || !password}
+          className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+        >
+          {loading ? "Laster..." : "Logg inn"}
+        </button>
       </div>
     </div>
   );
