@@ -2,7 +2,7 @@ import React from 'react';
 import {BrowserRouter} from 'react-router-dom';
 import {AuthProvider} from './contexts/authContext';
 import AppRouter from './components/common/appRouter';
-import Navbar from './components/common/Navbar';
+import Navbar from './components/Navbar/Navbar';
 
 function App() {
     return (
