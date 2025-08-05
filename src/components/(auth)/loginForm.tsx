@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { authService } from "../../services/api/authService";
-import { useAuth } from "../../hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { hentBeboer } from "../../backend/src/userDAO";
+import { logInn } from "../../backend/src/authentication";
 
 const LoginForm = () => {
   const router = useNavigate();
@@ -9,38 +9,36 @@ const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  const { user } = useAuth();
-
-  if (user) {
-    window.location.href = "/dashboard";
-    return null;
-  }
-
-  const handleSubmit = async () => {
+  const handleLogin = async () => {
+    setError(null);
+    setLoading(true);
     if (!email || !password) {
-      setError("Vennligst skriv inn både e-post og passord");
+      setError("Vennligst fyll ut både e-post og passord.");
+      setLoading(false);
       return;
     }
 
-    setLoading(true);
-    setError("");
-
     try {
-      const result = await authService.login(email, password);
-
-      if (!result.success) {
-        setError(result.error || "Ugyldig e-post eller passord");
+      const userID = await logInn(email, password);
+      if (userID) {
+        const user = await hentBeboer(userID);
+        if (user) {
+          router("/dashboard");
+        } else {
+          setError("Bruker ikke funnet");
+        }
       }
-    } catch (err) {
-      console.error("Login error:", err);
-      setError("Det oppstod en feil under innlogging");
+    } catch (error) {
+      setError(
+        "Bruker ikke funnet eller innlogging mislyktes. Vennligst prøv igjen."
+      );
+      console.error("Error during login:", error);
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div>
       {error && <div className="text-red-500 mb-4">{error}</div>}
@@ -64,7 +62,7 @@ const LoginForm = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
             disabled={loading}
             placeholder="passord"
             className="w-full border border-gray-300 rounded px-3 py-2 disabled:opacity-50"
@@ -72,7 +70,7 @@ const LoginForm = () => {
         </div>
 
         <button
-          onClick={handleSubmit}
+          onClick={handleLogin}
           disabled={loading || !email || !password}
           className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
         >

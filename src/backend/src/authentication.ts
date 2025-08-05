@@ -84,4 +84,4 @@ const confirmResetPassword = async (code: string, newPassword: string) => {
     }
 }
 
-export default { leggTilNyBeboer, logInn, loggUt, glemtpassord, confirmResetPassword};
+export { leggTilNyBeboer, logInn, loggUt, glemtpassord, confirmResetPassword};

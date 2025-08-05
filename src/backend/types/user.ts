@@ -20,7 +20,7 @@ const UserSchema = z.object({
     profilBilde: z.string().optional(),
     ansiennitet: z.number().int(),
     romNummer: z.number().int(),
-    rolle: z.enum(['Halv/halv', 'Full regi', 'Full vakt', 'Utvalgsmedlem', 'Daglig leder']),
+    rolle: z.string(),
     påpermisjon: z.boolean(),
     åpmandsVerv: z.array(z.string()).optional(),
     regioppgaver: z.array(z.string()).optional(),

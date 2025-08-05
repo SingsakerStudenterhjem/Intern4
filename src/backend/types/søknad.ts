@@ -7,7 +7,7 @@ const FirestoreTimestamp = z.object({
 
 const SøknadSchema = z.object({
     søknadId: z.string(),
-    status: z.enum(['Under behandling', 'Godkjent', 'Avvist']),
+    status: z.string(),
     navn: z.string(),
     email: z.string(),
     telefon: z.string(),
