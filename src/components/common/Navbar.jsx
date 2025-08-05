@@ -1,22 +1,12 @@
-import React, {useEffect, useRef, useState} from 'react';
-import {Link} from 'react-router-dom';
-import {useAuth} from '../../hooks/useAuth';
-import RegiMenu from "./RegiMenu";
+import React from "react";
+import {Link} from "react-router-dom";
+import {useAuth} from "../../hooks/useAuth";
+import {ROUTES} from "../../constants/routes";
+import {USER_ROLES} from "../../constants/userRoles";
+import DropdownMenu from "./DropdownMenu";
 
 const Navbar = () => {
     const {user, logout} = useAuth();
-    const [, setMenuOpen] = useState(false);
-    const menuRef = useRef(null);
-
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (menuRef.current && !menuRef.current.contains(e.target)) {
-                setMenuOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
 
     return (
         <nav className="bg-white shadow px-8 py-2 flex justify-between items-center">
@@ -26,17 +16,27 @@ const Navbar = () => {
             <div className="flex items-center space-x-6">
                 {user ? (
                     <>
-                        <Link to="/dashboard" className="hover:text-blue-500">Dashboard</Link>
+                        <Link to={ROUTES.DASHBOARD} className="hover:text-blue-500">Dashboard</Link>
 
-                        <RegiMenu/>
+                        <DropdownMenu
+                            label="Regi"
+                            items={[
+                                {label: "Regi", to: ROUTES.REGI},
+                                {label: "Oppgaver", to: ROUTES.TASKS},
+                                {
+                                    label: "Godkjenn Arbeid",
+                                    to: "/regisjef",
+                                    roles: [USER_ROLES.REGISJEF, USER_ROLES.DATA]
+                                }
+                            ]}
+                        />
 
                         <span className="border-l border-gray-300 h-6"/>
 
-                        {/* This should probably be changed to a dropdown menu like the old site */}
                         <button onClick={logout} className="hover:text-blue-500">Logg ut</button>
                     </>
                 ) : (
-                    <Link to="/login" className="hover:text-blue-500">Logg inn</Link>
+                    <Link to={ROUTES.LOGIN} className="hover:text-blue-500">Logg inn</Link>
                 )}
             </div>
         </nav>
