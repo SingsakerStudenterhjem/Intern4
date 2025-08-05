@@ -32,6 +32,7 @@ const Navbar = () => {
 
                         <span className="border-l border-gray-300 h-6"/>
 
+                        {/* This should probably be changed to a dropdown menu like the old site */}
                         <button onClick={logout} className="hover:text-blue-500">Logg ut</button>
                     </>
                 ) : (
