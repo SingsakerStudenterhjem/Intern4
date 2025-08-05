@@ -5,7 +5,7 @@ import {
     sendPasswordResetEmail 
   } from 'firebase/auth';
   import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
-  import { auth, db } from '../firebase/config';
+  import { auth, db } from '../firebase/firebaseConfig';
   
   export const authService = {
     // Login user

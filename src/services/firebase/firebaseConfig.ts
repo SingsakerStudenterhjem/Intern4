@@ -3,7 +3,17 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-const firebaseConfig = {
+interface FirebaseConfig {
+  apiKey: string;
+  authDomain: string;
+  projectId: string;
+  storageBucket: string;
+  messagingSenderId: string;
+  appId: string;
+  measurementId: string;
+}
+
+const firebaseConfig: FirebaseConfig = {
   apiKey: "AIzaSyCkKP8hwUI_JIFsXzan3RsRmV4Ypi19l3s",
   authDomain: "singinterndevsommer.firebaseapp.com",
   projectId: "singinterndevsommer",
