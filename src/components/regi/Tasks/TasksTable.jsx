@@ -21,6 +21,9 @@ const TasksTable = ({tasks}) => {
                     Kontaktperson
                 </th>
                 <th className="px-4 py-2 text-left font-bold text-gray-700">
+                    Frist
+                </th>
+                <th className="px-4 py-2 text-left font-bold text-gray-700">
                     Tatt av
                 </th>
             </tr>
@@ -31,6 +34,7 @@ const TasksTable = ({tasks}) => {
                     <td className="px-4 py-2">{task.hva}</td>
                     <td className="px-4 py-2">{task.kategori}</td>
                     <td className="px-4 py-2">{task.kontaktperson}</td>
+                    <td className="px-4 py-2">{task.frist || "Ingen frist"}</td>
                     <td className="px-4 py-2">{task.tattAv ||
                         <button onClick={() => takeTask(task.id)}
                                 className="bg-gray-100 rounded py-1 px-2 hover:bg-gray-200">

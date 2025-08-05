@@ -20,6 +20,7 @@ const TasksPage = () => {
                 hva: "Eksempeloppgave",
                 kategori: "Generelt",
                 kontaktperson: "Ola Nordmann",
+                frist: "2023-10-01",
                 tattAv: ""
             },
             {
@@ -27,6 +28,7 @@ const TasksPage = () => {
                 hva: "Eksempeloppgave 2",
                 kategori: "Dataarbeid",
                 kontaktperson: "Kari Nordmann",
+                frist: "",
                 tattAv: "Kari Nordmann"
             }
         ]);
@@ -34,8 +36,8 @@ const TasksPage = () => {
 
     const filtered = tasks.filter(t => {
         const q = query.toLowerCase();
-        return ['hva', 'kategori', 'kontaktperson', 'tattAv']
-            .some(key => String(t[key] || '')
+        return ["hva", "kategori", "kontaktperson", "frist", "tattAv"]
+            .some(key => String(t[key] || "")
                 .toLowerCase()
                 .includes(q)
             );
