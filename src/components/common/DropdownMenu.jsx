@@ -2,6 +2,7 @@ import React, {useEffect, useRef, useState} from "react";
 import {Link} from "react-router-dom";
 import {useAuth} from "../../hooks/useAuth";
 import {USER_ROLES} from "../../constants/userRoles";
+import {LucideChevronDown} from "lucide-react";
 
 const DropdownMenu = ({label, items}) => {
     const {user} = useAuth();
@@ -31,13 +32,11 @@ const DropdownMenu = ({label, items}) => {
         <div className="relative" ref={ref}>
             <button
                 aria-expanded={open}
-                onClick={() => setOpen(o => !o)}
+                onClick={() => setOpen(open => !open)}
                 className="flex items-center hover:text-blue-500"
             >
                 {label}
-                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"/>
-                </svg>
+                <LucideChevronDown className="w-6 h-6" strokeWidth={1.5}/>
             </button>
             {open && (
                 <ul className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg z-10">

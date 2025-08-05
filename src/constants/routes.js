@@ -3,6 +3,7 @@ export const ROUTES = {
     DASHBOARD: '/dashboard',
     REGI: '/regi',
     TASKS: '/tasks',
-    HOME: '/'
+    HOME: '/',
+    ADMIN: '/admin',
   };
   
