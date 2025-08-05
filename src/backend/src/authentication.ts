@@ -1,7 +1,7 @@
 import { auth } from "../../services/firebase/firebaseConfig";
 import { Søknad } from "../types/søknad";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, confirmPasswordReset, sendPasswordResetEmail, signOut} from "firebase/auth";
-import { FirestoreTimestamp, User } from '../types/user';
+import { User } from '../types/user';
 import { Timestamp } from "firebase/firestore";
 import { leggTilBeboer, hentBeboer } from "./userDAO";
 

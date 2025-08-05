@@ -8,7 +8,7 @@ import { Menu, X, ChevronDown } from "lucide-react";
 import { loggUt } from "../../backend/src/authentication";
 
 const Navbar = () => {
-    const { user, logout } = useAuth();
+    const user = useAuth();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [openSections, setOpenSections] = useState({});
 
