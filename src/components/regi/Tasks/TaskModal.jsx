@@ -14,30 +14,36 @@ const TaskModal = ({task, onClose}) => {
             >
                 <div className="flex">
                     <div>
-                        <h2 className="text-2xl font-semibold mb-4">{task.hva}</h2>
+                        <h2 className="text-2xl font-semibold mb-4">{task.taskName}</h2>
                         <p><strong>Beskrivelse:</strong></p>
-                        <p>{task.beskrivelse}</p>
+                        <p>{task.description}</p>
                     </div>
                     <div className="border-l px-2 border-gray-200"/>
                     <div className="min-w-44">
                         <strong>Kategori:</strong>
-                        <p>{task.kategori}</p>
+                        <p>{task.category}</p>
                         <strong>Kontaktperson:</strong>
-                        <p>{task.kontaktperson}</p>
+                        <p>{task.contactPerson}</p>
                         <strong>Frist:</strong>
-                        <p>{task.frist || "Ingen frist"}</p>
+                        <p>{task.deadline || "Ingen frist"}</p>
                         <strong>Time anslag:</strong>
-                        <p>{task.timeAnslag || "Ukjent"}</p>
+                        <p>{task.hourEstimate || "Ukjent"}</p>
                         <strong>Tatt av:</strong>
-                        <p>{task.tattAv || "Ingen"}</p>
+                        <p>{task.takenBy || "Ingen"}</p>
                     </div>
                 </div>
-                <button
-                    onClick={onClose}
-                    className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-                >
-                    Lukk
-                </button>
+                <div className="mt-6 space-x-2">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                    >
+                        Lukk
+                    </button>
+                    {/* FIXME: show only if user is currently assigned to the displayed task */}
+                    <button className="px-4 py-2 rounded text-white bg-red-500 hover:bg-red-600">
+                        Gi ifra
+                    </button>
+                </div>
             </div>
         </div>
     );

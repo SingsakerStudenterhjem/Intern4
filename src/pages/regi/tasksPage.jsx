@@ -19,30 +19,30 @@ const TasksPage = () => {
         setTasks([
             {
                 id: "1",
-                hva: "Eksempeloppgave",
-                kategori: "Generelt",
-                beskrivelse: "Dette er en eksempeloppgave for å demonstrere oppgavesystemet.",
-                kontaktperson: "Ola Nordmann",
-                frist: "2023-10-01",
-                timeAnslag: "3",
-                tattAv: ""
+                taskName: "Eksempeloppgave",
+                category: "Generelt",
+                description: "Dette er en eksempeloppgave for å demonstrere oppgavesystemet.",
+                contactPerson: "Ola Nordmann",
+                deadline: "2023-10-01",
+                hourEstimate: "3",
+                takenBy: ""
             },
             {
                 id: "2",
-                hva: "Eksempeloppgave 2",
-                kategori: "Dataarbeid",
-                beskrivelse: "En annen eksempeloppgave som krever dataarbeid.",
-                kontaktperson: "Kari Nordmann",
-                frist: "",
-                timeAnslag: "",
-                tattAv: "Kari Nordmann"
+                taskName: "Eksempeloppgave 2",
+                category: "Dataarbeid",
+                description: "En annen eksempeloppgave som krever dataarbeid.",
+                contactPerson: "Kari Nordmann",
+                deadline: "",
+                hourEstimate: "",
+                takenBy: "Kari Nordmann"
             }
         ]);
     }, []);
 
     const filtered = tasks.filter(t => {
         const q = query.toLowerCase();
-        return ["hva", "kategori", "kontaktperson", "frist", "tattAv"]
+        return ["taskName", "category", "contactPerson", "deadline", "takenBy"]
             .some(key => String(t[key] || "")
                 .toLowerCase()
                 .includes(q)

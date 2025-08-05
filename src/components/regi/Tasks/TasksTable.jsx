@@ -34,12 +34,12 @@ const TasksTable = ({tasks, onRowClick}) => {
                     onClick={() => onRowClick && onRowClick(task)}
                     className="cursor-pointer hover:bg-gray-50"
                 >
-                    <td className="px-4 py-2">{task.hva}</td>
-                    <td className="px-4 py-2">{task.kategori}</td>
-                    <td className="px-4 py-2">{task.kontaktperson}</td>
-                    <td className="px-4 py-2">{task.frist || "Ingen frist"}</td>
+                    <td className="px-4 py-2">{task.taskName}</td>
+                    <td className="px-4 py-2">{task.category}</td>
+                    <td className="px-4 py-2">{task.contactPerson}</td>
+                    <td className="px-4 py-2">{task.deadline || "Ingen frist"}</td>
                     <td className="px-4 py-2">
-                        {task.tattAv || (
+                        {task.takenBy || (
                             <button
                                 onClick={e => {
                                     e.stopPropagation();  // prevent row-click
