@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { hentBeboer } from "../../backend/src/userDAO";
-import { logInn } from "../../backend/src/authentication";
+import { getUser } from "../../backend/src/userDAO";
+import { logIn } from "../../backend/src/authentication";
 
 const LoginForm = () => {
   const router = useNavigate();
@@ -21,9 +21,9 @@ const LoginForm = () => {
     }
 
     try {
-      const userID = await logInn(email, password);
+      const userID = await logIn(email, password);
       if (userID) {
-        const user = await hentBeboer(userID);
+        const user = await getUser(userID);
         if (user) {
           router("/dashboard");
         } else {

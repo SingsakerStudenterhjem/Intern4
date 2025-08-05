@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 const FirestoreTimestamp = z.object({
     seconds: z.number(),
@@ -6,24 +6,26 @@ const FirestoreTimestamp = z.object({
 });
 
 const UserSchema = z.object({
-    navn: z.string(),
-    email: z.email(),
-    telefon: z.string(),
-    fødselsdato: FirestoreTimestamp,
-    adresse: z.object({
-        gate: z.string(),
-        postnummer: z.string(),
-        by: z.string(),
+    name: z.string(),
+    email: z.string().email(),
+    phone: z.string(),
+    birthDate: FirestoreTimestamp,
+    address: z.object({
+        street: z.string(),
+        postalCode: z.string(),
+        city: z.string(),
     }),
-    studie: z.string(),
-    studiested: z.string(),
-    profilBilde: z.string().optional(),
-    ansiennitet: z.number().int(),
-    romNummer: z.number().int(),
-    rolle: z.string(),
-    påpermisjon: z.boolean(),
-    åpmandsVerv: z.array(z.string()).optional(),
-    regioppgaver: z.array(z.string()).optional(),
+    study: z.string(),
+    studyPlace: z.string(),
+    profilePicture: z.string().optional(),
+    seniority: z.number().int(),
+    roomNumber: z.number().int(),
+    role: z.string().refine(
+        (value) => ['Halv/Halv', 'Full Regi', 'Full Vakt', 'Utvalgsmeldem', 'Daglig leder'].includes(value),
+    ),
+    onLeave: z.boolean(),
+    leadershipRoles: z.array(z.string()).optional(),
+    tasks: z.array(z.string()).optional(),
     createdAt: FirestoreTimestamp,
 });
 

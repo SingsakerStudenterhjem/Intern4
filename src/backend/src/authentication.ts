@@ -1,87 +1,86 @@
 import { auth } from "../../services/firebase/firebaseConfig";
-import { Søknad } from "../types/søknad";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, confirmPasswordReset, sendPasswordResetEmail, signOut} from "firebase/auth";
+import { Application } from "../types/application";
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, confirmPasswordReset, sendPasswordResetEmail, signOut } from "firebase/auth";
 import { User } from '../types/user';
 import { Timestamp } from "firebase/firestore";
-import { leggTilBeboer, hentBeboer } from "./userDAO";
+import { addUser, getUser } from "./userDAO";
 
-const genererTilfeldigPassord = (): string => {
+const generateRandomPassword = (): string => {
     return Math.random().toString(36).slice(-12) + "!A1";
 };
 
-const leggTilNyBeboer = async (
-    søknad: Søknad
+const addNewUser = async (
+    application: Application
 ) => {
     try {
-        // Vi vil at nye brukere skal ha et tilfeldig generert passord
-        // slik at de bruker glemt passord ved første innlogging.
-        const password = genererTilfeldigPassord();
-        const userCredential = await createUserWithEmailAndPassword(auth, søknad.email, password)
+        // We want new users to have a randomly generated password
+        // so they use the forgot password feature on their first login.
+        const password = generateRandomPassword();
+        const userCredential = await createUserWithEmailAndPassword(auth, application.email, password);
         const user = userCredential.user;
 
-        const newuser: User = {
-            navn: søknad.navn,
-            email: søknad.email,
-            telefon: søknad.telefon,
-            fødselsdato: søknad.fødselsDato,
-            adresse: {
-                gate: søknad.adresse.gate,
-                postnummer: søknad.adresse.postnummer,
-                by: søknad.adresse.poststed,
+        const newUser: User = {
+            name: application.name,
+            email: application.email,
+            phone: application.phone,
+            birthDate: application.birthDate,
+            address: {
+                street: application.address.street,
+                postalCode: application.address.postalCode,
+                city: application.address.city,
             },
-            studie: søknad.studie,
-            studiested: søknad.studiested,
-            profilBilde: søknad.profilbilde || "",
-            ansiennitet: 0, // Standardverdi
-            romNummer: 0, // Standardverdi
-            rolle: 'Halv/halv', // Standardverdi
-            påpermisjon: false, // Standardverdi
-            åpmandsVerv: [],
-            regioppgaver: [],
+            study: application.study,
+            studyPlace: application.studyPlace,
+            profilePicture: application.profilePicture || "",
+            seniority: 0, // Default value
+            roomNumber: 0, // Default value
+            role: 'Half/Half', // Default value
+            onLeave: false, // Default value
+            leadershipRoles: [],
+            tasks: [],
             createdAt: Timestamp.now(),
         };
 
-        const beboerId = await leggTilBeboer(user.uid, newuser);
-        return beboerId
-
+        const userId = await addUser(user.uid, newUser);
+        return userId;
 
     } catch (error: any) {
-        throw new Error("Kunne ikke legge til ny beboer");
+        throw new Error("kunne ikke legge til beboer");
     }
-}
+};
 
-const logInn = async (email: string, password: string) => {
+const logIn = async (email: string, password: string) => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      hentBeboer(userCredential.user.uid);
-      return userCredential.user.uid;
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        getUser(userCredential.user.uid);
+        return userCredential.user.uid;
     } catch (error: any) {
-      throw new Error("Feil brukernavn eller passord");
+        throw new Error("Feil brukernavn eller passord");
     }
-  };
+};
 
-const loggUt = async () => {
+const logOut = async () => {
     try {
         await signOut(auth);
     } catch (error: any) {
         throw new Error("Kunne ikke logge ut");
     }
-}
+};
 
-const glemtpassord = async (email: string) => {
+const forgotPassword = async (email: string) => {
     try {
         await sendPasswordResetEmail(auth, email);
     } catch (error: any) {
-        throw new Error("Kunne ikke sende e-post for tilbakestilling av passord");
+        throw new Error("Kunne ikke sende tilbakestillings e-post");
     }
-}
+};
 
 const confirmResetPassword = async (code: string, newPassword: string) => {
     try {
         await confirmPasswordReset(auth, code, newPassword);
     } catch (error: any) {
-        throw new Error("Kunne ikke tilbakestille passord");
+        throw new Error("Kunne ikke bekrefte tilbakestilling av passord");
     }
-}
+};
 
-export { leggTilNyBeboer, logInn, loggUt, glemtpassord, confirmResetPassword};
+export { addNewUser, logIn, logOut, forgotPassword, confirmResetPassword };
