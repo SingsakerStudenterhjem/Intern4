@@ -1,8 +1,14 @@
 import React from "react";
 
-const TasksTable = () => {
+const TasksTable = ({tasks}) => {
+
+    const takeTask = (taskId) => {
+        // Logic to take the task, e.g., update the task in the database
+        console.log(`Task ${taskId} taken`);
+    }
+
     return (
-        <table className="min-w-full">
+        <table className="min-w-full bg-white">
             <thead className="border-b border-gray-300">
             <tr>
                 <th className="px-4 py-2 text-left font-boldtext-gray-700">
@@ -20,28 +26,22 @@ const TasksTable = () => {
             </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-            <tr>
-                <td className="px-4 py-2">Eksempeloppgave</td>
-                <td className="px-4 py-2">Generelt</td>
-                <td className="px-4 py-2">Ola Nordmann</td>
-                <td className="px-4 py-2">
-                    <button className="bg-gray-100 rounded p-1 hover:bg-gray-200">
-                        Ta oppgave
-                    </button>
-                </td>
-            </tr>
-            <tr>
-                <td className="px-4 py-2">Eksempeloppgave 2</td>
-                <td className="px-4 py-2">Generelt</td>
-                <td className="px-4 py-2">Ola Nordmann</td>
-                <td className="px-4 py-2">
-                    Tatt av Kari Nordmann
-                </td>
-            </tr>
-
+            {tasks.map(task => (
+                <tr key={task.id}>
+                    <td className="px-4 py-2">{task.hva}</td>
+                    <td className="px-4 py-2">{task.kategori}</td>
+                    <td className="px-4 py-2">{task.kontaktperson}</td>
+                    <td className="px-4 py-2">{task.tattAv ||
+                        <button onClick={() => takeTask(task.id)}
+                                className="bg-gray-100 rounded py-1 px-2 hover:bg-gray-200">
+                            Ta oppgave
+                        </button>}
+                    </td>
+                </tr>
+            ))}
             </tbody>
         </table>
-    )
-}
+    );
+};
 
 export default TasksTable;
