@@ -19,13 +19,15 @@ const TaskModal = ({task, onClose}) => {
                         <p>{task.beskrivelse}</p>
                     </div>
                     <div className="border-l px-2 border-gray-200"/>
-                    <div className="min-w-48">
+                    <div className="min-w-44">
                         <strong>Kategori:</strong>
                         <p>{task.kategori}</p>
                         <strong>Kontaktperson:</strong>
                         <p>{task.kontaktperson}</p>
                         <strong>Frist:</strong>
                         <p>{task.frist || "Ingen frist"}</p>
+                        <strong>Time anslag:</strong>
+                        <p>{task.timeAnslag || "Ukjent"}</p>
                         <strong>Tatt av:</strong>
                         <p>{task.tattAv || "Ingen"}</p>
                     </div>

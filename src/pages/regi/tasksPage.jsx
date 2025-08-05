@@ -24,6 +24,7 @@ const TasksPage = () => {
                 beskrivelse: "Dette er en eksempeloppgave for å demonstrere oppgavesystemet.",
                 kontaktperson: "Ola Nordmann",
                 frist: "2023-10-01",
+                timeAnslag: "3",
                 tattAv: ""
             },
             {
@@ -33,6 +34,7 @@ const TasksPage = () => {
                 beskrivelse: "En annen eksempeloppgave som krever dataarbeid.",
                 kontaktperson: "Kari Nordmann",
                 frist: "",
+                timeAnslag: "",
                 tattAv: "Kari Nordmann"
             }
         ]);
