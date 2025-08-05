@@ -1,11 +1,10 @@
 import React from "react";
 
-const TasksTable = ({tasks}) => {
-
+const TasksTable = ({tasks, onRowClick}) => {
     const takeTask = (taskId) => {
         // Logic to take the task, e.g., update the task in the database
         console.log(`Task ${taskId} taken`);
-    }
+    };
 
     return (
         <table className="min-w-full bg-white">
@@ -30,16 +29,27 @@ const TasksTable = ({tasks}) => {
             </thead>
             <tbody className="divide-y divide-gray-200">
             {tasks.map(task => (
-                <tr key={task.id}>
+                <tr
+                    key={task.id}
+                    onClick={() => onRowClick && onRowClick(task)}
+                    className="cursor-pointer hover:bg-gray-50"
+                >
                     <td className="px-4 py-2">{task.hva}</td>
                     <td className="px-4 py-2">{task.kategori}</td>
                     <td className="px-4 py-2">{task.kontaktperson}</td>
                     <td className="px-4 py-2">{task.frist || "Ingen frist"}</td>
-                    <td className="px-4 py-2">{task.tattAv ||
-                        <button onClick={() => takeTask(task.id)}
-                                className="bg-gray-100 rounded py-1 px-2 hover:bg-gray-200">
-                            Ta oppgave
-                        </button>}
+                    <td className="px-4 py-2">
+                        {task.tattAv || (
+                            <button
+                                onClick={e => {
+                                    e.stopPropagation();  // prevent row-click
+                                    takeTask(task.id);
+                                }}
+                                className="bg-gray-100 rounded py-1 px-2 hover:bg-gray-200"
+                            >
+                                Ta oppgave
+                            </button>
+                        )}
                     </td>
                 </tr>
             ))}

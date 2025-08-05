@@ -1,9 +1,11 @@
 import React, {useEffect, useState} from "react";
 import TasksTable from "../../components/regi/Tasks/TasksTable";
+import TaskModal from "../../components/regi/Tasks/TaskModal";
 
 const TasksPage = () => {
     const [tasks, setTasks] = useState([]);
     const [query, setQuery] = useState("");
+    const [selected, setSelected] = useState(null);
 
     useEffect(() => {
         /*
@@ -19,6 +21,7 @@ const TasksPage = () => {
                 id: "1",
                 hva: "Eksempeloppgave",
                 kategori: "Generelt",
+                beskrivelse: "Dette er en eksempeloppgave for å demonstrere oppgavesystemet.",
                 kontaktperson: "Ola Nordmann",
                 frist: "2023-10-01",
                 tattAv: ""
@@ -27,6 +30,7 @@ const TasksPage = () => {
                 id: "2",
                 hva: "Eksempeloppgave 2",
                 kategori: "Dataarbeid",
+                beskrivelse: "En annen eksempeloppgave som krever dataarbeid.",
                 kontaktperson: "Kari Nordmann",
                 frist: "",
                 tattAv: "Kari Nordmann"
@@ -65,9 +69,18 @@ const TasksPage = () => {
                 </div>
 
                 <div className="overflow-x-auto">
-                    <TasksTable tasks={filtered}/>
+                    <TasksTable
+                        tasks={filtered}
+                        onRowClick={task => setSelected(task)}
+                    />
                 </div>
             </div>
+            {selected && (
+                <TaskModal
+                    task={selected}
+                    onClose={() => setSelected(null)}
+                />
+            )}
         </div>
     );
 };
