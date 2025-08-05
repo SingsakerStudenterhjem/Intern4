@@ -25,7 +25,8 @@ const TasksPage = () => {
                 contactPerson: "Ola Nordmann",
                 deadline: "01-10-2025",
                 hourEstimate: "3",
-                takenBy: ""
+                takenBy: "",
+                completed: false,
             },
             {
                 id: "2",
@@ -35,7 +36,8 @@ const TasksPage = () => {
                 contactPerson: "Kari Nordmann",
                 deadline: "",
                 hourEstimate: "",
-                takenBy: "Kari Nordmann"
+                takenBy: "Kari Nordmann",
+                completed: true,
             }
         ]);
     }, []);
@@ -48,6 +50,8 @@ const TasksPage = () => {
                 .includes(q)
             );
     });
+
+    const availableCount = tasks.filter(t => !t.takenBy && !t.completed).length;
 
     return (
         <div className="flex min-h-screen bg-gray-100 overflow-x-hidden">
@@ -70,11 +74,12 @@ const TasksPage = () => {
                     />
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto text-sm">
                     <TasksTable
                         tasks={filtered}
                         onRowClick={task => setSelected(task)}
                     />
+                    <p className="text-gray-500 py-2 text-right">Antall ledige oppgaver: {availableCount}</p>
                 </div>
             </div>
             {selected && (
