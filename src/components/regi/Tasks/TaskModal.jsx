@@ -1,6 +1,9 @@
-import React from "react";
+import React, {useState} from "react";
 
 const TaskModal = ({task, onClose}) => {
+    const [isCompleting, setIsCompleting] = useState(false);
+    const [hours, setHours] = useState("");
+
     if (!task) return null;
 
     const handleUnassign = () => {
@@ -9,9 +12,20 @@ const TaskModal = ({task, onClose}) => {
         onClose();
     };
 
-    const handleComplete = () => {
-        console.log(`Mark task ${task.id} as completed`);
-        // TODO: show new popup where the user can write how many hours they spent
+    const startComplete = () => {
+        setIsCompleting(true);
+    };
+
+    const cancelComplete = () => {
+        setIsCompleting(false);
+        setHours("");
+    };
+
+    const confirmComplete = () => {
+        console.log(`Task ${task.id} completed in ${hours}h`);
+        // TODO: update Firestore: set completed=true and hoursSpent=hours and maybe completedBy=user who pressed
+        //  the complete button
+        onClose();
     };
 
     return (
@@ -45,29 +59,63 @@ const TaskModal = ({task, onClose}) => {
                     </div>
                 </div>
 
-                <div className="mt-2 md:mt-auto flex justify-between items-center">
-                    <button
-                        onClick={onClose}
-                        className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
-                    >
-                        Lukk
-                    </button>
-
-                    <div className="flex gap-2">
-                        <button
-                            onClick={handleComplete}
-                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                        >
-                            Marker fullført
-                        </button>
-                        {/* FIXME: show only if user is currently assigned to the displayed task */}
-                        <button
-                            onClick={handleUnassign}
-                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                        >
-                            Gi vekk
-                        </button>
-                    </div>
+                {/* bottom area */}
+                <div className="mt-4 md:mt-auto">
+                    {isCompleting ? (
+                        <div className="space-y-3">
+                            <label className="block">
+                                <span className="font-medium">Antall timer brukt:</span>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    value={hours}
+                                    onChange={e => setHours(e.target.value)}
+                                    className="mt-1 w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring"
+                                    placeholder="F.eks. 2"
+                                />
+                            </label>
+                            <div className="flex justify-end space-x-2">
+                                <button
+                                    onClick={cancelComplete}
+                                    className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                                >
+                                    Avbryt
+                                </button>
+                                <button
+                                    onClick={confirmComplete}
+                                    disabled={!hours}
+                                    className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    Bekreft
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex justify-between items-center">
+                            <button
+                                onClick={onClose}
+                                className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
+                            >
+                                Lukk
+                            </button>
+                            <div className="flex gap-2">
+                                {/* FIXME: only show if user is assigned */}
+                                <button
+                                    onClick={startComplete}
+                                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                >
+                                    Marker fullført
+                                </button>
+                                {/* FIXME: only show if user is assigned */}
+                                <button
+                                    onClick={handleUnassign}
+                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                >
+                                    Gi vekk
+                                </button>
+                            </div>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
