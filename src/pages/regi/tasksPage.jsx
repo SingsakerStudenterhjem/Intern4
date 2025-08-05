@@ -53,8 +53,8 @@ const TasksPage = () => {
     const availableCount = tasks.filter(t => !t.takenBy && !t.completed).length;
 
     return (
-        <div className="flex min-h-screen bg-gray-100 overflow-x-hidden">
-            <div className="bg-white p-8 rounded-md shadow-md w-full mx-4 my-4 space-y-2 max-w-full min-w-0">
+        <div className="flex justify-center min-h-screen bg-gray-100 overflow-x-hidden">
+            <div className="bg-white p-8 rounded-md shadow-md w-full mx-4 my-4 space-y-2 max-w-[80rem] min-w-0">
                 <div className="space-y-1">
                     <h1 className="font-bold text-2xl">Oppgaver</h1>
                     <p className="text-gray-600 text-sm">
