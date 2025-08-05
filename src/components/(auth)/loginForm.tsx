@@ -22,18 +22,11 @@ const LoginForm = () => {
 
     try {
       const userID = await logIn(email, password);
-      if (userID) {
-        const user = await getUser(userID);
-        if (user) {
-          router("/dashboard");
-        } else {
-          setError("Bruker ikke funnet");
-        }
-      }
+      const user = await getUser(userID); // If getUser fails, it will throw an error
+
+      router("/dashboard");
     } catch (error) {
-      setError(
-        "Bruker ikke funnet eller innlogging mislyktes. Vennligst prøv igjen."
-      );
+      setError("Brukernavn eller passord er feil.");
       console.error("Error during login:", error);
     } finally {
       setLoading(false);
