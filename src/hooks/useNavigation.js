@@ -29,18 +29,15 @@ export const useNavigation = () => {
     const baseRoutes = [
       { path: ROUTES.DASHBOARD, label: 'Dashboard', icon: 'home' },
       { path: ROUTES.REGI, label: 'Regi', icon: 'work' },
-      { path: ROUTES.TASKS, label: 'Oppgaver', icon: 'tasks' }
+      { path: ROUTES.TASKS, label: 'Oppgaver', icon: 'tasks' },
     ];
 
     if (user?.role === 'regisjef' || user?.role === 'data') {
-      baseRoutes.push(
-      );
+      baseRoutes.push();
     }
 
     if (user?.role === 'data') {
-      baseRoutes.push(
-        { path: ROUTES.ADMIN, label: 'Admin', icon: 'admin' }
-      );
+      baseRoutes.push({ path: ROUTES.ADMIN, label: 'Admin', icon: 'admin' });
     }
 
     return baseRoutes;
@@ -56,6 +53,6 @@ export const useNavigation = () => {
     handleLogout,
     isCurrentRoute,
     getAvailableRoutes,
-    currentPath: location.pathname
+    currentPath: location.pathname,
   };
 };

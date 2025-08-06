@@ -1,13 +1,8 @@
-import React from "react";
-import { useAuth } from "../../hooks/useAuth";
-import { USER_ROLES } from "../../constants/userRoles";
+import React from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { USER_ROLES } from '../../constants/userRoles';
 
-const AuthGuard = ({
-  children,
-  allowedRoles = [],
-  fallback = null,
-  redirectTo = "/login",
-}) => {
+const AuthGuard = ({ children, allowedRoles = [], fallback = null, redirectTo = '/login' }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -56,10 +51,7 @@ export const DataGuard = ({ children, fallback }) => (
 
 // Guard for regisjef role
 export const RegisjefGuard = ({ children, fallback }) => (
-  <AuthGuard
-    allowedRoles={[USER_ROLES.DATA, USER_ROLES.REGISJEF]}
-    fallback={fallback}
-  >
+  <AuthGuard allowedRoles={[USER_ROLES.DATA, USER_ROLES.REGISJEF]} fallback={fallback}>
     {children}
   </AuthGuard>
 );
