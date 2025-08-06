@@ -1,6 +1,6 @@
 import React, {useState} from "react";
 
-const TaskModal = ({task, onClose}) => {
+const TaskModal = ({task, onClose, currentUser}) => {
     const [isCompleting, setIsCompleting] = useState(false);
     const [hours, setHours] = useState("");
 
@@ -27,6 +27,8 @@ const TaskModal = ({task, onClose}) => {
         //  the complete button
         onClose();
     };
+
+    const isAssignedToCurrentUser = task.takenBy === currentUser;
 
     return (
         <div
@@ -99,20 +101,22 @@ const TaskModal = ({task, onClose}) => {
                                 Lukk
                             </button>
                             <div className="flex gap-2">
-                                {/* FIXME: only show if user is assigned */}
-                                <button
-                                    onClick={startComplete}
-                                    className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-                                >
-                                    Marker fullført
-                                </button>
-                                {/* FIXME: only show if user is assigned */}
-                                <button
-                                    onClick={handleUnassign}
-                                    className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-                                >
-                                    Gi vekk
-                                </button>
+                                {isAssignedToCurrentUser && !task.completed && (
+                                    <>
+                                        <button
+                                            onClick={startComplete}
+                                            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+                                        >
+                                            Marker fullført
+                                        </button>
+                                        <button
+                                            onClick={handleUnassign}
+                                            className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                                        >
+                                            Gi vekk
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         </div>
                     )}

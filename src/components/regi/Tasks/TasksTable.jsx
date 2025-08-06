@@ -1,11 +1,6 @@
 import React from "react";
 
-const TasksTable = ({tasks, onRowClick}) => {
-    const takeTask = (taskId) => {
-        // Logic to take the task, e.g., update the task in the database
-        console.log(`Task ${taskId} taken`);
-    };
-
+const TasksTable = ({tasks, onRowClick, onTakeTask}) => {
     return (
         <table className="min-w-full bg-white">
             <thead className="border-b border-gray-300">
@@ -39,11 +34,11 @@ const TasksTable = ({tasks, onRowClick}) => {
                     <td className="px-4 py-2">{task.contactPerson}</td>
                     <td className="px-4 py-2">{task.deadline || "Ingen frist"}</td>
                     <td className="px-4 py-2">
-                        {task.takenBy || (
+                        {task.takenBy ? task.takenBy : (
                             <button
                                 onClick={e => {
-                                    e.stopPropagation();  // prevent row-click
-                                    takeTask(task.id);
+                                    e.stopPropagation();
+                                    onTakeTask(task.id);
                                 }}
                                 className="bg-gray-100 rounded py-1 px-2 hover:bg-gray-200"
                             >
