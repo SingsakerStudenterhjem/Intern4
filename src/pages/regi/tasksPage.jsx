@@ -24,7 +24,7 @@ const TasksPage = () => {
         prevPage,
         categories,
         filteredTasks,
-    } = useTasks(tasks);
+    } = useTasks(tasks, currentUser);
 
     useEffect(() => {
         /*
@@ -50,7 +50,7 @@ const TasksPage = () => {
             id: "2",
             taskName: "Eksempeloppgave 2",
             category: "Dataarbeid",
-            description: "En annen eksempeloppgaved.",
+            description: "En annen eksempeloppgave.",
             contactPerson: "Kari Nordmann",
             deadline: "",
             hourEstimate: "",

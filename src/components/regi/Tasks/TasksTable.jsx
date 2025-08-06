@@ -5,7 +5,7 @@ const TasksTable = ({tasks, onRowClick, onTakeTask}) => {
         <table className="min-w-full bg-white">
             <thead className="border-b border-gray-300">
             <tr>
-                <th className="px-4 py-2 text-left font-boldtext-gray-700">
+                <th className="px-4 py-2 text-left font-bold text-gray-700">
                     Hva
                 </th>
                 <th className="px-4 py-2 text-left font-bold text-gray-700">

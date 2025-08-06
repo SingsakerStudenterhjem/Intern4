@@ -1,13 +1,10 @@
 import {useMemo, useState} from "react";
 
-export const useTasks = (tasks, tasksPerPage = 10) => {
+export const useTasks = (tasks, currentUser, tasksPerPage = 10) => {
     const [query, setQuery] = useState("");
     const [filter, setFilter] = useState("available");
     const [category, setCategory] = useState("all");
     const [currentPage, setCurrentPage] = useState(1);
-
-    // Hardcoded user for now, will be replaced with auth context
-    const currentUser = "Ola Nordmann";
 
     const filteredTasks = useMemo(() => {
         let filtered = tasks;
