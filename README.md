@@ -1,6 +1,6 @@
 # Singsaker Studenterhjem internside
 
-Repo for the internal "internside" system. 
+Repo for the internal "internside" system.
 
 React, Tailwind, Firebase.
 

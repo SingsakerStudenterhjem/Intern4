@@ -4,13 +4,9 @@ const WorkApprovalPage = () => {
   return (
     <div>
       <div>
-        <h1>
-          Godkjenn Arbeid
-        </h1>
+        <h1>Godkjenn Arbeid</h1>
         <div>
-          <p>
-            Her kan du godkjenne eller avvise innsendt arbeid.
-          </p>
+          <p>Her kan du godkjenne eller avvise innsendt arbeid.</p>
         </div>
       </div>
     </div>
