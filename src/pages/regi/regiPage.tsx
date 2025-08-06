@@ -36,11 +36,14 @@ const RegiPage = () => {
               </div>
             </form>
           </div>
-          <div className="d"></div>
           <div className="w-1/3">
             {/* Regi overview */}
             <h2 className="font-medium text-xl">Oversikt over min regi</h2>
           </div>
+        </div>
+        <div className="w-full flex">
+          {/* Regi log */}
+          <h2 className="font-medium text-xl">Regi logg</h2>
         </div>
       </div>
     </div>
