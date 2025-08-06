@@ -1,14 +1,14 @@
 import {z} from "zod";
-import {User} from "./user";
+import UserSchema from "./user";
 
 export const TaskSchema = z.object({
     taskName: z.string(),
     category: z.string(),
     description: z.string().optional(),
-    contactPerson: z.object<User>(),
+    contactPerson: UserSchema,
     deadline: z.iso.datetime().optional(),
     hourEstimate: z.number().optional(), // int or float
-    takenBy: z.object<User>().optional(),
+    takenBy: UserSchema,
     completed: z.boolean(),
     completedAt: z.iso.datetime().optional(),
 })

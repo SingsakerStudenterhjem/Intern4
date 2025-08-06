@@ -1,4 +1,4 @@
-import {doc, getDoc, setDoc,} from "firebase/firestore";
+import {collection, doc, getDoc, getDocs, setDoc,} from "firebase/firestore";
 import {db} from "../../services/firebase/firebaseConfig";
 import {Task} from "../types/task";
 
@@ -19,21 +19,17 @@ export async function getTask(uid: string): Promise<Task | undefined> {
         if (taskDoc.exists()) {
             return taskDoc.data() as Task;
         } else {
-            return undefined;
+            return;
         }
     } catch (error: any) {
         throw new Error(error.message);
     }
 }
 
-export async function getTasks(): Promise<[Task] | undefined> {
+export async function getTasks(): Promise<Task[]> {
     try {
-        const tasksDoc = await getDoc(doc(db, "tasks"));
-        if (tasksDoc.exists()) {
-            return tasksDoc.data() as [Task];
-        } else {
-            return;
-        }
+        const tasksDoc = await getDocs(collection(db, "tasks"));
+        return tasksDoc.docs.map(doc => doc.data() as Task);
     } catch (error: any) {
         throw new Error(error.message);
     }
