@@ -1,13 +1,9 @@
 import { z } from 'zod';
-
-const FirestoreTimestamp = z.object({
-  seconds: z.number(),
-  nanoseconds: z.number(),
-});
+import { FirestoreTimestamp } from './firestoreTimestamp';
 
 const UserSchema = z.object({
   name: z.string(),
-  email: z.string().email(),
+  email: z.email(),
   phone: z.string(),
   birthDate: FirestoreTimestamp,
   address: z.object({
@@ -34,4 +30,3 @@ const UserSchema = z.object({
 });
 
 export type User = z.infer<typeof UserSchema>;
-export type FirestoreTimestamp = z.infer<typeof FirestoreTimestamp>;

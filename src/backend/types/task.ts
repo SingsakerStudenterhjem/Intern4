@@ -1,17 +1,17 @@
-import {z} from "zod";
-import UserSchema from "./user";
+import { z } from 'zod';
+import { FirestoreTimestamp } from './firestoreTimestamp';
 
 export const TaskSchema = z.object({
-    taskName: z.string(),
-    category: z.string(),
-    description: z.string().optional(),
-    contactPerson: UserSchema,
-    deadline: z.iso.datetime().optional(),
-    hourEstimate: z.number().optional(), // int or float
-    takenBy: UserSchema,
-    completed: z.boolean(),
-    completedAt: z.iso.datetime().optional(),
-    isApproved: z.boolean(),
-})
+  taskName: z.string(),
+  category: z.string(),
+  description: z.string().optional(),
+  contactPerson: z.uuid(),
+  deadline: FirestoreTimestamp,
+  hourEstimate: z.number().optional(), // int or float
+  takenBy: z.uuid(),
+  completed: z.boolean(),
+  completedAt: FirestoreTimestamp,
+  isApproved: z.boolean(),
+});
 
 export type Task = z.infer<typeof TaskSchema>;
