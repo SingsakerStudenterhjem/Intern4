@@ -35,11 +35,13 @@ const AuthGuard = ({ children, allowedRoles = [], fallback = null, redirectTo = 
 };
 
 export const withAuth = (Component, allowedRoles = []) => {
-  return (props) => (
+  const Wrapped = (props) => (
     <AuthGuard allowedRoles={allowedRoles}>
       <Component {...props} />
     </AuthGuard>
   );
+  Wrapped.displayName = `withAuth(${Component.displayName || Component.name || 'Component'})`;
+  return Wrapped;
 };
 
 // Guard for data åpmand role
