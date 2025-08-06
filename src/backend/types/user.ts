@@ -24,6 +24,8 @@ const UserSchema = z.object({
         (value) => ['Halv/Halv', 'Full Regi', 'Full Vakt', 'Utvalgsmedlem', 'Daglig leder'].includes(value),
     ),
     onLeave: z.boolean(),
+    isActive: z.boolean(),
+    lastLogin: FirestoreTimestamp.optional(),
     leadershipRoles: z.array(z.string()).optional(),
     tasks: z.array(z.string()).optional(),
     createdAt: FirestoreTimestamp,

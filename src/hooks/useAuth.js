@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "../services/firebase/firebaseConfig";
-import { authService } from "../services/api/authService";
+import { logOut } from "../backend/src/authentication";
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
@@ -25,7 +25,7 @@ export const useAuth = () => {
 
             // Check if user is still active
             if (!userData.isActive) {
-              await authService.logout();
+              await logOut();
               setUser(null);
               setError("Brukerkonto er deaktivert");
               return;
@@ -39,7 +39,7 @@ export const useAuth = () => {
           } else {
             // User document doesn't exist in Firestore
             setError("Brukerprofil ikke funnet");
-            await authService.logout();
+            await logOut();
             setUser(null);
           }
         } catch (err) {
@@ -58,7 +58,7 @@ export const useAuth = () => {
   }, []);
 
   const logout = async () => {
-    const result = await authService.logout();
+    const result = await logOut();
     if (!result.success) {
       setError(result.error);
     }

@@ -3,7 +3,7 @@ import { Application } from "../types/application";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, confirmPasswordReset, sendPasswordResetEmail, signOut } from "firebase/auth";
 import { User } from '../types/user';
 import { Timestamp } from "firebase/firestore";
-import { addUser, getUser } from "./userDAO";
+import { addUser, getUser, updateUser } from "./userDAO";
 
 const generateRandomPassword = (): string => {
     return Math.random().toString(36).slice(-12) + "!A1";
@@ -36,36 +36,101 @@ const addNewUser = async (
             roomNumber: 0, // Default value
             role: 'Halv/Halv', // Default value
             onLeave: false, // Default value
+            isActive: true, // Default value
             leadershipRoles: [],
             tasks: [],
             createdAt: Timestamp.now(),
         };
 
         const userId = await addUser(user.uid, newUser);
-        return userId;
+        return { success: true, uid: userId, user: userCredential.user };
 
     } catch (error: any) {
-        throw new Error("kunne ikke legge til beboer");
+        console.error('Create user error:', error);
+        
+        let errorMessage = 'Kunne ikke opprette bruker';
+        
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'E-postadressen er allerede i bruk';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Ugyldig e-postadresse';
+            break;
+          default:
+            errorMessage += ": " + error.message;
+        }
+        
+        return { success: false, error: errorMessage };
     }
 };
 
 const logIn = async (email: string, password: string) => {
     try {
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        getUser(userCredential.user.uid);
-        return userCredential.user.uid;
+
+        const userData = await getUser(userCredential.user.uid);
+
+        if (!userData) {
+            await signOut(auth);
+            return { success: false, error: 'Brukerprofil ikke funnet' };
+            }
+
+        if (!userData.isActive) {
+            await signOut(auth);
+            return { success: false, error: 'Brukerprofil er deaktivert' };
+        }
+
+        await updateUser(userCredential.user.uid, { lastLogin: Timestamp.now() });
+
+        return { 
+          success: true, 
+          user: userCredential.user,
+          userData: userData
+        };
+
     } catch (error: any) {
-        throw new Error("Feil brukernavn eller passord");
-    }
+        console.error('Login error:', error);
+        
+        // Error messages for common Firebase Auth errors
+        let errorMessage = 'Det oppstod en feil under innlogging';
+        
+        switch (error.code) {
+          case 'auth/user-not-found':
+            errorMessage = 'Ingen bruker funnet med denne e-postadressen';
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'Feil passord';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Ugyldig e-postadresse';
+            break;
+          case 'auth/user-disabled':
+            errorMessage = 'Brukerkonto er deaktivert';
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = 'For mange innloggingsforsøk. Prøv igjen senere';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Nettverksfeil. Sjekk internettforbindelsen';
+            break;
+          default:
+            errorMessage = 'Ugyldig e-post eller passord';
+        }
+        
+        return { success: false, error: errorMessage };
+      }
 };
 
-const logOut = async () => {
-    try {
+const logOut =  async () => {
+      try {
         await signOut(auth);
-    } catch (error: any) {
-        throw new Error("Kunne ikke logge ut");
+        return { success: true };
+      } catch (error) {
+        console.error('Logout error:', error);
+        return { success: false, error: 'Kunne ikke logge ut' };
+      }
     }
-};
 
 const forgotPassword = async (email: string) => {
     try {
