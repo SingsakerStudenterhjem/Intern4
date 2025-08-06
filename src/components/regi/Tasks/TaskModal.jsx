@@ -23,8 +23,8 @@ const TaskModal = ({task, onClose, currentUser}) => {
 
     const confirmComplete = () => {
         console.log(`Task ${task.id} completed in ${hours}h`);
-        // TODO: update Firestore: set completed=true and hoursSpent=hours and maybe completedBy=user who pressed
-        //  the complete button
+        // TODO: update Firestore: set completed=true and hoursSpent=hours, completedAt=current datetime and maybe
+        //  completedBy=user who presse the complete button
         onClose();
     };
 

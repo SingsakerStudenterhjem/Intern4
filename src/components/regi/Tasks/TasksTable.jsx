@@ -29,11 +29,11 @@ const TasksTable = ({tasks, onRowClick, onTakeTask}) => {
                     onClick={() => onRowClick && onRowClick(task)}
                     className="cursor-pointer hover:bg-gray-50"
                 >
-                    <td className="px-4 py-2">{task.taskName}</td>
-                    <td className="px-4 py-2">{task.category}</td>
-                    <td className="px-4 py-2">{task.contactPerson}</td>
-                    <td className="px-4 py-2">{task.deadline || "Ingen frist"}</td>
-                    <td className="px-4 py-2">
+                    <td className="px-4 py-2 w-1/3">{task.taskName}</td>
+                    <td className="px-4 py-2 w-1/6">{task.category}</td>
+                    <td className="px-4 py-2 w-1/5">{task.contactPerson}</td>
+                    <td className="px-4 py-2 w-1/10">{task.deadline || "Ingen frist"}</td>
+                    <td className="px-4 py-2 w-1/5">
                         {task.takenBy ? task.takenBy : (
                             <button
                                 onClick={e => {
