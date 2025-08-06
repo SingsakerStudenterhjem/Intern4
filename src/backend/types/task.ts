@@ -11,6 +11,7 @@ export const TaskSchema = z.object({
     takenBy: UserSchema,
     completed: z.boolean(),
     completedAt: z.iso.datetime().optional(),
+    isApproved: z.boolean(),
 })
 
 export type Task = z.infer<typeof TaskSchema>;
