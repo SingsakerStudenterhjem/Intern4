@@ -5,7 +5,6 @@ import { ROUTES } from "../../constants/routes";
 import { USER_ROLES } from "../../constants/userRoles";
 import DropdownMenu from "./DropdownMenu";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { logOut } from "../../backend/src/authentication";
 
 const Navbar = () => {
     const { user, logout } = useAuth();

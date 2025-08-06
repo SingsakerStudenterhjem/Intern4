@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUser } from "../../backend/src/userDAO";
 import { logIn } from "../../backend/src/authentication";
 import { useAuth } from "../../hooks/useAuth";
 
