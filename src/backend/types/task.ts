@@ -9,7 +9,7 @@ export const TaskSchema = z.object({
     deadline: z.iso.datetime().optional(),
     hourEstimate: z.number().optional(), // int or float
     takenBy: z.object<User>().optional(),
-    completed: false,
+    completed: z.boolean(),
     completedAt: z.iso.datetime().optional(),
 })
 
