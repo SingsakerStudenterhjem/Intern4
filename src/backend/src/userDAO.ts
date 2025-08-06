@@ -19,7 +19,7 @@ export async function getUser(uid: string): Promise<User | undefined> {
         if (userDoc.exists()) {
             return userDoc.data() as User;
         } else {
-            throw new Error("User not found");
+            return undefined;
         }
     } catch (error: any) {
         throw new Error(error.message);

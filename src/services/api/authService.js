@@ -7,6 +7,7 @@ import {
   import { doc, setDoc, getDoc, updateDoc } from 'firebase/firestore';
   import { auth, db } from '../firebase/firebaseConfig';
   
+  // Deprecated: Use services from authentication.ts instead
   export const authService = {
     // Login user
     login: async (email, password) => {

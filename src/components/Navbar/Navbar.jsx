@@ -5,24 +5,15 @@ import { ROUTES } from "../../constants/routes";
 import { USER_ROLES } from "../../constants/userRoles";
 import DropdownMenu from "./DropdownMenu";
 import { Menu, X, ChevronDown } from "lucide-react";
-import { logOut } from "../../backend/src/authentication";
 
 const Navbar = () => {
-    const user = useAuth();
+    const { user, logout } = useAuth();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [openSections, setOpenSections] = useState({});
 
     const toggleSection = key =>
         setOpenSections(s => ({ ...s, [key]: !s[key] }));
 
-    const handleLogout = async () => {
-        try {
-            await logOut();
-        } catch (error) {
-            console.error("Logout failed:", error);
-        }
-        setMobileOpen(false);
-    };
 
     const menuItems = [
         { key: "dash", label: "Dashboard", to: ROUTES.DASHBOARD },
@@ -84,7 +75,7 @@ const Navbar = () => {
 
                         <span className="border-l border-gray-300 h-6" />
 
-                        <button onClick={handleLogout} className="hover:text-blue-500">
+                        <button onClick={logout} className="hover:text-blue-500">
                             Logg ut
                         </button>
                     </>
@@ -144,7 +135,7 @@ const Navbar = () => {
                         <li>
                             <button
                                 onClick={() => {
-                                    handleLogout();
+                                    logout();
                                     setMobileOpen(false);
                                 }}
                                 className="w-full text-left py-2"

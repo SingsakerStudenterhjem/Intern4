@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { getUser } from "../../backend/src/userDAO";
 import { logIn } from "../../backend/src/authentication";
+import { useAuth } from "../../hooks/useAuth";
+import { useEffect } from "react";
 
 const LoginForm = () => {
   const router = useNavigate();
@@ -10,6 +11,14 @@ const LoginForm = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      router("/dashboard");
+    }
+  }, [user, router]);
 
   const handleLogin = async () => {
     setError(null);
@@ -21,9 +30,12 @@ const LoginForm = () => {
     }
 
     try {
-      const userID = await logIn(email, password);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const user = await getUser(userID); // If getUser fails, it will throw an error
+      const result = await logIn(email, password);
+      if (!result.success) {
+        setError(result.error || "Ugyldig e-post eller passord");
+        setLoading(false);
+        return;
+      }
 
       router("/dashboard");
     } catch (error) {
