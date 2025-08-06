@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../services/firebase/firebaseConfig";
-import { authService } from "../services/api/authService";
+import { useState, useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../services/firebase/firebaseConfig';
+import { logOut } from '../backend/src/authentication';
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
@@ -17,7 +17,7 @@ export const useAuth = () => {
       if (firebaseUser) {
         try {
           // Get user data from Firestore
-          const userDocRef = doc(db, "users", firebaseUser.uid);
+          const userDocRef = doc(db, 'users', firebaseUser.uid);
           const userDoc = await getDoc(userDocRef);
 
           if (userDoc.exists()) {
@@ -25,9 +25,9 @@ export const useAuth = () => {
 
             // Check if user is still active
             if (!userData.isActive) {
-              await authService.logout();
+              await logOut();
               setUser(null);
-              setError("Brukerkonto er deaktivert");
+              setError('Brukerkonto er deaktivert');
               return;
             }
 
@@ -38,13 +38,13 @@ export const useAuth = () => {
             });
           } else {
             // User document doesn't exist in Firestore
-            setError("Brukerprofil ikke funnet");
-            await authService.logout();
+            setError('Brukerprofil ikke funnet');
+            await logOut();
             setUser(null);
           }
         } catch (err) {
-          console.error("Error fetching user data:", err);
-          setError("Kunne ikke laste brukerprofil");
+          console.error('Error fetching user data:', err);
+          setError('Kunne ikke laste brukerprofil');
           setUser(null);
         }
       } else {
@@ -58,7 +58,7 @@ export const useAuth = () => {
   }, []);
 
   const logout = async () => {
-    const result = await authService.logout();
+    const result = await logOut();
     if (!result.success) {
       setError(result.error);
     }
@@ -70,8 +70,8 @@ export const useAuth = () => {
     error,
     logout,
     isAuthenticated: !!user,
-    isAdmin: user?.role === "data",
-    isRegisjef: user?.role === "regisjef",
-    isUser: user?.role === "user",
+    isAdmin: user?.role === 'data',
+    isRegisjef: user?.role === 'regisjef',
+    isUser: user?.role === 'user',
   };
 };

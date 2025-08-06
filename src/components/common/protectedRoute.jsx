@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 
@@ -21,12 +20,8 @@ const ProtectedRoute = ({ children, allowedRoles = [] }) => {
     return (
       <div>
         <div>
-          <h2>
-            Ingen tilgang
-          </h2>
-          <p>
-            Du har ikke tilgang til denne siden.
-          </p>
+          <h2>Ingen tilgang</h2>
+          <p>Du har ikke tilgang til denne siden.</p>
         </div>
       </div>
     );

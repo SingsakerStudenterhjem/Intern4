@@ -1,34 +1,46 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getUser } from "../../backend/src/userDAO";
-import { logIn } from "../../backend/src/authentication";
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { logIn } from '../../backend/src/authentication';
+import { useAuth } from '../../hooks/useAuth';
+import { useEffect } from 'react';
 
 const LoginForm = () => {
   const router = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      router('/dashboard');
+    }
+  }, [user, router]);
 
   const handleLogin = async () => {
     setError(null);
     setLoading(true);
     if (!email || !password) {
-      setError("Vennligst fyll ut både e-post og passord.");
+      setError('Vennligst fyll ut både e-post og passord.');
       setLoading(false);
       return;
     }
 
     try {
-      const userID = await logIn(email, password);
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const user = await getUser(userID); // If getUser fails, it will throw an error
+      const result = await logIn(email, password);
+      if (!result.success) {
+        setError(result.error || 'Ugyldig e-post eller passord');
+        setLoading(false);
+        return;
+      }
 
-      router("/dashboard");
+      router('/dashboard');
     } catch (error) {
-      setError("Brukernavn eller passord er feil.");
-      console.error("Error during login:", error);
+      setError('Brukernavn eller passord er feil.');
+      console.error('Error during login:', error);
     } finally {
       setLoading(false);
     }
@@ -56,7 +68,7 @@ const LoginForm = () => {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
             disabled={loading}
             placeholder="passord"
             className="w-full border border-gray-300 rounded px-3 py-2 disabled:opacity-50"
@@ -68,7 +80,7 @@ const LoginForm = () => {
           disabled={loading || !email || !password}
           className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
         >
-          {loading ? "Laster..." : "Logg inn"}
+          {loading ? 'Laster...' : 'Logg inn'}
         </button>
       </div>
     </div>

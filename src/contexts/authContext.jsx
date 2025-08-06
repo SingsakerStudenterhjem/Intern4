@@ -5,12 +5,8 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const auth = useAuthHook();
-  
-  return (
-    <AuthContext.Provider value={auth}>
-      {children}
-    </AuthContext.Provider>
-  );
+
+  return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 
 export const useAuth = () => {
