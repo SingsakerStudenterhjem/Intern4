@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { logIn } from "../../backend/src/authentication";
 import { useAuth } from "../../hooks/useAuth";
+import { useEffect } from "react";
 
 const LoginForm = () => {
   const router = useNavigate();
@@ -12,10 +13,12 @@ const LoginForm = () => {
   const [error, setError] = useState<string | null>(null);
 
   const { user } = useAuth();
-  if (user) {
-    router("/dashboard");
-    return null;
-  }
+
+  useEffect(() => {
+    if (user) {
+      router("/dashboard");
+    }
+  }, [user, router]);
 
   const handleLogin = async () => {
     setError(null);
