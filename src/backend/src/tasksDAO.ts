@@ -19,7 +19,7 @@ export async function getTask(uid: string): Promise<Task | undefined> {
         if (taskDoc.exists()) {
             return taskDoc.data() as Task;
         } else {
-            throw new Error("Task not found");
+            return undefined;
         }
     } catch (error: any) {
         throw new Error(error.message);
