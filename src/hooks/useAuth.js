@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "../services/firebase/firebaseConfig";
-import { logOut } from "../backend/src/authentication";
+import { useState, useEffect } from 'react';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../services/firebase/firebaseConfig';
+import { logOut } from '../backend/src/authentication';
 
 export const useAuth = () => {
   const [user, setUser] = useState(null);
@@ -38,7 +38,7 @@ export const useAuth = () => {
             });
           } else {
             // User document doesn't exist in Firestore
-            setError("Brukerprofil ikke funnet");
+            setError('Brukerprofil ikke funnet');
             await logOut();
             setUser(null);
           }

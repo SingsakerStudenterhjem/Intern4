@@ -1,18 +1,17 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "../../hooks/useAuth";
-import { ROUTES } from "../../constants/routes";
-import { USER_ROLES } from "../../constants/userRoles";
-import DropdownMenu from "./DropdownMenu";
-import { Menu, X, ChevronDown } from "lucide-react";
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { ROUTES } from '../../constants/routes';
+import { USER_ROLES } from '../../constants/userRoles';
+import DropdownMenu from './DropdownMenu';
+import { Menu, X, ChevronDown } from 'lucide-react';
 
 const Navbar = () => {
-    const { user, logout } = useAuth();
-    const [mobileOpen, setMobileOpen] = useState(false);
-    const [openSections, setOpenSections] = useState({});
+  const { user, logout } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [openSections, setOpenSections] = useState({});
 
   const toggleSection = (key) => setOpenSections((s) => ({ ...s, [key]: !s[key] }));
-
 
   const menuItems = [
     { key: 'dash', label: 'Dashboard', to: ROUTES.DASHBOARD },
@@ -74,16 +73,16 @@ const Navbar = () => {
 
             <span className="border-l border-gray-300 h-6" />
 
-                        <button onClick={logout} className="hover:text-blue-500">
-                            Logg ut
-                        </button>
-                    </>
-                ) : (
-                    <Link to={ROUTES.LOGIN} className="hover:text-blue-500">
-                        Logg inn
-                    </Link>
-                )}
-            </div>
+            <button onClick={logout} className="hover:text-blue-500">
+              Logg ut
+            </button>
+          </>
+        ) : (
+          <Link to={ROUTES.LOGIN} className="hover:text-blue-500">
+            Logg inn
+          </Link>
+        )}
+      </div>
 
       {user && mobileOpen && (
         <div className="absolute top-full inset-x-0 bg-white shadow-md p-4 md:hidden">
@@ -127,22 +126,22 @@ const Navbar = () => {
               </li>
             ))}
 
-                        <li>
-                            <button
-                                onClick={() => {
-                                    logout();
-                                    setMobileOpen(false);
-                                }}
-                                className="w-full text-left py-2"
-                            >
-                                Logg ut
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            )}
-        </nav>
-    );
+            <li>
+              <button
+                onClick={() => {
+                  logout();
+                  setMobileOpen(false);
+                }}
+                className="w-full text-left py-2"
+              >
+                Logg ut
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
+    </nav>
+  );
 };
 
 export default Navbar;
