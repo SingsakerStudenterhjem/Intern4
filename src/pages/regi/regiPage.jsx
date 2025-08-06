@@ -4,13 +4,9 @@ const RegiPage = () => {
   return (
     <div>
       <div>
-        <h1>
-          Regi
-        </h1>
+        <h1>Regi</h1>
         <div>
-          <p>
-            Her kan du registrere arbeid du har utført.
-          </p>
+          <p>Her kan du registrere arbeid du har utført.</p>
         </div>
       </div>
     </div>
