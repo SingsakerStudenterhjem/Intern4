@@ -1,9 +1,5 @@
 import { z } from 'zod';
-
-const FirestoreTimestamp = z.object({
-  seconds: z.number(),
-  nanoseconds: z.number(),
-});
+import { FirestoreTimestamp } from './firestoreTimestamp';
 
 const ApplicationSchema = z.object({
   applicationId: z.string(),
@@ -30,4 +26,3 @@ const ApplicationSchema = z.object({
 });
 
 export type Application = z.infer<typeof ApplicationSchema>;
-export type FirestoreTimestamp = z.infer<typeof FirestoreTimestamp>;
