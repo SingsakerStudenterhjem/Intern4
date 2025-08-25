@@ -23,8 +23,10 @@ const firebaseConfig: FirebaseConfig = {
   measurementId: 'G-M6TBY5RYSF',
 };
 
-// Avoid duplicate apps during HMR in dev
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+const app =
+  process.env.NODE_ENV === 'development'
+    ? (getApps().length ? getApp() : initializeApp(firebaseConfig))
+    : initializeApp(firebaseConfig);
 
 export const db = initializeFirestore(app, {
   experimentalForceLongPolling: true,
