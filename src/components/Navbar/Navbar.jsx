@@ -29,6 +29,18 @@ const Navbar = () => {
       ],
     },
     {
+      key: 'rom',
+      label: 'Rom',
+      roles: [USER_ROLES.ROMSJEF, USER_ROLES.DATA],
+      children: [
+        {
+          label: 'Legg til beboer',
+          to: ROUTES.LEGG_TIL_BEBOER,
+          roles: [USER_ROLES.ROMSJEF, USER_ROLES.DATA],
+        },
+      ],
+    },
+    {
       key: 'admin',
       label: 'Admin',
       to: ROUTES.ADMIN,
@@ -39,7 +51,7 @@ const Navbar = () => {
   const visibleItems = menuItems.filter((item) => {
     if (!item.roles) return true;
     if (!user) return false;
-    return item.roles.includes(user.role) | item.roles.includes(USER_ROLES.DATA);
+    return item.roles.includes(user.role) || item.roles.includes(USER_ROLES.DATA);
   });
 
   return (
@@ -61,15 +73,15 @@ const Navbar = () => {
       <div className="hidden md:flex items-center space-x-6">
         {user ? (
           <>
-            <Link to={ROUTES.DASHBOARD} className="hover:text-blue-500">
-              Dashboard
-            </Link>
-
-            <DropdownMenu label="Regi" items={menuItems.find((i) => i.key === 'regi').children} />
-
-            <Link to={ROUTES.ADMIN} className="hover:text-blue-500">
-              Admin
-            </Link>
+            {visibleItems.map((item) =>
+              item.children ? (
+                <DropdownMenu key={item.key} label={item.label} items={item.children} />
+              ) : (
+                <Link key={item.key} to={item.to} className="hover:text-blue-500">
+                  {item.label}
+                </Link>
+              )
+            )}
 
             <span className="border-l border-gray-300 h-6" />
 
