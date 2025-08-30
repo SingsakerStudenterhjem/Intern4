@@ -15,7 +15,7 @@ const generateRandomPassword = (): string => {
   return Math.random().toString(36).slice(-12) + '!A1';
 };
 
-const addNewUser = async (application: Application) => {
+const addNewUser = async (application: Application, roomNumber?: number) => {
   try {
     // We want new users to have a randomly generated password
     // so they use the forgot password feature on their first login.
@@ -36,11 +36,11 @@ const addNewUser = async (application: Application) => {
       study: application.study,
       studyPlace: application.studyPlace,
       profilePicture: application.profilePicture || '',
-      seniority: 0, // Default value
-      roomNumber: 0, // Default value
-      role: 'Halv/Halv', // Default value
-      onLeave: false, // Default value
-      isActive: true, // Default value
+      seniority: 0,
+      roomNumber: roomNumber || 0,
+      role: 'Halv/Halv',
+      onLeave: false,
+      isActive: true,
       leadershipRoles: [],
       tasks: [],
       createdAt: Timestamp.now(),
