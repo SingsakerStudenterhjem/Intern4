@@ -25,7 +25,9 @@ const firebaseConfig: FirebaseConfig = {
 
 const app =
   process.env.NODE_ENV === 'development'
-    ? (getApps().length ? getApp() : initializeApp(firebaseConfig))
+    ? getApps().length
+      ? getApp()
+      : initializeApp(firebaseConfig)
     : initializeApp(firebaseConfig);
 
 export const db = initializeFirestore(app, {
