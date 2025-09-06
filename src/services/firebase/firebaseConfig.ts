@@ -1,6 +1,6 @@
-import { initializeApp } from 'firebase/app';
+import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { initializeFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 interface FirebaseConfig {
@@ -23,8 +23,16 @@ const firebaseConfig: FirebaseConfig = {
   measurementId: 'G-M6TBY5RYSF',
 };
 
-const app = initializeApp(firebaseConfig);
+const app =
+  process.env.NODE_ENV === 'development'
+    ? (getApps().length ? getApp() : initializeApp(firebaseConfig))
+    : initializeApp(firebaseConfig);
+
+export const db = initializeFirestore(app, {
+  experimentalForceLongPolling: true,
+});
+
 export const auth = getAuth(app);
-export const db = getFirestore(app);
 export const storage = getStorage(app);
+
 export default app;
