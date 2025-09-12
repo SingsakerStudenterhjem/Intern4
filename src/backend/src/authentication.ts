@@ -33,16 +33,15 @@ const addNewUser = async (application: Application) => {
         postalCode: application.address.postalCode,
         city: application.address.city,
       },
-      study: application.study,
       studyPlace: application.studyPlace,
       profilePicture: application.profilePicture || '',
+      study: 'annet', // Default value
       seniority: 0, // Default value
       roomNumber: 0, // Default value
       role: 'Halv/Halv', // Default value
       onLeave: false, // Default value
       isActive: true, // Default value
-      leadershipRoles: [],
-      tasks: [],
+      volunteerPositions: [],
       createdAt: Timestamp.now(),
     };
 
