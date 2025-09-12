@@ -13,14 +13,14 @@ interface FirebaseConfig {
   measurementId: string;
 }
 
-const firebaseConfig: FirebaseConfig = {
-  apiKey: 'AIzaSyCkKP8hwUI_JIFsXzan3RsRmV4Ypi19l3s',
-  authDomain: 'singinterndevsommer.firebaseapp.com',
-  projectId: 'singinterndevsommer',
-  storageBucket: 'singinterndevsommer.firebasestorage.app',
-  messagingSenderId: '720132605037',
-  appId: '1:720132605037:web:c2922ae94cc367b4e56b64',
-  measurementId: 'G-M6TBY5RYSF',
+const firebaseConfig = {
+  apiKey: 'AIzaSyBR4h0WoNBbLR-9Ee8s1_Et04h75A4EVg4',
+  authDomain: 'singintern4.firebaseapp.com',
+  projectId: 'singintern4',
+  storageBucket: 'singintern4.firebasestorage.app',
+  messagingSenderId: '301175057267',
+  appId: '1:301175057267:web:6e069fab508796787b7306',
+  measurementId: 'G-4EXHDXR1JT',
 };
 
 const app =

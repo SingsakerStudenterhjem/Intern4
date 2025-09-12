@@ -19,13 +19,20 @@ const UserSchema = z.object({
   role: z
     .string()
     .refine((value) =>
-      ['Halv/Halv', 'Full Regi', 'Full Vakt', 'Utvalgsmedlem', 'Daglig leder'].includes(value)
+      [
+        'Halv/Halv',
+        'Full Regi',
+        'Full Vakt',
+        'Utvalgsmedlem',
+        'Data Åpmand',
+        'Daglig leder',
+      ].includes(value)
     ),
   onLeave: z.boolean(),
   isActive: z.boolean(),
   lastLogin: FirestoreTimestamp.optional(),
-  leadershipRoles: z.array(z.string()).optional(),
-  tasks: z.array(z.string()).optional(),
+  //Åpmandsverv
+  volunteerPosition: z.array(z.string()).optional(),
   createdAt: FirestoreTimestamp,
 });
 
