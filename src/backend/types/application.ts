@@ -11,7 +11,7 @@ const ApplicationSchema = z.object({
   gender: z.string(),
   address: z.object({
     street: z.string(),
-    postalCode: z.string(),
+    postalCode: z.number(),
     city: z.string(),
   }),
   study: z.string(),

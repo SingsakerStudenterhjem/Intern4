@@ -8,7 +8,7 @@ const UserSchema = z.object({
   birthDate: FirestoreTimestamp,
   address: z.object({
     street: z.string(),
-    postalCode: z.string(),
+    postalCode: z.number(),
     city: z.string(),
   }),
   study: z.string(),
