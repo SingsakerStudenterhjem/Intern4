@@ -1,11 +1,10 @@
 import React, { createContext, useContext } from 'react';
-import { useAuth as useAuthHook } from '../hooks/useAuth';
+import { useAuth as useAuthHook, type UseAuthReturn } from '../hooks/useAuth';
 
-const AuthContext = createContext();
+const AuthContext = createContext<UseAuthReturn | undefined>(undefined);
 
-export const AuthProvider = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const auth = useAuthHook();
-
   return <AuthContext.Provider value={auth}>{children}</AuthContext.Provider>;
 };
 

@@ -19,10 +19,10 @@ const Navbar = () => {
       key: 'regi',
       label: 'Regi',
       children: [
-        { label: 'Regi', to: ROUTES.REGI },
+        { label: 'Min regi', to: ROUTES.REGI },
         { label: 'Oppgaver', to: ROUTES.TASKS },
         {
-          label: 'Godkjenn Arbeid',
+          label: 'Regisjef',
           to: '/regisjef',
           roles: [USER_ROLES.REGISJEF, USER_ROLES.DATA],
         },
