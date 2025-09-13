@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { Timestamp } from 'firebase/firestore';
 import { addNewUser } from '../../backend/src/authentication';
-import { Application } from '../../backend/types/application';
+import { User } from '../../backend/types/user';
 
 const AddUser: React.FC = () => {
-  const [formData, setFormData] = useState({
+  const [userData, setUserData] = useState<Omit<User, 'createdAt' | 'lastLogin'>>({
     name: '',
     email: '',
     phone: '',
-    birthDate: '',
-    gender: '',
+    birthDate: Timestamp.now(),
     address: {
       street: '',
       postalCode: '',
@@ -17,15 +16,23 @@ const AddUser: React.FC = () => {
     },
     study: '',
     studyPlace: '',
-    roomNumber: '',
+    profilePicture: '',
+    seniority: 0,
+    roomNumber: 0,
+    role: 'Halv/Halv',
+    onLeave: false,
+    isActive: true,
+    leadershipRoles: [],
+    tasks: [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
+  const [birthDateString, setBirthDateString] = useState('');
 
-  const validateField = (name: string, value: string) => {
+  const validateField = (name: string, value: any) => {
     const errors: { [key: string]: string } = {};
 
     if (name === 'phone' && value) {
@@ -35,8 +42,15 @@ const AddUser: React.FC = () => {
       }
     }
 
+    if (name === 'seniority' && value !== undefined) {
+      const seniorityNum = typeof value === 'string' ? parseInt(value) : value;
+      if (isNaN(seniorityNum) || seniorityNum < 0) {
+        errors.seniority = 'Ansiennitet må være et positivt tall';
+      }
+    }
+
     if (name === 'roomNumber' && value) {
-      const roomNum = parseInt(value);
+      const roomNum = typeof value === 'string' ? parseInt(value) : value;
       if (isNaN(roomNum)) {
         errors.roomNumber = 'Romnummer må være et tall';
       } else if (
@@ -52,12 +66,25 @@ const AddUser: React.FC = () => {
     return errors;
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+
+    if (name === 'birthDate') {
+      setBirthDateString(value);
+      if (value) {
+        setUserData((prev) => ({
+          ...prev,
+          birthDate: Timestamp.fromDate(new Date(value)),
+        }));
+      }
+      return;
+    }
 
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
-      setFormData((prev) => ({
+      setUserData((prev) => ({
         ...prev,
         [parent]: {
           ...(prev[parent as keyof typeof prev] as any),
@@ -65,17 +92,39 @@ const AddUser: React.FC = () => {
         },
       }));
     } else {
-      setFormData((prev) => ({
+      let processedValue: any = value;
+
+      if (type === 'checkbox') {
+        processedValue = (e.target as HTMLInputElement).checked;
+      } else if (type === 'number') {
+        processedValue = value === '' ? 0 : parseInt(value);
+      }
+
+      setUserData((prev) => ({
         ...prev,
-        [name]: value,
+        [name]: processedValue,
       }));
     }
 
-    const fieldErrors = validateField(name, value);
+    const fieldErrors = validateField(
+      name,
+      type === 'number' ? (value === '' ? 0 : parseInt(value)) : value
+    );
     setValidationErrors((prev) => ({
       ...prev,
       ...fieldErrors,
       [name]: fieldErrors[name] || '',
+    }));
+  };
+
+  const handleArrayChange = (field: 'leadershipRoles' | 'tasks', value: string) => {
+    const items = value
+      .split(',')
+      .map((item) => item.trim())
+      .filter((item) => item !== '');
+    setUserData((prev) => ({
+      ...prev,
+      [field]: items,
     }));
   };
 
@@ -85,11 +134,9 @@ const AddUser: React.FC = () => {
     setMessage(null);
 
     const allErrors: { [key: string]: string } = {};
-    Object.entries(formData).forEach(([key, value]) => {
-      if (typeof value === 'string') {
-        const fieldErrors = validateField(key, value);
-        Object.assign(allErrors, fieldErrors);
-      }
+    Object.entries(userData).forEach(([key, value]) => {
+      const fieldErrors = validateField(key, value);
+      Object.assign(allErrors, fieldErrors);
     });
 
     if (Object.values(allErrors).some((error) => error)) {
@@ -99,53 +146,41 @@ const AddUser: React.FC = () => {
       return;
     }
 
-    try {
-      const application: Application = {
-        applicationId: `temp-${Date.now()}`,
-        status: 'Godkjent',
-        name: formData.name,
-        email: formData.email,
-        phone: formData.phone || '',
-        birthDate: formData.birthDate
-          ? Timestamp.fromDate(new Date(formData.birthDate))
-          : Timestamp.now(),
-        gender: formData.gender || '',
-        address: {
-          street: formData.address.street || '',
-          postalCode: formData.address.postalCode || '',
-          city: formData.address.city || '',
-        },
-        study: formData.study || '',
-        studyPlace: formData.studyPlace || '',
-        profilePicture: '',
-        certificate: '',
-        skills: '',
-        knowsAboutSing: '',
-        knowsResidents: '',
-        applicationText: '',
-        applicationDate: Timestamp.now(),
-      };
+    if (!userData.name.trim() || !userData.email.trim()) {
+      setMessage({ type: 'error', text: 'Navn og e-post er obligatoriske felter' });
+      setIsSubmitting(false);
+      return;
+    }
 
-      const result = await addNewUser(
-        application,
-        formData.roomNumber ? parseInt(formData.roomNumber) : undefined
-      );
+    try {
+      const result = await addNewUser(userData);
 
       if (result.success) {
-        setMessage({ type: 'success', text: 'Beboer lagt til successfully!' });
-        setFormData({
+        setMessage({ type: 'success', text: `✓ ${userData.name} ble lagt til som beboer` });
+        setUserData({
           name: '',
           email: '',
           phone: '',
-          birthDate: '',
-          gender: '',
+          birthDate: Timestamp.now(),
           address: { street: '', postalCode: '', city: '' },
           study: '',
           studyPlace: '',
-          roomNumber: '',
+          profilePicture: '',
+          seniority: 0,
+          roomNumber: 0,
+          role: 'Halv/Halv',
+          onLeave: false,
+          isActive: true,
+          leadershipRoles: [],
+          tasks: [],
         });
+        setBirthDateString('');
         setValidationErrors({});
         setShowOptionalFields(false);
+
+        setTimeout(() => {
+          setMessage(null);
+        }, 4000);
       } else {
         setMessage({ type: 'error', text: result.error || 'En feil oppstod' });
       }
@@ -164,9 +199,9 @@ const AddUser: React.FC = () => {
 
       {message && (
         <div
-          className={`mb-4 p-4 rounded-md ${
+          className={`mb-4 p-3 rounded-md text-sm transition-all duration-300 ${
             message.type === 'success'
-              ? 'bg-green-50 text-green-800 border border-green-200'
+              ? 'bg-green-50 text-green-700 border border-green-200'
               : 'bg-red-50 text-red-800 border border-red-200'
           }`}
         >
@@ -188,7 +223,7 @@ const AddUser: React.FC = () => {
                 id="name"
                 name="name"
                 required
-                value={formData.name}
+                value={userData.name}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="Skriv inn fullt navn"
@@ -204,7 +239,7 @@ const AddUser: React.FC = () => {
                 id="email"
                 name="email"
                 required
-                value={formData.email}
+                value={userData.email}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="navn@eksempel.com"
@@ -236,7 +271,7 @@ const AddUser: React.FC = () => {
                   type="tel"
                   id="phone"
                   name="phone"
-                  value={formData.phone}
+                  value={userData.phone}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     validationErrors.phone ? 'border-red-300' : 'border-gray-300'
@@ -256,7 +291,7 @@ const AddUser: React.FC = () => {
                   type="date"
                   id="birthDate"
                   name="birthDate"
-                  value={formData.birthDate}
+                  value={birthDateString}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 />
@@ -265,22 +300,47 @@ const AddUser: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
-                <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1">
-                  Kjønn
+                <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                  Rolle
                 </label>
                 <select
-                  id="gender"
-                  name="gender"
-                  value={formData.gender}
+                  id="role"
+                  name="role"
+                  value={userData.role}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="">Velg kjønn</option>
-                  <option value="Mann">Mann</option>
-                  <option value="Kvinne">Kvinne</option>
+                  <option value="Halv/Halv">Halv/Halv</option>
+                  <option value="Full Regi">Full Regi</option>
+                  <option value="Full Vakt">Full Vakt</option>
+                  <option value="Utvalgsmedlem">Utvalgsmedlem</option>
+                  <option value="Daglig leder">Daglig leder</option>
                 </select>
               </div>
 
+              <div>
+                <label htmlFor="seniority" className="block text-sm font-medium text-gray-700 mb-1">
+                  Ansiennitet (år)
+                </label>
+                <input
+                  type="number"
+                  id="seniority"
+                  name="seniority"
+                  min="0"
+                  value={userData.seniority}
+                  onChange={handleInputChange}
+                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    validationErrors.seniority ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                  placeholder="0"
+                />
+                {validationErrors.seniority && (
+                  <p className="mt-1 text-sm text-red-600">{validationErrors.seniority}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label
                   htmlFor="roomNumber"
@@ -289,10 +349,11 @@ const AddUser: React.FC = () => {
                   Romnummer
                 </label>
                 <input
-                  type="text"
+                  type="number"
                   id="roomNumber"
                   name="roomNumber"
-                  value={formData.roomNumber}
+                  min="0"
+                  value={userData.roomNumber}
                   onChange={handleInputChange}
                   className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
                     validationErrors.roomNumber ? 'border-red-300' : 'border-gray-300'
@@ -302,6 +363,44 @@ const AddUser: React.FC = () => {
                 {validationErrors.roomNumber && (
                   <p className="mt-1 text-sm text-red-600">{validationErrors.roomNumber}</p>
                 )}
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="onLeave"
+                      name="onLeave"
+                      type="checkbox"
+                      checked={userData.onLeave}
+                      onChange={handleInputChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <label htmlFor="onLeave" className="text-sm font-medium text-gray-700">
+                      På permisjon
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex items-center">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="isActive"
+                      name="isActive"
+                      type="checkbox"
+                      checked={userData.isActive}
+                      onChange={handleInputChange}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </div>
+                  <div className="ml-3">
+                    <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
+                      Aktiv bruker
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -314,7 +413,7 @@ const AddUser: React.FC = () => {
                   type="text"
                   id="study"
                   name="study"
-                  value={formData.study}
+                  value={userData.study}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Dataingeniør"
@@ -332,10 +431,87 @@ const AddUser: React.FC = () => {
                   type="text"
                   id="studyPlace"
                   name="studyPlace"
-                  value={formData.studyPlace}
+                  value={userData.studyPlace}
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="NTNU"
+                />
+              </div>
+            </div>
+
+            <div className="mb-4">
+              <h4 className="text-md font-medium text-gray-900 mb-2">Adresse</h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                  <label
+                    htmlFor="address.street"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Gate
+                  </label>
+                  <input
+                    type="text"
+                    id="address.street"
+                    name="address.street"
+                    value={userData.address.street}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Storgata 1"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="address.postalCode"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
+                    Postnummer
+                  </label>
+                  <input
+                    type="text"
+                    id="address.postalCode"
+                    name="address.postalCode"
+                    value={userData.address.postalCode}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="0123"
+                  />
+                </div>
+              </div>
+              <div className="mt-4">
+                <label
+                  htmlFor="address.city"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  By
+                </label>
+                <input
+                  type="text"
+                  id="address.city"
+                  name="address.city"
+                  value={userData.address.city}
+                  onChange={handleInputChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Oslo"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div>
+                <label
+                  htmlFor="leadershipRoles"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Lederroller
+                </label>
+                <input
+                  type="text"
+                  id="leadershipRoles"
+                  name="leadershipRoles"
+                  value={userData.leadershipRoles?.join(', ') || ''}
+                  onChange={(e) => handleArrayChange('leadershipRoles', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Komiteleder, Styremedlem (skill med komma)"
                 />
               </div>
             </div>
@@ -345,9 +521,9 @@ const AddUser: React.FC = () => {
         <div className="flex justify-end">
           <button
             onClick={handleSubmit}
-            disabled={isSubmitting || !formData.name.trim() || !formData.email.trim()}
+            disabled={isSubmitting || !userData.name.trim() || !userData.email.trim()}
             className={`px-6 py-2 rounded-md font-medium transition-colors ${
-              isSubmitting || !formData.name.trim() || !formData.email.trim()
+              isSubmitting || !userData.name.trim() || !userData.email.trim()
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
             }`}
