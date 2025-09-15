@@ -28,7 +28,8 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
     return { approved, pending, total: approved + pending, remaining: 36 - approved };
   }, [logs]);
 
-  if (loading) return <div>Laster...</div>;
+  // TODO: uncomment after connecting to the db
+  //if (loading) return <div>Laster...</div>;
 
   return (
     <div className="space-y-4">

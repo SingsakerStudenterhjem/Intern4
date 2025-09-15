@@ -1,17 +1,16 @@
 import { z } from 'zod';
 import { FirestoreTimestamp } from './firestoreTimestamp';
 
-export const WorkTypeSchema = z.enum([
-  'vedlikehold',
-  'rengjoring',
-  'arrangement',
-  'kafe',
-  'dugnad',
-  'annet',
-]);
+export const WorkTypeSchema = z
+  .string()
+  .refine((value) =>
+    ['vedlikehold', 'rengjoring', 'arrangement', 'kafe', 'dugnad', 'annet'].includes(value)
+  );
 export type WorkType = z.infer<typeof WorkTypeSchema>;
 
-export const WorkStatusSchema = z.enum(['pending', 'approved', 'rejected']);
+export const WorkStatusSchema = z
+  .string()
+  .refine((value) => ['pending', 'approved', 'rejected'].includes(value));
 export type WorkStatus = z.infer<typeof WorkStatusSchema>;
 
 export const RegiLogSchema = z.object({
