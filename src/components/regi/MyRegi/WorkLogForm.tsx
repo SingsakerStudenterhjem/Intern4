@@ -12,7 +12,7 @@ const FormSchema = z.object({
   date: z.string().min(1, 'Påkrevd'),
   hours: z.coerce.number().positive('Må være > 0'),
   type: WorkTypeSchema,
-  images: z.any().optional(),
+  images: z.array(z.instanceof(File)).optional(),
 });
 
 const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {

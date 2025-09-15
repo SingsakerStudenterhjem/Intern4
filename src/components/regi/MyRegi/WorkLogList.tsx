@@ -61,7 +61,7 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
                 <tr key={l.id} className="border-t">
                   <td className="p-2">{l.title}</td>
                   <td className="p-2">
-                    {new Date((l.date as any).seconds * 1000).toLocaleDateString('no-NO')}
+                    {new Date(l.date.seconds * 1000).toLocaleDateString('no-NO')}
                   </td>
                   <td className="p-2">{l.hours.toFixed(2)}</td>
                   <td className="p-2 capitalize">{l.type}</td>

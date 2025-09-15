@@ -5,7 +5,7 @@ import { RegiLog, RegiLogWithId } from '../types/regi';
 const COL = 'regiLogs';
 
 export async function addRegiLog(data: Omit<RegiLog, 'id' | 'createdAt' | 'status'>) {
-  const payload: RegiLog = { ...data, status: 'pending', createdAt: Timestamp.now() as any };
+  const payload: RegiLog = { ...data, status: 'pending', createdAt: Timestamp.now() };
   const ref = await addDoc(collection(db, COL), payload);
   return ref.id;
 }
