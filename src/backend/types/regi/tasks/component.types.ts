@@ -1,8 +1,6 @@
-// Simplified component types - using TypeScript interfaces instead of Zod schemas
 import { Task, TaskCreationData } from './task.types';
 import { Category, CategoryCreationData } from './category.types';
 
-// Simple TypeScript interfaces for component props (much more reliable)
 export interface AuthUser {
   uid: string;
   email: string;
@@ -46,7 +44,6 @@ export interface TaskCreationModalProps {
   currentUser: AuthUser | null;
 }
 
-// Category Component Props
 export interface CategoryManagementProps {
   categories: Category[];
   onAddCategory: (categoryData: CategoryCreationData) => Promise<void>;
@@ -55,7 +52,6 @@ export interface CategoryManagementProps {
   getCategoryUsage: (categoryName: string) => Promise<number>;
 }
 
-// Simple state interfaces (no Zod complexity)
 export interface TaskFilterState {
   query: string;
   filter: 'all' | 'available' | 'myTasks';
@@ -81,7 +77,6 @@ export interface ModalState {
   data?: any;
 }
 
-// Utility type guards (simple and reliable)
 export const isAuthUser = (user: unknown): user is AuthUser => {
   return (
     typeof user === 'object' &&

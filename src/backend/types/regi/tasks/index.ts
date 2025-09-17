@@ -1,9 +1,7 @@
-// Export all types from regi/tasks module
 export * from './task.types';
 export * from './category.types';
 export * from './component.types';
 
-// Re-export commonly used schemas for convenience
 export {
   TaskSchema,
   TaskFormDataSchema,
@@ -26,7 +24,6 @@ export {
   validateCategoryName,
 } from './category.types';
 
-// Re-export the simplified TypeScript interfaces (no Zod schemas for components)
 export type {
   AuthUser,
   FormErrors,
