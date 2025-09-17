@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react';
+import { Task } from '../backend/types/regi/tasks/task.types';
+import { Category } from '../backend/types/regi/tasks/category.types';
 
-export const useTasks = (tasks, currentUser, tasksPerPage = 10) => {
+export const useTasks = (
+  tasks: Task[],
+  categories: Category[],
+  currentUser: string,
+  tasksPerPage = 10
+) => {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('available');
   const [category, setCategory] = useState('all');
@@ -10,9 +17,14 @@ export const useTasks = (tasks, currentUser, tasksPerPage = 10) => {
     let filtered = tasks;
 
     if (filter === 'available') {
-      filtered = filtered.filter((t) => !t.takenBy && !t.completed);
+      // Updated filter logic for the new Task structure
+      filtered = filtered.filter(
+        (t) => !t.completed && (!t.maxParticipants || t.participants.length < t.maxParticipants)
+      );
     } else if (filter === 'myTasks') {
-      filtered = filtered.filter((t) => t.takenBy === currentUser);
+      filtered = filtered.filter(
+        (t) => t.participants.includes(currentUser) || t.createdBy === currentUser
+      );
     }
 
     if (category !== 'all') {
@@ -21,8 +33,12 @@ export const useTasks = (tasks, currentUser, tasksPerPage = 10) => {
 
     if (query) {
       const lowerCaseQuery = query.toLowerCase();
-      filtered = filtered.filter((t) =>
-        Object.values(t).some((val) => String(val).toLowerCase().includes(lowerCaseQuery))
+      filtered = filtered.filter(
+        (t) =>
+          t.taskName.toLowerCase().includes(lowerCaseQuery) ||
+          t.category.toLowerCase().includes(lowerCaseQuery) ||
+          t.description?.toLowerCase().includes(lowerCaseQuery) ||
+          t.contactPerson.toLowerCase().includes(lowerCaseQuery)
       );
     }
 
@@ -48,10 +64,10 @@ export const useTasks = (tasks, currentUser, tasksPerPage = 10) => {
     }
   };
 
-  const categories = useMemo(() => {
-    const allCategories = tasks.map((t) => t.category);
-    return ['all', ...new Set(allCategories)];
-  }, [tasks]);
+  // Use the categories from the database instead of extracting from tasks
+  const availableCategories = useMemo(() => {
+    return ['all', ...categories.map((c) => c.name)];
+  }, [categories]);
 
   return {
     query,
@@ -66,7 +82,7 @@ export const useTasks = (tasks, currentUser, tasksPerPage = 10) => {
     totalPages,
     nextPage,
     prevPage,
-    categories,
+    categories: availableCategories,
     filteredTasks,
   };
 };

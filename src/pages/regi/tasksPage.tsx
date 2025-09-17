@@ -6,14 +6,7 @@ import TaskCreationModal from '../../components/regi/Tasks/TaskCreationModal';
 import CategoryManagement from '../../components/admin/CategoryManagement';
 import { useTasks } from '../../hooks/useTasks';
 import { useAuth } from '../../hooks/useAuth';
-import {
-  getTasks,
-  addTask,
-  updateTask,
-  joinTask,
-  leaveTask,
-  getTasksByUser,
-} from '../../backend/src/tasksDAO';
+import { getTasks, addTask, updateTask, joinTask, leaveTask } from '../../backend/src/tasksDAO';
 import {
   getCategories,
   addCategory,
@@ -27,7 +20,6 @@ import { Category, CategoryCreationData } from '../../backend/types/regi/tasks/c
 import { ParticipantNames } from '../../backend/types/regi/tasks/component.types';
 import { Timestamp } from 'firebase/firestore';
 
-// Define a local user type based on what we expect
 interface LocalUser {
   uid: string;
   name: string;
@@ -46,7 +38,6 @@ const TasksPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [participantNames, setParticipantNames] = useState<ParticipantNames>({});
 
-  // Safely extract user data
   const user = authData?.user as LocalUser | null;
   const authLoading = authData?.loading || false;
 
@@ -64,12 +55,11 @@ const TasksPage: React.FC = () => {
     prevPage,
     categories: availableCategories,
     filteredTasks,
-  } = useTasks(tasks, user?.uid || '', 10);
+  } = useTasks(tasks, categories, user?.uid || '', 10);
 
   const canCreateTasks = user?.role === 'Data Åpmand' || user?.role === 'Regisjef';
   const canManageCategories = user?.role === 'Data Åpmand' || user?.role === 'Regisjef';
 
-  // Load initial data
   useEffect(() => {
     loadData();
   }, []);
@@ -84,11 +74,12 @@ const TasksPage: React.FC = () => {
       setTasks(tasksData);
       setCategories(categoriesData);
 
-      // Load participant names
-      await loadParticipantNames(tasksData);
+      if (tasksData.length > 0) {
+        await loadParticipantNames(tasksData);
+      }
     } catch (err) {
       console.error('Error loading data:', err);
-      setError('Kunne ikke laste oppgaver. Prøv å oppdatere siden.');
+      setError('Kunne ikke laste data. Prøv å oppdatere siden.');
     } finally {
       setLoading(false);
     }
@@ -123,8 +114,8 @@ const TasksPage: React.FC = () => {
 
   const handleCreateTask = async (taskData: TaskCreationData): Promise<void> => {
     try {
-      const taskId = await addTask(taskData);
-      await loadData(); // Reload all data to get the new task
+      await addTask(taskData);
+      await loadData();
       showSuccessMessage('Oppgave opprettet!');
     } catch (err) {
       console.error('Error creating task:', err);
@@ -137,7 +128,7 @@ const TasksPage: React.FC = () => {
 
     try {
       await joinTask(taskId, user.uid);
-      await loadData(); // Reload to get updated participant list
+      await loadData();
       showSuccessMessage('Du er nå påmeldt oppgaven!');
     } catch (err) {
       console.error('Error joining task:', err);
@@ -150,7 +141,7 @@ const TasksPage: React.FC = () => {
 
     try {
       await leaveTask(taskId, user.uid);
-      await loadData(); // Reload to get updated participant list
+      await loadData();
       showSuccessMessage('Du er nå avmeldt oppgaven');
     } catch (err) {
       console.error('Error leaving task:', err);
@@ -212,6 +203,7 @@ const TasksPage: React.FC = () => {
   };
 
   const showSuccessMessage = (message: string): void => {
+    // TODO: Implement toast notification system
     console.log('Success:', message);
   };
 
@@ -221,7 +213,7 @@ const TasksPage: React.FC = () => {
     setTimeout(() => setError(null), 5000);
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>

@@ -23,7 +23,6 @@ export async function addTask(data: TaskCreationData): Promise<string> {
       ...data,
       id: docRef.id,
       createdAt: Timestamp.now(),
-      // Convert Date to Firestore Timestamp if needed
       deadline: data.deadline ? Timestamp.fromDate(data.deadline) : undefined,
     };
 
@@ -48,13 +47,42 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
 
 export async function getTasks(): Promise<Task[]> {
   try {
-    const tasksQuery = query(
-      collection(db, 'regiTasks'),
-      where('isActive', '==', true),
-      orderBy('createdAt', 'desc')
-    );
-    const tasksDoc = await getDocs(tasksQuery);
-    return tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
+    // Attempt optimized query with composite index
+    try {
+      const tasksQuery = query(
+        collection(db, 'regiTasks'),
+        where('isActive', '==', true),
+        orderBy('createdAt', 'desc')
+      );
+      const tasksDoc = await getDocs(tasksQuery);
+      return tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
+    } catch (indexError) {
+      // Fallback: Query without orderBy if composite index is not available
+      try {
+        const tasksQuery = query(collection(db, 'regiTasks'), where('isActive', '==', true));
+        const tasksDoc = await getDocs(tasksQuery);
+
+        // Manual sort by createdAt (newest first)
+        const tasks = tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
+        return tasks.sort((a, b) => {
+          const aTime = a.createdAt?.seconds || 0;
+          const bTime = b.createdAt?.seconds || 0;
+          return bTime - aTime;
+        });
+      } catch (fallbackError) {
+        // Final fallback: Get all tasks and filter manually
+        const allDocs = await getDocs(collection(db, 'regiTasks'));
+        const allTasks = allDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
+
+        return allTasks
+          .filter((task) => task.isActive !== false)
+          .sort((a, b) => {
+            const aTime = a.createdAt?.seconds || 0;
+            const bTime = b.createdAt?.seconds || 0;
+            return bTime - aTime;
+          });
+      }
+    }
   } catch (error: any) {
     throw new Error(`Could not get tasks: ${error.message}`);
   }
@@ -68,12 +96,11 @@ export async function updateTask(
     const docRef = doc(db, 'regiTasks', taskId);
     const updateData = { ...data };
 
-    // Convert Date to Firestore Timestamp if deadline is being updated
+    // Convert Date objects to Firestore Timestamps
     if (data.deadline && data.deadline instanceof Date) {
       updateData.deadline = Timestamp.fromDate(data.deadline);
     }
 
-    // Convert Date to Firestore Timestamp if completedAt is being updated
     if (data.completedAt && data.completedAt instanceof Date) {
       updateData.completedAt = Timestamp.fromDate(data.completedAt);
     }
@@ -109,12 +136,11 @@ export async function joinTask(taskId: string, userId: string): Promise<boolean>
       throw new Error('Task not found');
     }
 
-    // Check if user is already joined
+    // Validation checks
     if (task.participants.includes(userId)) {
       throw new Error('User already joined this task');
     }
 
-    // Check if task is full
     if (task.maxParticipants && task.participants.length >= task.maxParticipants) {
       throw new Error('Task is full');
     }
@@ -145,13 +171,20 @@ export async function leaveTask(taskId: string, userId: string): Promise<boolean
 
 export async function getTasksByUser(userId: string): Promise<Task[]> {
   try {
-    const tasksQuery = query(
-      collection(db, 'regiTasks'),
-      where('participants', 'array-contains', userId),
-      where('isActive', '==', true)
-    );
-    const tasksDoc = await getDocs(tasksQuery);
-    return tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
+    // Attempt query with composite index
+    try {
+      const tasksQuery = query(
+        collection(db, 'regiTasks'),
+        where('participants', 'array-contains', userId),
+        where('isActive', '==', true)
+      );
+      const tasksDoc = await getDocs(tasksQuery);
+      return tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
+    } catch (indexError) {
+      // Fallback: Get all active tasks and filter manually
+      const allActiveTasks = await getTasks();
+      return allActiveTasks.filter((task) => task.participants.includes(userId));
+    }
   } catch (error: any) {
     throw new Error(`Could not get user tasks: ${error.message}`);
   }

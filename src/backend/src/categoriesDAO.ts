@@ -22,9 +22,6 @@ export async function addCategory(data: Omit<Category, 'id' | 'createdAt'>): Pro
       createdAt: Timestamp.now(),
     };
 
-    console.log('categoryData: ', categoryData);
-    console.log('docRef: ', docRef);
-
     await setDoc(docRef, categoryData);
     return docRef.id;
   } catch (error: any) {
@@ -46,15 +43,39 @@ export async function getCategory(categoryId: string): Promise<Category | undefi
 
 export async function getCategories(): Promise<Category[]> {
   try {
-    const categoriesQuery = query(
-      collection(db, 'regiCategories'),
-      where('isActive', '==', true),
-      orderBy('name', 'asc')
-    );
-    const categoriesDoc = await getDocs(categoriesQuery);
-    return categoriesDoc.docs.map((doc) => doc.data() as Category);
+    // Attempt optimized query with composite index
+    try {
+      const categoriesQuery = query(
+        collection(db, 'regiCategories'),
+        where('isActive', '==', true),
+        orderBy('name', 'asc')
+      );
+      const categoriesDoc = await getDocs(categoriesQuery);
+      return categoriesDoc.docs.map((doc) => doc.data() as Category);
+    } catch (indexError) {
+      // Fallback: Query without orderBy if composite index is not available
+      const categoriesQuery = query(
+        collection(db, 'regiCategories'),
+        where('isActive', '==', true)
+      );
+      const categoriesDoc = await getDocs(categoriesQuery);
+
+      // Manual sort by name
+      const categories = categoriesDoc.docs.map((doc) => doc.data() as Category);
+      return categories.sort((a, b) => a.name.localeCompare(b.name));
+    }
   } catch (error: any) {
-    throw new Error(`Could not get categories: ${error.message}`);
+    // Final fallback: Get all categories and filter manually
+    try {
+      const allDocs = await getDocs(collection(db, 'regiCategories'));
+      const allCategories = allDocs.docs.map((doc) => doc.data() as Category);
+
+      return allCategories
+        .filter((cat) => cat.isActive !== false)
+        .sort((a, b) => a.name.localeCompare(b.name));
+    } catch (finalError: any) {
+      throw new Error(`Could not get categories: ${error.message}`);
+    }
   }
 }
 
