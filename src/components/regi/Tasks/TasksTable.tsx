@@ -35,24 +35,16 @@ const TasksTable: React.FC<TasksTableProps> = ({
 
   const getParticipantStatus = (task: Task) => {
     const count = task.participants.length;
-    const max = task.maxParticipants;
+    const max = task.maxParticipants || 0;
     const isUserJoined = currentUserId && task.participants.includes(currentUserId);
 
-    if (max) {
-      const isFull = count >= max;
-      return {
-        text: `${count}/${max}`,
-        isFull,
-        isUserJoined,
-        canJoin: !isFull && !isUserJoined && !task.completed,
-      };
-    }
-
+    // maxParticipants should always be defined and > 0 now
+    const isFull = count >= max;
     return {
-      text: count.toString(),
-      isFull: false,
+      text: `${count}/${max}`,
+      isFull,
       isUserJoined,
-      canJoin: !isUserJoined && !task.completed,
+      canJoin: !isFull && !isUserJoined && !task.completed,
     };
   };
 

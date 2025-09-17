@@ -23,7 +23,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     description: '',
     deadline: '',
     hourEstimate: '',
-    maxParticipants: '',
+    maxParticipants: '1', // Default to 1 participant required
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -37,7 +37,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
         description: '',
         deadline: '',
         hourEstimate: '',
-        maxParticipants: '',
+        maxParticipants: '1', // Default to 1 participant required
       });
       setErrors({});
     }
@@ -77,10 +77,13 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       }
     }
 
-    if (formData.maxParticipants) {
+    // Max participants is now required and must be at least 1
+    if (!formData.maxParticipants) {
+      newErrors.maxParticipants = 'Maksimalt antall deltakere er påkrevd';
+    } else {
       const maxParticipants = Number(formData.maxParticipants);
-      if (isNaN(maxParticipants) || maxParticipants <= 0) {
-        newErrors.maxParticipants = 'Maksimalt antall deltakere må være et positivt tall';
+      if (isNaN(maxParticipants) || maxParticipants < 1) {
+        newErrors.maxParticipants = 'Maksimalt antall deltakere må være minst 1';
       }
     }
 
@@ -97,7 +100,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       contactPersonId: currentUser?.uid || '',
       deadline: formData.deadline ? new Date(formData.deadline) : undefined,
       hourEstimate: formData.hourEstimate ? Number(formData.hourEstimate) : undefined,
-      maxParticipants: formData.maxParticipants ? Number(formData.maxParticipants) : undefined,
+      maxParticipants: Number(formData.maxParticipants), // Always a number now, never undefined
       participants: [],
       completed: false,
       isApproved: false,
@@ -182,7 +185,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                   ? 'border-red-300 focus:border-red-500'
                   : 'border-gray-300 focus:border-blue-500'
               }`}
-              placeholder="F.eks. Vaske kopper"
+              placeholder="Begå lovbrudd"
               aria-invalid={!!errors.taskName}
               aria-describedby={errors.taskName ? 'taskName-error' : undefined}
             />
@@ -289,14 +292,14 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
             </div>
           </div>
 
-          {/* Max Participants */}
+          {/* Max Participants - Now Required */}
           <div>
             <label
               htmlFor="maxParticipants"
               className="block text-sm font-medium text-gray-700 mb-2"
             >
               <Users className="w-4 h-4 inline mr-1" />
-              Maksimalt antall deltakere
+              Maksimalt antall deltakere *
             </label>
             <input
               type="number"
@@ -309,12 +312,12 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                   ? 'border-red-300 focus:border-red-500'
                   : 'border-gray-300 focus:border-blue-500'
               }`}
-              placeholder="La stå tom for ubegrenset"
+              placeholder="F.eks. 3"
               aria-invalid={!!errors.maxParticipants}
               aria-describedby="maxParticipants-help"
             />
             <p id="maxParticipants-help" className="mt-1 text-sm text-gray-500">
-              La stå tom hvis det ikke er noen begrensning på antall deltakere
+              Angi hvor mange personer som kan melde seg på denne oppgaven (minst 1)
             </p>
             {errors.maxParticipants && (
               <p className="mt-1 text-sm text-red-600" role="alert">

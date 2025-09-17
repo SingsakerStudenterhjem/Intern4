@@ -6,7 +6,14 @@ import TaskCreationModal from '../../components/regi/Tasks/TaskCreationModal';
 import CategoryManagement from '../../components/admin/CategoryManagement';
 import { useTasks } from '../../hooks/useTasks';
 import { useAuth } from '../../hooks/useAuth';
-import { getTasks, addTask, updateTask, joinTask, leaveTask } from '../../backend/src/tasksDAO';
+import {
+  getTasks,
+  addTask,
+  updateTask,
+  joinTask,
+  leaveTask,
+  deleteTask,
+} from '../../backend/src/tasksDAO';
 import {
   getCategories,
   addCategory,
@@ -59,6 +66,7 @@ const TasksPage: React.FC = () => {
 
   const canCreateTasks = user?.role === 'Data Åpmand' || user?.role === 'Regisjef';
   const canManageCategories = user?.role === 'Data Åpmand' || user?.role === 'Regisjef';
+  const canDeleteTasks = user?.role === 'Data Åpmand' || user?.role === 'Regisjef';
 
   useEffect(() => {
     loadData();
@@ -149,7 +157,7 @@ const TasksPage: React.FC = () => {
     }
   };
 
-  const handleCompleteTask = async (taskId: string, hours: number): Promise<void> => {
+  const handleCompleteTask = async (taskId: string): Promise<void> => {
     try {
       await updateTask(taskId, {
         completed: true,
@@ -160,6 +168,22 @@ const TasksPage: React.FC = () => {
     } catch (err) {
       console.error('Error completing task:', err);
       showErrorMessage('Kunne ikke markere oppgave som fullført');
+    }
+  };
+
+  const handleDeleteTask = async (taskId: string): Promise<void> => {
+    if (!canDeleteTasks) {
+      showErrorMessage('Du har ikke tillatelse til å slette oppgaver');
+      return;
+    }
+
+    try {
+      await deleteTask(taskId);
+      await loadData();
+      showSuccessMessage('Oppgave slettet!');
+    } catch (err) {
+      console.error('Error deleting task:', err);
+      showErrorMessage('Kunne ikke slette oppgave');
     }
   };
 
@@ -410,6 +434,7 @@ const TasksPage: React.FC = () => {
           onJoinTask={handleJoinTask}
           onLeaveTask={handleLeaveTask}
           onCompleteTask={handleCompleteTask}
+          onDeleteTask={canDeleteTasks ? handleDeleteTask : undefined}
           participantNames={participantNames}
         />
       )}

@@ -52,7 +52,7 @@ export async function getTasks(): Promise<Task[]> {
       const tasksQuery = query(
         collection(db, 'regiTasks'),
         where('isActive', '==', true),
-        orderBy('createdAt', 'desc')
+        orderBy('deadline', 'asc') // Sort by deadline (earliest first)
       );
       const tasksDoc = await getDocs(tasksQuery);
       return tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
@@ -62,25 +62,38 @@ export async function getTasks(): Promise<Task[]> {
         const tasksQuery = query(collection(db, 'regiTasks'), where('isActive', '==', true));
         const tasksDoc = await getDocs(tasksQuery);
 
-        // Manual sort by createdAt (newest first)
+        // Manual sort by deadline (earliest first, tasks without deadline at the end)
         const tasks = tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
         return tasks.sort((a, b) => {
-          const aTime = a.createdAt?.seconds || 0;
-          const bTime = b.createdAt?.seconds || 0;
-          return bTime - aTime;
+          // Handle tasks without deadlines - put them at the end
+          if (!a.deadline && !b.deadline) return 0;
+          if (!a.deadline) return 1;
+          if (!b.deadline) return -1;
+
+          // Compare deadline timestamps
+          const aTime = a.deadline?.seconds || 0;
+          const bTime = b.deadline?.seconds || 0;
+          return aTime - bTime; // Ascending order (earliest first)
         });
       } catch (fallbackError) {
         // Final fallback: Get all tasks and filter manually
         const allDocs = await getDocs(collection(db, 'regiTasks'));
         const allTasks = allDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
 
-        return allTasks
+        const activeTasks = allTasks
           .filter((task) => task.isActive !== false)
           .sort((a, b) => {
-            const aTime = a.createdAt?.seconds || 0;
-            const bTime = b.createdAt?.seconds || 0;
-            return bTime - aTime;
+            // Handle tasks without deadlines - put them at the end
+            if (!a.deadline && !b.deadline) return 0;
+            if (!a.deadline) return 1;
+            if (!b.deadline) return -1;
+
+            const aTime = a.deadline?.seconds || 0;
+            const bTime = b.deadline?.seconds || 0;
+            return aTime - bTime; // Ascending order (earliest first)
           });
+
+        return activeTasks;
       }
     }
   } catch (error: any) {
@@ -136,11 +149,12 @@ export async function joinTask(taskId: string, userId: string): Promise<boolean>
       throw new Error('Task not found');
     }
 
-    // Validation checks
+    // Check if user is already joined
     if (task.participants.includes(userId)) {
       throw new Error('User already joined this task');
     }
 
+    // Check if task is full - maxParticipants is now always defined and > 0
     if (task.maxParticipants && task.participants.length >= task.maxParticipants) {
       throw new Error('Task is full');
     }

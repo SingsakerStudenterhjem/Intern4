@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Users, Clock, Calendar, User, MapPin } from 'lucide-react';
+import { X, Users, Clock, Calendar, User, Trash2 } from 'lucide-react';
 import { Task } from '../../../backend/types/regi/tasks/task.types';
 
 interface TaskModalProps {
@@ -9,7 +9,8 @@ interface TaskModalProps {
   userRole?: string;
   onJoinTask?: (taskId: string) => void;
   onLeaveTask?: (taskId: string) => void;
-  onCompleteTask?: (taskId: string, hours: number) => void;
+  onCompleteTask?: (taskId: string) => void;
+  onDeleteTask?: (taskId: string) => void;
   participantNames?: { [userId: string]: string };
 }
 
@@ -21,10 +22,11 @@ const TaskModal: React.FC<TaskModalProps> = ({
   onJoinTask,
   onLeaveTask,
   onCompleteTask,
+  onDeleteTask,
   participantNames = {},
 }) => {
   const [isCompleting, setIsCompleting] = useState(false);
-  const [hours, setHours] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   if (!task) return null;
 
@@ -46,6 +48,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const isFull = task.maxParticipants && task.participants.length >= task.maxParticipants;
   const canJoin = !isFull && !isUserJoined && !task.completed;
   const canViewParticipants = userRole === 'Data Åpmand' || userRole === 'Regisjef' || isUserJoined;
+  const canDeleteTask = (userRole === 'Data Åpmand' || userRole === 'Regisjef') && onDeleteTask;
 
   const handleJoin = () => {
     if (onJoinTask && task.id) {
@@ -65,15 +68,29 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   const cancelComplete = () => {
     setIsCompleting(false);
-    setHours('');
   };
 
   const confirmComplete = () => {
-    if (onCompleteTask && task.id && hours) {
-      onCompleteTask(task.id, parseFloat(hours));
+    if (onCompleteTask && task.id) {
+      onCompleteTask(task.id);
     }
     setIsCompleting(false);
-    setHours('');
+    onClose();
+  };
+
+  const startDelete = () => {
+    setIsDeleting(true);
+  };
+
+  const cancelDelete = () => {
+    setIsDeleting(false);
+  };
+
+  const confirmDelete = () => {
+    if (onDeleteTask && task.id) {
+      onDeleteTask(task.id);
+    }
+    setIsDeleting(false);
     onClose();
   };
 
@@ -107,9 +124,23 @@ const TaskModal: React.FC<TaskModalProps> = ({
               {task.category}
             </span>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <X className="w-6 h-6" />
-          </button>
+          <div className="flex items-center space-x-2">
+            {canDeleteTask && (
+              <button
+                onClick={startDelete}
+                className="text-red-400 hover:text-red-600 transition-colors"
+                title="Slett oppgave"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+          </div>
         </div>
 
         {/* Content */}
@@ -128,8 +159,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
                   <Users className="w-4 h-4 mr-1" />
-                  Deltakere ({task.participants.length}
-                  {task.maxParticipants ? `/${task.maxParticipants}` : ''})
+                  Deltakere ({task.participants.length}/{task.maxParticipants})
                 </h3>
 
                 {canViewParticipants ? (
@@ -154,15 +184,14 @@ const TaskModal: React.FC<TaskModalProps> = ({
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500 italic">Ingen deltakere ennå</p>
+                      <p className="text-sm text-gray-500 italic">Ingen deltakere </p>
                     )}
                   </div>
                 ) : (
                   <div className="p-3 bg-gray-50 rounded-md">
                     <p className="text-sm text-gray-600">
                       {task.participants.length} person{task.participants.length !== 1 ? 'er' : ''}{' '}
-                      påmeldt
-                      {task.maxParticipants && ` av ${task.maxParticipants} plasser`}
+                      påmeldt av {task.maxParticipants} plasser
                     </p>
                   </div>
                 )}
@@ -196,9 +225,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   <Users className="w-4 h-4 text-gray-500" />
                   <span className="font-medium text-gray-700">Kapasitet:</span>
                 </div>
-                <p className="text-sm text-gray-900 ml-6">
-                  {task.maxParticipants ? `Maks ${task.maxParticipants} personer` : 'Ubegrenset'}
-                </p>
+                <p className="text-sm text-gray-900 ml-6">Maks {task.maxParticipants} personer</p>
               </div>
 
               {/* Status indicators */}
@@ -232,20 +259,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">
           {isCompleting ? (
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Antall timer brukt:
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  value={hours}
-                  onChange={(e) => setHours(e.target.value)}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="F.eks. 2.5"
-                  autoFocus
-                />
+              <div className="text-center">
+                <p className="text-sm text-gray-700">
+                  Er du sikker på at du vil markere denne oppgaven som fullført?
+                </p>
               </div>
               <div className="flex justify-end space-x-3">
                 <button
@@ -256,10 +273,35 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 </button>
                 <button
                   onClick={confirmComplete}
-                  disabled={!hours || parseFloat(hours) <= 0}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                 >
                   Marker som fullført
+                </button>
+              </div>
+            </div>
+          ) : isDeleting ? (
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-3">
+                  <Trash2 className="h-6 w-6 text-red-600" />
+                </div>
+                <p className="text-sm font-medium text-gray-900">Slett oppgave</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  Er du sikker på at du vil slette oppgaven? Denne handlingen kan ikke angres.
+                </p>
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={cancelDelete}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                >
+                  Avbryt
+                </button>
+                <button
+                  onClick={confirmDelete}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                >
+                  Slett oppgave
                 </button>
               </div>
             </div>

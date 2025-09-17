@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, Palette } from 'lucide-react';
 import {
   CategoryManagementProps,
@@ -22,6 +22,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [usageCounts, setUsageCounts] = useState<{ [key: string]: number }>({});
+  const [loadingUsage, setLoadingUsage] = useState<boolean>(true);
 
   const predefinedColors: string[] = [
     '#3B82F6', // Blue
@@ -35,6 +36,39 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
     '#EC4899', // Pink
     '#6B7280', // Gray
   ];
+
+  // Load usage counts for all categories when component mounts or categories change
+  useEffect(() => {
+    const loadAllUsageCounts = async () => {
+      setLoadingUsage(true);
+      const counts: { [key: string]: number } = {};
+
+      try {
+        await Promise.all(
+          categories.map(async (category) => {
+            try {
+              const count = await getCategoryUsage(category.name);
+              counts[category.name] = count;
+            } catch (error) {
+              console.error(`Error loading usage for category ${category.name}:`, error);
+              counts[category.name] = 0;
+            }
+          })
+        );
+        setUsageCounts(counts);
+      } catch (error) {
+        console.error('Error loading category usage counts:', error);
+      } finally {
+        setLoadingUsage(false);
+      }
+    };
+
+    if (categories.length > 0) {
+      loadAllUsageCounts();
+    } else {
+      setLoadingUsage(false);
+    }
+  }, [categories, getCategoryUsage]);
 
   const resetForm = (): void => {
     setFormData({ name: '', description: '', color: '#3B82F6' });
@@ -118,7 +152,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
     }
 
     try {
-      const usage = await getCategoryUsage(category.name);
+      const usage = usageCounts[category.name] || 0;
       if (usage > 0) {
         alert(
           `Kan ikke slette kategorien "${category.name}" fordi den brukes av ${usage} oppgave${usage !== 1 ? 'r' : ''}.`
@@ -130,15 +164,6 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
     } catch (error) {
       console.error('Error deleting category:', error);
       alert('Kunne ikke slette kategori. Prøv igjen.');
-    }
-  };
-
-  const loadUsageCount = async (categoryName: string): Promise<void> => {
-    try {
-      const count = await getCategoryUsage(categoryName);
-      setUsageCounts((prev) => ({ ...prev, [categoryName]: count }));
-    } catch (error) {
-      console.error('Error loading usage count:', error);
     }
   };
 
@@ -199,7 +224,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                   className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                     errors.name ? 'border-red-300' : 'border-gray-300'
                   }`}
-                  placeholder="F.eks. Kjøkken"
+                  placeholder="Størm 🔌"
                 />
                 {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
               </div>
@@ -275,61 +300,60 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
 
       {/* Categories List */}
       <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
-          {categories.length === 0 ? (
-            <li className="px-6 py-8 text-center">
-              <p className="text-gray-500">Ingen kategorier opprettet ennå</p>
-            </li>
-          ) : (
-            categories.map((category) => (
-              <li key={category.id} className="px-6 py-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    <div
-                      className="w-6 h-6 rounded-full border border-gray-300"
-                      style={{ backgroundColor: category.color }}
-                    />
-                    <div>
-                      <h4 className="text-sm font-medium text-gray-900">{category.name}</h4>
-                      {category.description && (
-                        <p className="text-sm text-gray-500">{category.description}</p>
-                      )}
-                      {usageCounts[category.name] !== undefined && (
+        {loadingUsage ? (
+          <div className="px-6 py-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <p className="text-gray-500 mt-2">Laster kategorier...</p>
+          </div>
+        ) : (
+          <ul className="divide-y divide-gray-200">
+            {categories.length === 0 ? (
+              <li className="px-6 py-8 text-center">
+                <p className="text-gray-500">Ingen kategorier opprettet</p>
+              </li>
+            ) : (
+              categories.map((category) => (
+                <li key={category.id} className="px-6 py-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div
+                        className="w-6 h-6 rounded-full border border-gray-300"
+                        style={{ backgroundColor: category.color }}
+                      />
+                      <div>
+                        <h4 className="text-sm font-medium text-gray-900">{category.name}</h4>
+                        {category.description && (
+                          <p className="text-sm text-gray-500">{category.description}</p>
+                        )}
                         <p className="text-xs text-gray-400">
-                          Brukes av {usageCounts[category.name]} oppgave
+                          Brukes av {usageCounts[category.name] || 0} oppgave
                           {usageCounts[category.name] !== 1 ? 'r' : ''}
                         </p>
-                      )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => startEdit(category)}
+                        className="p-2 text-gray-400 hover:text-gray-600"
+                        title="Rediger kategori"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(category)}
+                        className="p-2 text-gray-400 hover:text-red-600"
+                        title="Slett kategori"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
-
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => loadUsageCount(category.name)}
-                      className="text-xs text-blue-600 hover:text-blue-800"
-                    >
-                      Vis bruk
-                    </button>
-                    <button
-                      onClick={() => startEdit(category)}
-                      className="p-2 text-gray-400 hover:text-gray-600"
-                      title="Rediger kategori"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(category)}
-                      className="p-2 text-gray-400 hover:text-red-600"
-                      title="Slett kategori"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </li>
-            ))
-          )}
-        </ul>
+                </li>
+              ))
+            )}
+          </ul>
+        )}
       </div>
     </div>
   );
