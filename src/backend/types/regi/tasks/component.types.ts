@@ -1,0 +1,93 @@
+// Simplified component types - using TypeScript interfaces instead of Zod schemas
+import { Task, TaskCreationData } from './task.types';
+import { Category, CategoryCreationData } from './category.types';
+
+// Simple TypeScript interfaces for component props (much more reliable)
+export interface AuthUser {
+  uid: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
+export interface FormErrors {
+  [key: string]: string;
+}
+
+export interface ParticipantNames {
+  [userId: string]: string;
+}
+
+// Task Component Props
+export interface TasksTableProps {
+  tasks: Task[];
+  onRowClick?: (task: Task) => void;
+  onJoinTask?: (taskId: string) => void;
+  currentUserId?: string;
+  userRole?: string;
+}
+
+export interface TaskModalProps {
+  task: Task | null;
+  onClose: () => void;
+  currentUserId?: string;
+  userRole?: string;
+  onJoinTask?: (taskId: string) => void;
+  onLeaveTask?: (taskId: string) => void;
+  onCompleteTask?: (taskId: string, hours: number) => void;
+  participantNames?: ParticipantNames;
+}
+
+export interface TaskCreationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onCreateTask: (taskData: TaskCreationData) => Promise<void>;
+  categories: Category[];
+  currentUser: AuthUser | null;
+}
+
+// Category Component Props
+export interface CategoryManagementProps {
+  categories: Category[];
+  onAddCategory: (categoryData: CategoryCreationData) => Promise<void>;
+  onUpdateCategory: (categoryId: string, categoryData: Partial<Category>) => Promise<void>;
+  onDeleteCategory: (categoryId: string) => Promise<void>;
+  getCategoryUsage: (categoryName: string) => Promise<number>;
+}
+
+// Simple state interfaces (no Zod complexity)
+export interface TaskFilterState {
+  query: string;
+  filter: 'all' | 'available' | 'myTasks';
+  category: string;
+  currentPage: number;
+}
+
+export interface PaginationState {
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
+  totalItems: number;
+}
+
+export interface LoadingState {
+  isLoading: boolean;
+  isSubmitting: boolean;
+  error: string | null;
+}
+
+export interface ModalState {
+  isOpen: boolean;
+  data?: any;
+}
+
+// Utility type guards (simple and reliable)
+export const isAuthUser = (user: unknown): user is AuthUser => {
+  return (
+    typeof user === 'object' &&
+    user !== null &&
+    typeof (user as any).uid === 'string' &&
+    typeof (user as any).name === 'string' &&
+    typeof (user as any).role === 'string'
+  );
+};
