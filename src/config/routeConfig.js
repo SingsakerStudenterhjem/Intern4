@@ -3,7 +3,7 @@ import { Navigate } from 'react-router-dom';
 import LoginPage from '../pages/loginPage';
 import DashboardPage from '../pages/dashboardPage';
 import RegiPage from '../pages/regi/regiPage';
-import LeggTilBeboer from '../pages/rom/addUser';
+import AddUserPage from '../pages/rom/addUserPage';
 import TasksPage from '../pages/regi/tasksPage';
 import NotFoundPage from '../pages/notFoundPage';
 import ProtectedRoute from '../components/common/protectedRoute';
@@ -40,7 +40,7 @@ export const protectedRoutes = [
     path: ROUTES.LEGG_TIL_BEBOER,
     element: (
       <ProtectedRoute>
-        <LeggTilBeboer />
+        <AddUserPage />
       </ProtectedRoute>
     ),
   },
