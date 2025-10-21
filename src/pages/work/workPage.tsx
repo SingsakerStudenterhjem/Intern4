@@ -3,7 +3,7 @@ import WorkLogForm from '../../components/regi/MyRegi/WorkLogForm';
 import WorkLogList from '../../components/regi/MyRegi/WorkLogList';
 import { useAuth } from '../../hooks/useAuth';
 
-const RegiPage = () => {
+const WorkPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const { user, loading } = useAuth();
 
@@ -31,4 +31,4 @@ const RegiPage = () => {
   );
 };
 
-export default RegiPage;
+export default WorkPage;

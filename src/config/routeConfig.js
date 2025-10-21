@@ -2,9 +2,9 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import LoginPage from '../pages/loginPage';
 import DashboardPage from '../pages/dashboardPage';
-import RegiPage from '../pages/regi/regiPage';
-import LeggTilBeboer from '../pages/rom/addUser';
-import TasksPage from '../pages/regi/tasksPage';
+import WorkPage from '../pages/work/workPage';
+import AddUserPage from '../pages/roomManager/addUserPage';
+import WorkTasksPage from '../pages/work/workTasksPage';
 import NotFoundPage from '../pages/notFoundPage';
 import ProtectedRoute from '../components/common/protectedRoute';
 import { ROUTES } from '../constants/routes';
@@ -32,7 +32,7 @@ export const protectedRoutes = [
     path: ROUTES.REGI,
     element: (
       <ProtectedRoute>
-        <RegiPage />
+        <WorkPage />
       </ProtectedRoute>
     ),
   },
@@ -40,7 +40,7 @@ export const protectedRoutes = [
     path: ROUTES.LEGG_TIL_BEBOER,
     element: (
       <ProtectedRoute>
-        <LeggTilBeboer />
+        <AddUserPage />
       </ProtectedRoute>
     ),
   },
@@ -48,7 +48,7 @@ export const protectedRoutes = [
     path: ROUTES.TASKS,
     element: (
       <ProtectedRoute>
-        <TasksPage />
+        <WorkTasksPage />
       </ProtectedRoute>
     ),
   },

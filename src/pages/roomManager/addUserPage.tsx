@@ -3,7 +3,7 @@ import { Timestamp } from 'firebase/firestore';
 import { addNewUser } from '../../backend/src/authentication';
 import { User } from '../../backend/types/user';
 
-const AddUser: React.FC = () => {
+const AddUserPage: React.FC = () => {
   const [userData, setUserData] = useState<Omit<User, 'createdAt' | 'lastLogin'>>({
     name: '',
     email: '',
@@ -512,4 +512,4 @@ const AddUser: React.FC = () => {
   );
 };
 
-export default AddUser;
+export default AddUserPage;
