@@ -74,7 +74,6 @@ const addNewUserFromApplication = async (application: Application, roomNumber?: 
       role: 'Halv/Halv', // Default value
       onLeave: false, // Default value
       isActive: true, // Default value
-      volunteerPositions: [],
       createdAt: Timestamp.now(),
     };
 
