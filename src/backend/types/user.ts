@@ -23,15 +23,16 @@ const UserSchema = z.object({
         'Halv/Halv',
         'Full Regi',
         'Full Vakt',
-        'Data Åpmand',
         'Utvalgsmedlem',
+        'Data Åpmand',
         'Daglig leder',
       ].includes(value)
     ),
   onLeave: z.boolean(),
   isActive: z.boolean(),
   lastLogin: FirestoreTimestamp.optional(),
-  volunteerPositions: z.array(z.string()),
+  //Åpmandsverv
+  volunteerPosition: z.array(z.string()).optional(),
   createdAt: FirestoreTimestamp,
 });
 

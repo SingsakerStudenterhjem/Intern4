@@ -15,7 +15,40 @@ const generateRandomPassword = (): string => {
   return Math.random().toString(36).slice(-12) + '!A1';
 };
 
-const addNewUser = async (application: Application) => {
+const addNewUser = async (userData: Omit<User, 'createdAt'>) => {
+  try {
+    const password = generateRandomPassword();
+    const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
+    const user = userCredential.user;
+
+    const newUser: User = {
+      ...userData,
+      createdAt: Timestamp.now(),
+    };
+
+    const userId = await addUser(user.uid, newUser);
+    return { success: true, uid: userId, user: userCredential.user };
+  } catch (error: any) {
+    console.error('Create user error:', error);
+
+    let errorMessage = 'Kunne ikke opprette bruker';
+
+    switch (error.code) {
+      case 'auth/email-already-in-use':
+        errorMessage = 'E-postadressen er allerede i bruk';
+        break;
+      case 'auth/invalid-email':
+        errorMessage = 'Ugyldig e-postadresse';
+        break;
+      default:
+        errorMessage += ': ' + error.message;
+    }
+
+    return { success: false, error: errorMessage };
+  }
+};
+
+const addNewUserFromApplication = async (application: Application, roomNumber?: number) => {
   try {
     // We want new users to have a randomly generated password
     // so they use the forgot password feature on their first login.
@@ -41,7 +74,6 @@ const addNewUser = async (application: Application) => {
       role: 'Halv/Halv', // Default value
       onLeave: false, // Default value
       isActive: true, // Default value
-      volunteerPositions: [],
       createdAt: Timestamp.now(),
     };
 

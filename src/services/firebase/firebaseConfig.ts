@@ -13,14 +13,14 @@ interface FirebaseConfig {
   measurementId: string;
 }
 
-const firebaseConfig: FirebaseConfig = {
-  apiKey: process.env.REACT_APP_FIREBASE_API_KEY!,
-  authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN!,
-  projectId: process.env.REACT_APP_FIREBASE_PROJECT_ID!,
-  storageBucket: process.env.REACT_APP_FIREBASE_STORAGE_BUCKET!,
-  messagingSenderId: process.env.REACT_APP_FIREBASE_MESSAGING_SENDER_ID!,
-  appId: process.env.REACT_APP_FIREBASE_APP_ID!,
-  measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID!,
+const firebaseConfig = {
+  apiKey: 'AIzaSyBR4h0WoNBbLR-9Ee8s1_Et04h75A4EVg4',
+  authDomain: 'singintern4.firebaseapp.com',
+  projectId: 'singintern4',
+  storageBucket: 'singintern4.firebasestorage.app',
+  messagingSenderId: '301175057267',
+  appId: '1:301175057267:web:6e069fab508796787b7306',
+  measurementId: 'G-4EXHDXR1JT',
 };
 
 const app =
