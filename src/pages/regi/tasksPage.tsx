@@ -22,10 +22,15 @@ import {
   updateCategory,
 } from '../../backend/src/categoriesDAO';
 import { getUser } from '../../backend/src/userDAO';
-import { Task, TaskCreationData } from '../../backend/types/regi/tasks';
-import { Category, CategoryCreationData } from '../../backend/types/regi/tasks';
-import { ParticipantNames } from '../../backend/types/regi/tasks';
+import {
+  Category,
+  CategoryCreationData,
+  ParticipantNames,
+  Task,
+  TaskCreationData,
+} from '../../backend/types/regi/tasks';
 import { Timestamp } from 'firebase/firestore';
+import { canManageCategories, canManageTasks } from '../../constants/userRoles';
 
 interface LocalUser {
   uid: string;
@@ -64,9 +69,9 @@ const TasksPage: React.FC = () => {
     filteredTasks,
   } = useTasks(tasks, categories, user?.uid || '', 10);
 
-  const canCreateTasks = user?.role === 'Data Åpmand' || user?.role === 'Regisjef';
-  const canManageCategories = user?.role === 'Data Åpmand' || user?.role === 'Regisjef';
-  const canDeleteTasks = user?.role === 'Data Åpmand' || user?.role === 'Regisjef';
+  const canCreateTasksCheck = canManageTasks(user?.role);
+  const canManageCategoriesCheck = canManageCategories(user?.role);
+  const canDeleteTasksCheck = canManageTasks(user?.role);
 
   useEffect(() => {
     loadData();
@@ -172,7 +177,7 @@ const TasksPage: React.FC = () => {
   };
 
   const handleDeleteTask = async (taskId: string): Promise<void> => {
-    if (!canDeleteTasks) {
+    if (!canDeleteTasksCheck) {
       showErrorMessage('Du har ikke tillatelse til å slette oppgaver');
       return;
     }
@@ -258,7 +263,7 @@ const TasksPage: React.FC = () => {
               </p>
             </div>
             <div className="flex space-x-3">
-              {canManageCategories && (
+              {canManageCategoriesCheck && (
                 <button
                   onClick={() => setShowCategoryManagement(!showCategoryManagement)}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -267,7 +272,7 @@ const TasksPage: React.FC = () => {
                   Administrer kategorier
                 </button>
               )}
-              {canCreateTasks && (
+              {canCreateTasksCheck && (
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -288,7 +293,7 @@ const TasksPage: React.FC = () => {
         )}
 
         {/* Category Management */}
-        {showCategoryManagement && canManageCategories && (
+        {showCategoryManagement && canManageCategoriesCheck && (
           <div className="mb-8">
             <CategoryManagement
               categories={categories}
@@ -434,7 +439,7 @@ const TasksPage: React.FC = () => {
           onJoinTask={handleJoinTask}
           onLeaveTask={handleLeaveTask}
           onCompleteTask={handleCompleteTask}
-          onDeleteTask={canDeleteTasks ? handleDeleteTask : undefined}
+          onDeleteTask={canDeleteTasksCheck ? handleDeleteTask : undefined}
           participantNames={participantNames}
         />
       )}
