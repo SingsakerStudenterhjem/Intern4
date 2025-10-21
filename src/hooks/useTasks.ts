@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { Task } from '../backend/types/regi/tasks/task.types';
-import { Category } from '../backend/types/regi/tasks/category.types';
+import { Task } from '../backend/types/regi/tasks';
+import { Category } from '../backend/types/regi/tasks';
 
 export const useTasks = (
   tasks: Task[],

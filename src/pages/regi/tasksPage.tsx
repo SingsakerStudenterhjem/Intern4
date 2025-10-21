@@ -7,24 +7,24 @@ import CategoryManagement from '../../components/admin/CategoryManagement';
 import { useTasks } from '../../hooks/useTasks';
 import { useAuth } from '../../hooks/useAuth';
 import {
-  getTasks,
   addTask,
-  updateTask,
+  deleteTask,
+  getTasks,
   joinTask,
   leaveTask,
-  deleteTask,
+  updateTask,
 } from '../../backend/src/tasksDAO';
 import {
-  getCategories,
   addCategory,
-  updateCategory,
   deleteCategory,
+  getCategories,
   getCategoryUsageCount,
+  updateCategory,
 } from '../../backend/src/categoriesDAO';
 import { getUser } from '../../backend/src/userDAO';
-import { Task, TaskCreationData } from '../../backend/types/regi/tasks/task.types';
-import { Category, CategoryCreationData } from '../../backend/types/regi/tasks/category.types';
-import { ParticipantNames } from '../../backend/types/regi/tasks/component.types';
+import { Task, TaskCreationData } from '../../backend/types/regi/tasks';
+import { Category, CategoryCreationData } from '../../backend/types/regi/tasks';
+import { ParticipantNames } from '../../backend/types/regi/tasks';
 import { Timestamp } from 'firebase/firestore';
 
 interface LocalUser {
