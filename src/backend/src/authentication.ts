@@ -66,14 +66,15 @@ const addNewUserFromApplication = async (application: Application, roomNumber?: 
         postalCode: application.address.postalCode,
         city: application.address.city,
       },
-      study: application.study,
       studyPlace: application.studyPlace,
       profilePicture: application.profilePicture || '',
-      seniority: 0,
-      roomNumber: roomNumber || 0,
-      role: 'Halv/Halv',
-      onLeave: false,
-      isActive: true,
+      study: 'annet', // Default value
+      seniority: 0, // Default value
+      roomNumber: 0, // Default value
+      role: 'Halv/Halv', // Default value
+      onLeave: false, // Default value
+      isActive: true, // Default value
+      volunteerPositions: [],
       createdAt: Timestamp.now(),
     };
 
