@@ -24,19 +24,19 @@ const Navbar = () => {
         {
           label: 'Regisjef',
           to: '/regisjef',
-          roles: [USER_ROLES.REGISJEF, USER_ROLES.DATA],
+          roles: [USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
         },
       ],
     },
     {
       key: 'rom',
       label: 'Rom',
-      roles: [USER_ROLES.ROMSJEF, USER_ROLES.DATA],
+      roles: [USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
       children: [
         {
           label: 'Legg til beboer',
           to: ROUTES.LEGG_TIL_BEBOER,
-          roles: [USER_ROLES.ROMSJEF, USER_ROLES.DATA],
+          roles: [USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
         },
       ],
     },

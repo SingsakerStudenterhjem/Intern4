@@ -39,7 +39,7 @@ interface LocalUser {
   role: string;
 }
 
-const TasksPage: React.FC = () => {
+const WorkTasksPage: React.FC = () => {
   const authData = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -457,4 +457,4 @@ const TasksPage: React.FC = () => {
   );
 };
 
-export default TasksPage;
+export default WorkTasksPage;
