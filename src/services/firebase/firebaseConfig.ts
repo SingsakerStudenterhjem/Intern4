@@ -13,7 +13,7 @@ interface FirebaseConfig {
   measurementId: string;
 }
 
-const firebaseConfig = {
+const firebaseConfig: FirebaseConfig = {
   apiKey: 'AIzaSyBR4h0WoNBbLR-9Ee8s1_Et04h75A4EVg4',
   authDomain: 'singintern4.firebaseapp.com',
   projectId: 'singintern4',
@@ -36,5 +36,3 @@ export const db = initializeFirestore(app, {
 
 export const auth = getAuth(app);
 export const storage = getStorage(app);
-
-export default app;
