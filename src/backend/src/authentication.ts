@@ -66,6 +66,7 @@ const addNewUserFromApplication = async (application: Application, roomNumber?: 
         postalCode: application.address.postalCode,
         city: application.address.city,
       },
+      study: application.study,
       studyPlace: application.studyPlace,
       profilePicture: application.profilePicture || '',
       seniority: 0,
@@ -73,8 +74,6 @@ const addNewUserFromApplication = async (application: Application, roomNumber?: 
       role: 'Halv/Halv',
       onLeave: false,
       isActive: true,
-      leadershipRoles: [],
-      tasks: [],
       createdAt: Timestamp.now(),
     };
 

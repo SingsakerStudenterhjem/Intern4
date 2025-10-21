@@ -11,7 +11,7 @@ const AddUser: React.FC = () => {
     birthDate: Timestamp.now(),
     address: {
       street: '',
-      postalCode: '',
+      postalCode: 0,
       city: '',
     },
     study: '',
@@ -22,8 +22,6 @@ const AddUser: React.FC = () => {
     role: 'Halv/Halv',
     onLeave: false,
     isActive: true,
-    leadershipRoles: [],
-    tasks: [],
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -162,7 +160,7 @@ const AddUser: React.FC = () => {
           email: '',
           phone: '',
           birthDate: Timestamp.now(),
-          address: { street: '', postalCode: '', city: '' },
+          address: { street: '', postalCode: 0, city: '' },
           study: '',
           studyPlace: '',
           profilePicture: '',
@@ -171,8 +169,6 @@ const AddUser: React.FC = () => {
           role: 'Halv/Halv',
           onLeave: false,
           isActive: true,
-          leadershipRoles: [],
-          tasks: [],
         });
         setBirthDateString('');
         setValidationErrors({});
@@ -492,26 +488,6 @@ const AddUser: React.FC = () => {
                   onChange={handleInputChange}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Oslo"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label
-                  htmlFor="leadershipRoles"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Lederroller
-                </label>
-                <input
-                  type="text"
-                  id="leadershipRoles"
-                  name="leadershipRoles"
-                  value={userData.leadershipRoles?.join(', ') || ''}
-                  onChange={(e) => handleArrayChange('leadershipRoles', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  placeholder="Komiteleder, Styremedlem (skill med komma)"
                 />
               </div>
             </div>
