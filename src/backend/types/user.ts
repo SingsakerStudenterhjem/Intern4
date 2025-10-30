@@ -1,15 +1,15 @@
 import { z } from 'zod';
-import { FirestoreTimestamp } from './firestoreTimestamp';
 
 const UserSchema = z.object({
   name: z.string(),
   email: z.email(),
   phone: z.string(),
-  birthDate: FirestoreTimestamp,
+  birthDate: z.date(),
   address: z.object({
     street: z.string(),
-    postalCode: z.number(),
+    postalCode: z.string(),
     city: z.string(),
+    country: z.string().optional(),
   }),
   study: z.string(),
   studyPlace: z.string(),
@@ -30,10 +30,7 @@ const UserSchema = z.object({
     ),
   onLeave: z.boolean(),
   isActive: z.boolean(),
-  lastLogin: FirestoreTimestamp.optional(),
-  //Åpmandsverv
-  volunteerPosition: z.array(z.string()).optional(),
-  createdAt: FirestoreTimestamp,
+  createdAt: z.date(),
 });
 
 export type User = z.infer<typeof UserSchema>;

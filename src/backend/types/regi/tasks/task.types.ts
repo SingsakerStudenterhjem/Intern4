@@ -1,76 +1,62 @@
 import { z } from 'zod';
-import { FirestoreTimestamp } from '../../firestoreTimestamp';
 
 // Core Task Schema
 export const TaskSchema = z.object({
   id: z.string(),
-  taskName: z.string().min(1, 'Oppgavenavn er påkrevd'),
+  title: z.string().min(1, 'Tittel er påkrevd'),
   category: z.string().min(1, 'Kategori er påkrevd'),
   description: z.string().optional(),
-  contactPerson: z.string(),
-  contactPersonId: z.string(),
-  deadline: FirestoreTimestamp.optional(),
-  hourEstimate: z.number().positive().optional(),
-  participants: z.array(z.string()).default([]),
-  maxParticipants: z.number().positive().optional(),
-  completed: z.boolean().default(false),
-  completedAt: FirestoreTimestamp.optional(),
-  isApproved: z.boolean().default(false),
-  createdAt: FirestoreTimestamp,
-  createdBy: z.string(),
-  isActive: z.boolean().default(true),
+  contactPersonId: z.string().uuid().optional(),
+  deadline: z.date().optional(),
+  hourEstimate: z.number().positive().optional(), // Represents time_estimate
+  participants: z.array(z.string().uuid()).default([]),
+  createdAt: z.date(),
+  // Fields that are no longer in the new schema:
+  // taskName -> title
+  // contactPerson (name) -> can be fetched via contactPersonId
+  // maxParticipants -> no longer supported
+  // completed -> no longer supported
+  // completedAt -> no longer supported
+  // isApproved -> no longer supported
+  // createdBy -> no longer supported
+  // isActive -> no longer supported
 });
 
 // Task Form Data Schema (for forms with string inputs)
 export const TaskFormDataSchema = z.object({
-  taskName: z.string(),
+  title: z.string(),
   category: z.string(),
   description: z.string().default(''),
   deadline: z.string().default(''), // datetime-local input gives string
   hourEstimate: z.string().default(''), // number input as string
-  maxParticipants: z.string().default(''), // number input as string
 });
 
 // Task Creation Data Schema (processed form data for API)
 export const TaskCreationDataSchema = z.object({
-  taskName: z.string().min(1, 'Oppgavenavn er påkrevd'),
+  title: z.string().min(1, 'Tittel er påkrevd'),
   category: z.string().min(1, 'Kategori er påkrevd'),
   description: z.string().optional(),
-  contactPerson: z.string(),
-  contactPersonId: z.string(),
+  contactPersonId: z.string().uuid().optional(),
   deadline: z.date().optional(),
   hourEstimate: z.number().positive().optional(),
-  maxParticipants: z.number().positive().optional(),
-  participants: z.array(z.string()).default([]),
-  completed: z.boolean().default(false),
-  isApproved: z.boolean().default(false),
-  createdBy: z.string(),
-  isActive: z.boolean().default(true),
 });
 
 // Task Update Schema (for partial updates)
-export const TaskUpdateSchema = TaskSchema.partial().omit({
-  id: true,
-  createdAt: true,
-  createdBy: true,
+export const TaskUpdateSchema = TaskCreationDataSchema.partial().omit({
+  category: true, // Usually category is not updated.
 });
 
 // Task Filter Schema
 export const TaskFilterSchema = z.object({
   category: z.string().optional(),
-  completed: z.boolean().optional(),
-  createdBy: z.string().optional(),
-  participants: z.string().optional(), // filter by participant ID
   search: z.string().optional(),
 });
 
 // Participant Status Schema
 export const ParticipantStatusSchema = z.object({
   userId: z.string(),
-  joinedAt: FirestoreTimestamp,
-  status: z.string().refine((val) => ['active', 'completed', 'withdrawn'].includes(val), {
-    message: "Status must be 'active', 'completed', or 'withdrawn'",
-  }),
+  joinedAt: z.date(),
+  // status is now on work_assignments (approved_state)
 });
 
 // Task with Participant Details Schema

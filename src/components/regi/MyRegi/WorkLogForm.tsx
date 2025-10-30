@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
-import { Timestamp } from 'firebase/firestore';
 import { z } from 'zod';
 import { RegiLogSchema, WorkTypeSchema } from '../../../backend/types/regi';
 import { addRegiLog } from '../../../backend/src/regiDAO';
-import { uploadRegiImages } from '../../../services/firebase/uploadRegiImages';
 import { useAuth } from '../../../hooks/useAuth';
 
 const FormSchema = z.object({
@@ -14,6 +12,11 @@ const FormSchema = z.object({
   type: WorkTypeSchema,
   images: z.array(z.instanceof(File)).optional(),
 });
+
+async function uploadRegiImages(uid: any, files: File[]) {
+  // TODO: move and implement with supabase
+  return [];
+}
 
 const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const { user } = useAuth();
@@ -45,17 +48,16 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
 
     try {
       setSubmitting(true);
-      const imageUrls = files.length ? await uploadRegiImages(user.uid, files) : [];
+      // const imageUrls = files.length ? await uploadRegiImages(user.id, files) : [];
 
       const payload = RegiLogSchema.parse({
-        userId: user.uid,
+        userId: user.id,
         title: form.title,
         description: form.description,
-        date: Timestamp.fromDate(new Date(form.date)),
+        date: new Date(form.date),
         hours: Number(form.hours),
         type: parsed.data.type,
-        images: imageUrls,
-        createdAt: Timestamp.now(),
+        createdAt: new Date(),
         status: 'pending',
       });
 
@@ -66,7 +68,6 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         date: payload.date,
         hours: payload.hours,
         type: payload.type,
-        images: payload.images,
       });
 
       setForm({ title: '', description: '', date: '', hours: '', type: 'annet' });

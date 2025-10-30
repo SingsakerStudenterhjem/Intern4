@@ -1,60 +1,57 @@
-import { auth } from '../../services/firebase/firebaseConfig';
+import { supabase } from '../../config/supabaseClient';
 import { Application } from '../types/application';
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  confirmPasswordReset,
-  sendPasswordResetEmail,
-  signOut,
-} from 'firebase/auth';
 import { User } from '../types/user';
-import { Timestamp } from 'firebase/firestore';
-import { addUser, getUser, updateUser } from './userDAO';
+import { addUser, getUser } from './userDAO';
 
 const generateRandomPassword = (): string => {
   return Math.random().toString(36).slice(-12) + '!A1';
 };
 
+// NOTE: This function assumes an admin Supabase client is used.
+// Regular client-side createUser is not available in server environments.
 const addNewUser = async (userData: Omit<User, 'createdAt'>) => {
   try {
     const password = generateRandomPassword();
-    const userCredential = await createUserWithEmailAndPassword(auth, userData.email, password);
-    const user = userCredential.user;
+    // @ts-ignore
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: userData.email,
+      password: password,
+      email_confirm: true, // Users will need to confirm their email
+    });
+
+    if (authError) {
+      throw authError;
+    }
+    if (!authData.user) {
+      throw new Error('User could not be created in auth provider.');
+    }
 
     const newUser: User = {
       ...userData,
-      createdAt: Timestamp.now(),
+      createdAt: new Date(),
     };
 
-    const userId = await addUser(user.uid, newUser);
-    return { success: true, uid: userId, user: userCredential.user };
+    const userId = await addUser(authData.user.id, newUser);
+    return { success: true, uid: userId, user: authData.user };
   } catch (error: any) {
     console.error('Create user error:', error);
-
-    let errorMessage = 'Kunne ikke opprette bruker';
-
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        errorMessage = 'E-postadressen er allerede i bruk';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Ugyldig e-postadresse';
-        break;
-      default:
-        errorMessage += ': ' + error.message;
-    }
-
+    let errorMessage = 'Kunne ikke opprette bruker: ' + error.message;
     return { success: false, error: errorMessage };
   }
 };
 
-const addNewUserFromApplication = async (application: Application, roomNumber?: number) => {
+const addNewUserFromApplication = async (application: Application) => {
   try {
-    // We want new users to have a randomly generated password
-    // so they use the forgot password feature on their first login.
     const password = generateRandomPassword();
-    const userCredential = await createUserWithEmailAndPassword(auth, application.email, password);
-    const user = userCredential.user;
+    // @ts-ignore
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email: application.email,
+      password,
+      email_confirm: true,
+    });
+
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('User could not be created in auth provider.');
 
     const newUser: User = {
       name: application.name,
@@ -74,111 +71,73 @@ const addNewUserFromApplication = async (application: Application, roomNumber?: 
       role: 'Halv/Halv', // Default value
       onLeave: false, // Default value
       isActive: true, // Default value
-      createdAt: Timestamp.now(),
+      createdAt: new Date(),
     };
 
-    const userId = await addUser(user.uid, newUser);
-    return { success: true, uid: userId, user: userCredential.user };
+    const userId = await addUser(authData.user.id, newUser);
+    return { success: true, uid: userId, user: authData.user };
   } catch (error: any) {
-    console.error('Create user error:', error);
-
-    let errorMessage = 'Kunne ikke opprette bruker';
-
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        errorMessage = 'E-postadressen er allerede i bruk';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Ugyldig e-postadresse';
-        break;
-      default:
-        errorMessage += ': ' + error.message;
-    }
-
+    console.error('Create user from application error:', error);
+    let errorMessage = 'Kunne ikke opprette bruker fra søknad: ' + error.message;
     return { success: false, error: errorMessage };
   }
 };
 
 const logIn = async (email: string, password: string) => {
   try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    const userData = await getUser(userCredential.user.uid);
+    if (authError) throw authError;
+    if (!authData.user) throw new Error('Could not sign in');
+
+    const userData = await getUser(authData.user.id);
 
     if (!userData) {
-      await signOut(auth);
+      await supabase.auth.signOut();
       return { success: false, error: 'Brukerprofil ikke funnet' };
     }
 
     if (!userData.isActive) {
-      await signOut(auth);
+      await supabase.auth.signOut();
       return { success: false, error: 'Brukerprofil er deaktivert' };
     }
 
-    await updateUser(userCredential.user.uid, { lastLogin: Timestamp.now() });
+    // Note: lastLogin from previous implementation is not in the new schema.
 
     return {
       success: true,
-      user: userCredential.user,
+      user: authData.user,
       userData: userData,
     };
   } catch (error: any) {
     console.error('Login error:', error);
-
-    // Error messages for common Firebase Auth errors
-    let errorMessage = 'Det oppstod en feil under innlogging';
-
-    switch (error.code) {
-      case 'auth/user-not-found':
-        errorMessage = 'Ingen bruker funnet med denne e-postadressen';
-        break;
-      case 'auth/wrong-password':
-        errorMessage = 'Feil passord';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Ugyldig e-postadresse';
-        break;
-      case 'auth/user-disabled':
-        errorMessage = 'Brukerkonto er deaktivert';
-        break;
-      case 'auth/too-many-requests':
-        errorMessage = 'For mange innloggingsforsøk. Prøv igjen senere';
-        break;
-      case 'auth/network-request-failed':
-        errorMessage = 'Nettverksfeil. Sjekk internettforbindelsen';
-        break;
-      default:
-        errorMessage = 'Ugyldig e-post eller passord';
-    }
-
-    return { success: false, error: errorMessage };
+    return { success: false, error: 'Innlogging feilet: ' + error.message };
   }
 };
 
 const logOut = async () => {
   try {
-    await signOut(auth);
+    const { error } = await supabase.auth.signOut();
+    if (error) throw error;
     return { success: true };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Logout error:', error);
-    return { success: false, error: 'Kunne ikke logge ut' };
+    return { success: false, error: 'Kunne ikke logge ut: ' + error.message };
   }
 };
 
 const forgotPassword = async (email: string) => {
-  try {
-    await sendPasswordResetEmail(auth, email);
-  } catch (error: unknown) {
-    throw new Error('Kunne ikke sende tilbakestillings e-post');
-  }
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) {
+      throw new Error('Kunne ikke sende tilbakestillings e-post: ' + error.message);
+    }
 };
 
-const confirmResetPassword = async (code: string, newPassword: string) => {
-  try {
-    await confirmPasswordReset(auth, code, newPassword);
-  } catch (error: unknown) {
-    throw new Error('Kunne ikke bekrefte tilbakestilling av passord');
-  }
-};
+// confirmResetPassword is not needed with Supabase's standard email link flow.
+// The user clicks a link in the email and is taken to a page to enter a new password.
+// The password update is handled on the client side.
 
-export { addNewUser, logIn, logOut, forgotPassword, confirmResetPassword };
+export { addNewUser, addNewUserFromApplication, logIn, logOut, forgotPassword };

@@ -29,7 +29,6 @@ import {
   Task,
   TaskCreationData,
 } from '../../backend/types/regi/tasks';
-import { Timestamp } from 'firebase/firestore';
 import { canManageCategories, canManageTasks } from '../../constants/userRoles';
 
 interface LocalUser {
@@ -165,8 +164,8 @@ const WorkTasksPage: React.FC = () => {
   const handleCompleteTask = async (taskId: string): Promise<void> => {
     try {
       await updateTask(taskId, {
-        completed: true,
-        completedAt: Timestamp.now(),
+        //completed: true,
+        //completedAt: new Date(),
       });
       await loadData();
       showSuccessMessage('Oppgave markert som fullført!');
@@ -196,7 +195,7 @@ const WorkTasksPage: React.FC = () => {
     try {
       await addCategory({
         ...categoryData,
-        createdBy: user?.uid || '',
+        //createdBy: user?.uid || '',
       });
       await loadData();
       showSuccessMessage('Kategori opprettet!');

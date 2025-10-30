@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { FirestoreTimestamp } from './firestoreTimestamp';
 
 const ApplicationSchema = z.object({
   applicationId: z.string(),
@@ -7,11 +6,11 @@ const ApplicationSchema = z.object({
   name: z.string(),
   email: z.string(),
   phone: z.string(),
-  birthDate: FirestoreTimestamp,
+  birthDate: z.date(),
   gender: z.string(),
   address: z.object({
     street: z.string(),
-    postalCode: z.number(),
+    postalCode: z.string(),
     city: z.string(),
   }),
   study: z.string(),
@@ -22,7 +21,7 @@ const ApplicationSchema = z.object({
   knowsAboutSing: z.string(),
   knowsResidents: z.string(),
   applicationText: z.string(),
-  applicationDate: FirestoreTimestamp,
+  applicationDate: z.date(),
 });
 
 export type Application = z.infer<typeof ApplicationSchema>;

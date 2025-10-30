@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { logIn } from '../../backend/src/authentication';
 import { useAuth } from '../../hooks/useAuth';
 import { useEffect } from 'react';
+import { supabase } from '../../config/supabaseClient';
 
 const LoginForm = () => {
   const router = useNavigate();
@@ -23,28 +24,12 @@ const LoginForm = () => {
   const handleLogin = async () => {
     setError(null);
     setLoading(true);
-    if (!email || !password) {
-      setError('Vennligst fyll ut både e-post og passord.');
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const result = await logIn(email, password);
-      if (!result.success) {
-        setError(result.error || 'Ugyldig e-post eller passord');
-        setLoading(false);
-        return;
-      }
-
-      router('/dashboard');
-    } catch (error) {
-      setError('Brukernavn eller passord er feil.');
-      console.error('Error during login:', error);
-    } finally {
-      setLoading(false);
-    }
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error || !data.user) { setError('Ugyldig e-post eller passord'); setLoading(false); return; }
+    router('/dashboard');
+    setLoading(false);
   };
+
   return (
     <div>
       {error && <div className="text-red-500 mb-4">{error}</div>}

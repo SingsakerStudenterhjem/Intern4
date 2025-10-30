@@ -1,0 +1,110 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model roles {
+  id         BigInt   @id @default(autoincrement())
+  created_at DateTime @default(now()) @db.Timestamptz(6)
+  name       String
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model users {
+  name                                                      String?
+  email                                                     String?
+  birth_date                                                DateTime?          @db.Date
+  created_at                                                DateTime           @default(now()) @db.Timestamptz(6)
+  is_active                                                 Boolean?           @default(false)
+  on_leave                                                  Boolean?           @default(true)
+  street                                                    String?
+  postal_code                                               String?
+  city                                                      String?
+  country                                                   String?
+  phone                                                     String?
+  profile_picture                                           String?
+  room_number                                               Int?               @db.SmallInt
+  seniority                                                 Int?               @db.SmallInt
+  study_program                                             String?
+  place_of_education                                        String?
+  id                                                        String             @id @db.Uuid
+  work_assignments_work_assignments_approved_by_uuidTousers work_assignments[] @relation("work_assignments_approved_by_uuidTousers")
+  work_assignments_work_assignments_user_uuidTousers        work_assignments[] @relation("work_assignments_user_uuidTousers")
+  work_tasks                                                work_tasks[]
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model work_assignments {
+  id                                             BigInt     @id @default(autoincrement())
+  created_at                                     DateTime   @default(now()) @db.Timestamptz(6)
+  hours_used                                     Int?       @db.SmallInt
+  approved_state                                 Int        @default(0) @db.SmallInt
+  approval_comment                               String?
+  approved_by_uuid                               String?    @db.Uuid
+  user_uuid                                      String     @db.Uuid
+  work_id                                        BigInt
+  users_work_assignments_approved_by_uuidTousers users?     @relation("work_assignments_approved_by_uuidTousers", fields: [approved_by_uuid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_work_assignments_user_uuidTousers        users      @relation("work_assignments_user_uuidTousers", fields: [user_uuid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  work_items                                     work_items @relation(fields: [work_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model work_categories {
+  id          BigInt       @id @default(autoincrement())
+  name        String?
+  description String?
+  color       String?
+  is_active   Boolean?     @default(true)
+  created_at  DateTime     @default(now()) @db.Timestamptz(6)
+  work_items  work_items[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model work_items {
+  id               BigInt             @id @default(autoincrement())
+  created_at       DateTime           @default(now()) @db.Timestamptz(6)
+  work_category_id BigInt
+  type             work_type?
+  title            String
+  description      String?
+  work_assignments work_assignments[]
+  work_categories  work_categories    @relation(fields: [work_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  work_misc        work_misc?
+  work_tasks       work_tasks?
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model work_misc {
+  id         BigInt     @id @default(autoincrement())
+  created_at DateTime   @default(now()) @db.Timestamptz(6)
+  image      String?
+  work_items work_items @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This model or at least one of its fields has comments in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model work_tasks {
+  id                  BigInt     @id(map: "task_pkey") @default(autoincrement())
+  created_at          DateTime   @default(now()) @db.Timestamptz(6)
+  deadline            DateTime?  @db.Date
+  time_estimate       Int?       @db.SmallInt
+  contact_person_uuid String?    @db.Uuid
+  users               users?     @relation(fields: [contact_person_uuid], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  work_items          work_items @relation(fields: [id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This enum is commented in the database, and requires an additional setup for migrations: Read more: https://pris.ly/d/database-comments
+enum work_type {
+  task
+  misc
+}

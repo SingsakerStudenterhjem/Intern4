@@ -1,29 +1,29 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  query,
-  where,
-  orderBy,
-  Timestamp,
-} from 'firebase/firestore';
-import { db } from '../../services/firebase/firebaseConfig';
-import { Category } from '../types/regi/tasks/category.types';
+import prisma from '../prisma';
+import { Category } from '../types/regi/tasks';
+import { work_categories as PrismaCategory } from '@prisma/client';
+
+function toAppCategory(cat: PrismaCategory): Category {
+  return {
+    id: cat.id.toString(),
+    name: cat.name ?? '',
+    description: cat.description ?? '',
+    color: cat.color ?? 'gray',
+    isActive: cat.is_active ?? true,
+    createdAt: cat.created_at,
+  };
+}
 
 export async function addCategory(data: Omit<Category, 'id' | 'createdAt'>): Promise<string> {
   try {
-    const docRef = doc(collection(db, 'regiCategories'));
-    const categoryData = {
-      ...data,
-      id: docRef.id,
-      createdAt: Timestamp.now(),
-    };
-
-    await setDoc(docRef, categoryData);
-    return docRef.id;
+    const newCategory = await prisma.work_categories.create({
+      data: {
+        name: data.name,
+        description: data.description,
+        color: data.color,
+        is_active: data.isActive,
+      },
+    });
+    return newCategory.id.toString();
   } catch (error: any) {
     throw new Error(`Could not add category: ${error.message}`);
   }
@@ -31,11 +31,10 @@ export async function addCategory(data: Omit<Category, 'id' | 'createdAt'>): Pro
 
 export async function getCategory(categoryId: string): Promise<Category | undefined> {
   try {
-    const categoryDoc = await getDoc(doc(db, 'regiCategories', categoryId));
-    if (categoryDoc.exists()) {
-      return categoryDoc.data() as Category;
-    }
-    return undefined;
+    const category = await prisma.work_categories.findUnique({
+      where: { id: BigInt(categoryId) },
+    });
+    return category ? toAppCategory(category) : undefined;
   } catch (error: any) {
     throw new Error(`Could not get category: ${error.message}`);
   }
@@ -43,46 +42,26 @@ export async function getCategory(categoryId: string): Promise<Category | undefi
 
 export async function getCategories(): Promise<Category[]> {
   try {
-    // Attempt optimized query with composite index
-    try {
-      const categoriesQuery = query(
-        collection(db, 'regiCategories'),
-        where('isActive', '==', true),
-        orderBy('name', 'asc')
-      );
-      const categoriesDoc = await getDocs(categoriesQuery);
-      return categoriesDoc.docs.map((doc) => doc.data() as Category);
-    } catch (indexError) {
-      // Fallback: Query without orderBy if composite index is not available
-      const categoriesQuery = query(
-        collection(db, 'regiCategories'),
-        where('isActive', '==', true)
-      );
-      const categoriesDoc = await getDocs(categoriesQuery);
-
-      // Manual sort by name
-      const categories = categoriesDoc.docs.map((doc) => doc.data() as Category);
-      return categories.sort((a, b) => a.name.localeCompare(b.name));
-    }
+    const categories = await prisma.work_categories.findMany({
+      where: { is_active: true },
+      orderBy: { name: 'asc' },
+    });
+    return categories.map(toAppCategory);
   } catch (error: any) {
-    // Final fallback: Get all categories and filter manually
-    try {
-      const allDocs = await getDocs(collection(db, 'regiCategories'));
-      const allCategories = allDocs.docs.map((doc) => doc.data() as Category);
-
-      return allCategories
-        .filter((cat) => cat.isActive !== false)
-        .sort((a, b) => a.name.localeCompare(b.name));
-    } catch (finalError: any) {
-      throw new Error(`Could not get categories: ${error.message}`);
-    }
+    throw new Error(`Could not get categories: ${error.message}`);
   }
 }
 
 export async function updateCategory(categoryId: string, data: Partial<Category>): Promise<void> {
   try {
-    const docRef = doc(db, 'regiCategories', categoryId);
-    await updateDoc(docRef, data);
+    const { id, createdAt, isActive, ...rest } = data;
+    await prisma.work_categories.update({
+      where: { id: BigInt(categoryId) },
+      data: {
+        ...rest,
+        is_active: isActive,
+      },
+    });
   } catch (error: any) {
     throw new Error(`Could not update category: ${error.message}`);
   }
@@ -99,13 +78,20 @@ export async function deleteCategory(categoryId: string): Promise<void> {
 
 export async function getCategoryUsageCount(categoryName: string): Promise<number> {
   try {
-    const tasksQuery = query(
-      collection(db, 'regiTasks'),
-      where('category', '==', categoryName),
-      where('isActive', '==', true)
-    );
-    const tasksDoc = await getDocs(tasksQuery);
-    return tasksDoc.docs.length;
+    const category = await prisma.work_categories.findFirst({
+      where: { name: categoryName },
+    });
+    if (!category) return 0;
+
+    // Note: The original implementation checked for `isActive` on tasks.
+    // The new schema doesn't have this field on `work_items` or `work_tasks`.
+    // This function now counts all tasks in a category regardless of an active status.
+    return await prisma.work_items.count({
+      where: {
+        work_category_id: category.id,
+        type: 'task',
+      },
+    });
   } catch (error: any) {
     throw new Error(`Could not get category usage count: ${error.message}`);
   }

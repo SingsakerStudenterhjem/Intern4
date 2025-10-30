@@ -1,33 +1,76 @@
-import {
-  collection,
-  doc,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  query,
-  where,
-  orderBy,
-  arrayUnion,
-  arrayRemove,
-  Timestamp,
-} from 'firebase/firestore';
-import { db } from '../../services/firebase/firebaseConfig';
-import { Task, TaskCreationData } from '../types/regi/tasks/task.types';
+import prisma from '../prisma';
+import { Task, TaskCreationData } from '../types/regi/tasks';
+
+// Helper to convert Prisma task to application Task type
+async function toAppTask(task: any): Promise<Task> {
+  const participants = await prisma.work_assignments.findMany({
+    where: { work_id: task.id },
+    select: { user_uuid: true },
+  });
+
+  return {
+    id: task.id.toString(),
+    title: task.work_items.title,
+    description: task.work_items.description ?? '',
+    category: task.work_items.work_categories.name ?? '',
+    deadline: task.deadline,
+    // Note: The new schema does not support maxParticipants, completedAt, completedBy, isActive
+    //maxParticipants: 0,
+    participants: participants.map((p: { user_uuid: any }) => p.user_uuid),
+    createdAt: task.created_at,
+    //isActive: true, // Not supported in new schema
+  };
+}
 
 export async function addTask(data: TaskCreationData): Promise<string> {
   try {
-    const docRef = doc(collection(db, 'regiTasks'));
-    const taskData = {
-      ...data,
-      id: docRef.id,
-      createdAt: Timestamp.now(),
-      deadline: data.deadline ? Timestamp.fromDate(data.deadline) : undefined,
-    };
+    const category = await prisma.work_categories.findFirst({
+      where: { name: data.category },
+    });
+    if (!category) {
+      throw new Error(`Category '${data.category}' not found.`);
+    }
 
-    await setDoc(docRef, taskData);
-    return docRef.id;
+    const result = await prisma.$transaction(
+      async (tx: {
+        work_items: {
+          create: (arg0: {
+            data: {
+              title: string;
+              description: string | undefined;
+              type: string;
+              work_category_id: any;
+            };
+          }) => any;
+        };
+        work_tasks: {
+          create: (arg0: {
+            data: { id: any; deadline: Date | undefined; time_estimate: number | undefined };
+          }) => any;
+        };
+      }) => {
+        const workItem = await tx.work_items.create({
+          data: {
+            title: data.title,
+            description: data.description,
+            type: 'task',
+            work_category_id: category.id,
+          },
+        });
+
+        await tx.work_tasks.create({
+          data: {
+            id: workItem.id,
+            deadline: data.deadline,
+            time_estimate: data.hourEstimate, // Using this field for time estimate
+            // contact_person_uuid is not set from TaskCreationData
+          },
+        });
+        return workItem;
+      }
+    );
+
+    return result.id.toString();
   } catch (error: any) {
     throw new Error(`Could not add task: ${error.message}`);
   }
@@ -35,11 +78,16 @@ export async function addTask(data: TaskCreationData): Promise<string> {
 
 export async function getTask(taskId: string): Promise<Task | undefined> {
   try {
-    const taskDoc = await getDoc(doc(db, 'regiTasks', taskId));
-    if (taskDoc.exists()) {
-      return { id: taskDoc.id, ...taskDoc.data() } as Task;
-    }
-    return undefined;
+    const task = await prisma.work_tasks.findUnique({
+      where: { id: BigInt(taskId) },
+      include: {
+        work_items: {
+          include: { work_categories: true },
+        },
+      },
+    });
+
+    return task ? await toAppTask(task) : undefined;
   } catch (error: any) {
     throw new Error(`Could not get task: ${error.message}`);
   }
@@ -47,55 +95,17 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
 
 export async function getTasks(): Promise<Task[]> {
   try {
-    // Attempt optimized query with composite index
-    try {
-      const tasksQuery = query(
-        collection(db, 'regiTasks'),
-        where('isActive', '==', true),
-        orderBy('deadline', 'asc') // Sort by deadline (earliest first)
-      );
-      const tasksDoc = await getDocs(tasksQuery);
-      return tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
-    } catch (indexError) {
-      // Fallback: Query without orderBy if composite index is not available
-      try {
-        const tasksQuery = query(collection(db, 'regiTasks'), where('isActive', '==', true));
-        const tasksDoc = await getDocs(tasksQuery);
+    // Note: isActive filter is removed as it's not in the new schema
+    const tasks = await prisma.work_tasks.findMany({
+      include: {
+        work_items: {
+          include: { work_categories: true },
+        },
+      },
+      orderBy: { deadline: 'asc' },
+    });
 
-        // Manual sort by deadline (earliest first, tasks without deadline at the end)
-        const tasks = tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
-        return tasks.sort((a, b) => {
-          // Handle tasks without deadlines - put them at the end
-          if (!a.deadline && !b.deadline) return 0;
-          if (!a.deadline) return 1;
-          if (!b.deadline) return -1;
-
-          // Compare deadline timestamps
-          const aTime = a.deadline?.seconds || 0;
-          const bTime = b.deadline?.seconds || 0;
-          return aTime - bTime; // Ascending order (earliest first)
-        });
-      } catch (fallbackError) {
-        // Final fallback: Get all tasks and filter manually
-        const allDocs = await getDocs(collection(db, 'regiTasks'));
-        const allTasks = allDocs.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
-
-        const activeTasks = allTasks
-          .filter((task) => task.isActive !== false)
-          .sort((a, b) => {
-            // Handle tasks without deadlines - put them at the end
-            if (!a.deadline && !b.deadline) return 0;
-            if (!a.deadline) return 1;
-            if (!b.deadline) return -1;
-
-            const aTime = a.deadline?.seconds || 0;
-            const bTime = b.deadline?.seconds || 0;
-            return aTime - bTime; // Ascending order (earliest first)
-          });
-
-        return activeTasks;
-      }
-    }
+    return Promise.all(tasks.map(toAppTask));
   } catch (error: any) {
     throw new Error(`Could not get tasks: ${error.message}`);
   }
@@ -106,19 +116,31 @@ export async function updateTask(
   data: Partial<Omit<Task, 'id' | 'createdAt'>>
 ): Promise<void> {
   try {
-    const docRef = doc(db, 'regiTasks', taskId);
-    const updateData = { ...data };
-
-    // Convert Date objects to Firestore Timestamps
-    if (data.deadline && data.deadline instanceof Date) {
-      updateData.deadline = Timestamp.fromDate(data.deadline);
-    }
-
-    if (data.completedAt && data.completedAt instanceof Date) {
-      updateData.completedAt = Timestamp.fromDate(data.completedAt);
-    }
-
-    await updateDoc(docRef, updateData);
+    const { title, description, deadline, ...rest } = data;
+    await prisma.$transaction(
+      async (tx: {
+        work_items: {
+          update: (arg0: {
+            where: { id: bigint };
+            data: { title: string | undefined; description: string | undefined };
+          }) => any;
+        };
+        work_tasks: { update: (arg0: { where: { id: bigint }; data: { deadline: Date } }) => any };
+      }) => {
+        if (title || description) {
+          await tx.work_items.update({
+            where: { id: BigInt(taskId) },
+            data: { title, description },
+          });
+        }
+        if (deadline) {
+          await tx.work_tasks.update({
+            where: { id: BigInt(taskId) },
+            data: { deadline },
+          });
+        }
+      }
+    );
   } catch (error: any) {
     throw new Error(`Could not update task: ${error.message}`);
   }
@@ -126,17 +148,28 @@ export async function updateTask(
 
 export async function deleteTask(taskId: string): Promise<void> {
   try {
-    // Soft delete by setting isActive to false
-    await updateTask(taskId, { isActive: false });
+    // Note: soft delete (isActive=false) is not supported in the new schema.
+    // This is now a hard delete.
+    await hardDeleteTask(taskId);
   } catch (error: any) {
     throw new Error(`Could not delete task: ${error.message}`);
   }
 }
 
 export async function hardDeleteTask(taskId: string): Promise<void> {
+  const id = BigInt(taskId);
   try {
-    const docRef = doc(db, 'regiTasks', taskId);
-    await deleteDoc(docRef);
+    await prisma.$transaction(
+      async (tx: {
+        work_assignments: { deleteMany: (arg0: { where: { work_id: bigint } }) => any };
+        work_tasks: { delete: (arg0: { where: { id: bigint } }) => any };
+        work_items: { delete: (arg0: { where: { id: bigint } }) => any };
+      }) => {
+        await tx.work_assignments.deleteMany({ where: { work_id: id } });
+        await tx.work_tasks.delete({ where: { id } });
+        await tx.work_items.delete({ where: { id } });
+      }
+    );
   } catch (error: any) {
     throw new Error(`Could not permanently delete task: ${error.message}`);
   }
@@ -144,24 +177,21 @@ export async function hardDeleteTask(taskId: string): Promise<void> {
 
 export async function joinTask(taskId: string, userId: string): Promise<boolean> {
   try {
-    const task = await getTask(taskId);
-    if (!task) {
-      throw new Error('Task not found');
-    }
+    const existing = await prisma.work_assignments.findFirst({
+      where: { work_id: BigInt(taskId), user_uuid: userId },
+    });
 
-    // Check if user is already joined
-    if (task.participants.includes(userId)) {
+    if (existing) {
       throw new Error('User already joined this task');
     }
 
-    // Check if task is full - maxParticipants is now always defined and > 0
-    if (task.maxParticipants && task.participants.length >= task.maxParticipants) {
-      throw new Error('Task is full');
-    }
-
-    const docRef = doc(db, 'regiTasks', taskId);
-    await updateDoc(docRef, {
-      participants: arrayUnion(userId),
+    // Note: maxParticipants check is not possible with the new schema.
+    await prisma.work_assignments.create({
+      data: {
+        work_id: BigInt(taskId),
+        user_uuid: userId,
+        approved_state: 0, // Default state
+      },
     });
 
     return true;
@@ -172,11 +202,12 @@ export async function joinTask(taskId: string, userId: string): Promise<boolean>
 
 export async function leaveTask(taskId: string, userId: string): Promise<boolean> {
   try {
-    const docRef = doc(db, 'regiTasks', taskId);
-    await updateDoc(docRef, {
-      participants: arrayRemove(userId),
+    await prisma.work_assignments.deleteMany({
+      where: {
+        work_id: BigInt(taskId),
+        user_uuid: userId,
+      },
     });
-
     return true;
   } catch (error: any) {
     throw new Error(`Could not leave task: ${error.message}`);
@@ -185,20 +216,29 @@ export async function leaveTask(taskId: string, userId: string): Promise<boolean
 
 export async function getTasksByUser(userId: string): Promise<Task[]> {
   try {
-    // Attempt query with composite index
-    try {
-      const tasksQuery = query(
-        collection(db, 'regiTasks'),
-        where('participants', 'array-contains', userId),
-        where('isActive', '==', true)
-      );
-      const tasksDoc = await getDocs(tasksQuery);
-      return tasksDoc.docs.map((doc) => ({ id: doc.id, ...doc.data() }) as Task);
-    } catch (indexError) {
-      // Fallback: Get all active tasks and filter manually
-      const allActiveTasks = await getTasks();
-      return allActiveTasks.filter((task) => task.participants.includes(userId));
-    }
+    const assignments = await prisma.work_assignments.findMany({
+      where: { user_uuid: userId },
+      include: {
+        work_items: {
+          include: {
+            work_tasks: true,
+            work_categories: true,
+          },
+        },
+      },
+    });
+
+    const tasks = assignments
+      .filter(
+        (a: { work_items: { type: string; work_tasks: any } }) =>
+          a.work_items.type === 'task' && a.work_items.work_tasks
+      )
+      .map((a: { work_items: { work_tasks: any } }) => ({
+        ...a.work_items.work_tasks,
+        work_items: a.work_items,
+      }));
+
+    return Promise.all(tasks.map(toAppTask));
   } catch (error: any) {
     throw new Error(`Could not get user tasks: ${error.message}`);
   }

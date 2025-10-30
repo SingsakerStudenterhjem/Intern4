@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { Timestamp } from 'firebase/firestore';
 import { addNewUser } from '../../backend/src/authentication';
 import { User } from '../../backend/types/user';
 
@@ -8,10 +7,10 @@ const AddUserPage: React.FC = () => {
     name: '',
     email: '',
     phone: '',
-    birthDate: Timestamp.now(),
+    birthDate: new Date(),
     address: {
       street: '',
-      postalCode: 0,
+      postalCode: '',
       city: '',
     },
     study: '',
@@ -74,7 +73,7 @@ const AddUserPage: React.FC = () => {
       if (value) {
         setUserData((prev) => ({
           ...prev,
-          birthDate: Timestamp.fromDate(new Date(value)),
+          birthDate: new Date(value),
         }));
       }
       return;
@@ -159,8 +158,8 @@ const AddUserPage: React.FC = () => {
           name: '',
           email: '',
           phone: '',
-          birthDate: Timestamp.now(),
-          address: { street: '', postalCode: 0, city: '' },
+          birthDate: new Date(),
+          address: { street: '', postalCode: '', city: '' },
           study: '',
           studyPlace: '',
           profilePicture: '',

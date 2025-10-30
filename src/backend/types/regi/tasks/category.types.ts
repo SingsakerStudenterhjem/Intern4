@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { FirestoreTimestamp } from '../../firestoreTimestamp';
 
 // Core Category Schema
 export const CategorySchema = z.object({
@@ -14,8 +13,7 @@ export const CategorySchema = z.object({
     .regex(/^#[0-9A-F]{6}$/i, 'Ugyldig hex-farge')
     .default('#3B82F6'),
   isActive: z.boolean().default(true),
-  createdAt: FirestoreTimestamp,
-  createdBy: z.string(),
+  createdAt: z.date(),
 });
 
 // Category Form Data Schema (for forms)
@@ -43,26 +41,23 @@ export const CategoryCreationDataSchema = z.object({
     .regex(/^#[0-9A-F]{6}$/i, 'Ugyldig hex-farge')
     .default('#3B82F6'),
   isActive: z.boolean().default(true),
-  createdBy: z.string(),
 });
 
 // Category Update Schema
 export const CategoryUpdateSchema = CategorySchema.partial().omit({
   id: true,
   createdAt: true,
-  createdBy: true,
 });
 
 // Category with Usage Schema
 export const CategoryWithUsageSchema = CategorySchema.extend({
   usageCount: z.number().min(0).default(0),
-  lastUsed: FirestoreTimestamp.optional(),
+  lastUsed: z.date().optional(),
 });
 
 // Category Filter Schema
 export const CategoryFilterSchema = z.object({
   isActive: z.boolean().optional(),
-  createdBy: z.string().optional(),
   search: z.string().optional(),
 });
 
