@@ -1,14 +1,14 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-import LoginPage from '../pages/loginPage';
-import DashboardPage from '../pages/dashboardPage';
-import WorkPage from '../pages/work/workPage';
-import AddUserPage from '../pages/roomManager/addUserPage';
-import WorkTasksPage from '../pages/work/workTasksPage';
-import NotFoundPage from '../pages/notFoundPage';
-import ProtectedRoute from '../components/common/protectedRoute';
-import { ROUTES } from '../constants/routes';
-import AdminPage from '../pages/adminPage';
+import LoginPage from '../app/pages/loginPage';
+import DashboardPage from '../app/pages/dashboardPage';
+import WorkPage from '../app/pages/work/workPage';
+import AddUserPage from '../app/pages/roomManager/addUserPage';
+import WorkTasksPage from '../app/pages/work/workTasksPage';
+import NotFoundPage from '../app/pages/notFoundPage';
+import ProtectedRoute from '../app/components/common/protectedRoute';
+import { ROUTES } from '../app/constants/routes';
+import AdminPage from '../app/pages/adminPage';
 
 // Public routes (no authentication required)
 export const publicRoutes = [
