@@ -1,15 +1,15 @@
-import prismaClient from '../prismaClient';
+import { prisma } from '../prismaClient';
 import { RegiLog, RegiLogWithId } from '../../shared/types/regi';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
 
 async function getOrCreateDefaultCategory() {
-  let category = await prismaClient.work_categories.findFirst({
+  let category = await prisma.work_categories.findFirst({
     where: { name: DEFAULT_REGI_CATEGORY },
   });
 
   if (!category) {
-    category = await prismaClient.work_categories.create({
+    category = await prisma.work_categories.create({
       data: {
         name: DEFAULT_REGI_CATEGORY,
         description: 'Generell regi-kategori',
@@ -25,7 +25,7 @@ export async function addRegiLog(data: Omit<RegiLog, 'id' | 'createdAt' | 'statu
   const category = await getOrCreateDefaultCategory();
 
   // Find or create a work_item for this log title
-  let workItem = await prismaClient.work_items.findFirst({
+  let workItem = await prisma.work_items.findFirst({
     where: {
       title: data.title,
       work_category_id: category.id,
@@ -33,7 +33,7 @@ export async function addRegiLog(data: Omit<RegiLog, 'id' | 'createdAt' | 'statu
   });
 
   if (!workItem) {
-    workItem = await prismaClient.work_items.create({
+    workItem = await prisma.work_items.create({
       data: {
         title: data.title,
         type: 'misc',
@@ -42,7 +42,7 @@ export async function addRegiLog(data: Omit<RegiLog, 'id' | 'createdAt' | 'statu
     });
   }
 
-  const assignment = await prismaClient.work_assignments.create({
+  const assignment = await prisma.work_assignments.create({
     data: {
       user_uuid: data.userId,
       work_id: workItem.id,
@@ -57,7 +57,7 @@ export async function addRegiLog(data: Omit<RegiLog, 'id' | 'createdAt' | 'statu
 }
 
 export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]> {
-  const assignments = await prismaClient.work_assignments.findMany({
+  const assignments = await prisma.work_assignments.findMany({
     where: { user_uuid: userId },
     include: {
       work_items: true,

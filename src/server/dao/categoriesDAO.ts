@@ -1,4 +1,4 @@
-import prismaClient from '../prismaClient';
+import { prisma } from '../prismaClient';
 import { Category } from '../../shared/types/regi/tasks';
 import { work_categories as PrismaCategory } from '@prisma/client';
 
@@ -15,7 +15,7 @@ function toAppCategory(cat: PrismaCategory): Category {
 
 export async function addCategory(data: Omit<Category, 'id' | 'createdAt'>): Promise<string> {
   try {
-    const newCategory = await prismaClient.work_categories.create({
+    const newCategory = await prisma.work_categories.create({
       data: {
         name: data.name,
         description: data.description,
@@ -31,7 +31,7 @@ export async function addCategory(data: Omit<Category, 'id' | 'createdAt'>): Pro
 
 export async function getCategory(categoryId: string): Promise<Category | undefined> {
   try {
-    const category = await prismaClient.work_categories.findUnique({
+    const category = await prisma.work_categories.findUnique({
       where: { id: BigInt(categoryId) },
     });
     return category ? toAppCategory(category) : undefined;
@@ -42,7 +42,7 @@ export async function getCategory(categoryId: string): Promise<Category | undefi
 
 export async function getCategories(): Promise<Category[]> {
   try {
-    const categories = await prismaClient.work_categories.findMany({
+    const categories = await prisma.work_categories.findMany({
       where: { is_active: true },
       orderBy: { name: 'asc' },
     });
@@ -55,7 +55,7 @@ export async function getCategories(): Promise<Category[]> {
 export async function updateCategory(categoryId: string, data: Partial<Category>): Promise<void> {
   try {
     const { id, createdAt, isActive, ...rest } = data;
-    await prismaClient.work_categories.update({
+    await prisma.work_categories.update({
       where: { id: BigInt(categoryId) },
       data: {
         ...rest,
@@ -78,7 +78,7 @@ export async function deleteCategory(categoryId: string): Promise<void> {
 
 export async function getCategoryUsageCount(categoryName: string): Promise<number> {
   try {
-    const category = await prismaClient.work_categories.findFirst({
+    const category = await prisma.work_categories.findFirst({
       where: { name: categoryName },
     });
     if (!category) return 0;
@@ -86,7 +86,7 @@ export async function getCategoryUsageCount(categoryName: string): Promise<numbe
     // Note: The original implementation checked for `isActive` on tasks.
     // The new schema doesn't have this field on `work_items` or `work_tasks`.
     // This function now counts all tasks in a category regardless of an active status.
-    return await prismaClient.work_items.count({
+    return await prisma.work_items.count({
       where: {
         work_category_id: category.id,
         type: 'task',

@@ -1,5 +1,5 @@
 import { User } from '../../shared/types/user';
-import prismaClient from '../prismaClient';
+import { prisma } from '../prismaClient';
 import { users as PrismaUser } from '@prisma/client';
 
 function toAppUser(user: PrismaUser): User {
@@ -27,7 +27,7 @@ function toAppUser(user: PrismaUser): User {
 
 export async function addUser(uid: string, data: User): Promise<string | undefined> {
   try {
-    await prismaClient.users.create({
+    await prisma.users.create({
       data: {
         id: uid,
         name: data.name,
@@ -56,7 +56,7 @@ export async function addUser(uid: string, data: User): Promise<string | undefin
 
 export async function getUser(uid: string): Promise<User | undefined> {
   try {
-    const user = await prismaClient.users.findUnique({ where: { id: uid } });
+    const user = await prisma.users.findUnique({ where: { id: uid } });
     if (user) {
       return toAppUser(user);
     }
@@ -79,7 +79,7 @@ export async function updateUser(uid: string, data: Partial<User>): Promise<void
       address,
       ...rest
     } = data;
-    await prismaClient.users.update({
+    await prisma.users.update({
       where: { id: uid },
       data: {
         ...rest,

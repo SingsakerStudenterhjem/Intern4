@@ -1,9 +1,9 @@
-import prismaClient from '../prismaClient';
+import { prisma } from '../prismaClient';
 import { Task, TaskCreationData } from '../../shared/types/regi/tasks';
 
 // Helper to convert Prisma task to application Task type
 async function toAppTask(task: any): Promise<Task> {
-  const participants = await prismaClient.work_assignments.findMany({
+  const participants = await prisma.work_assignments.findMany({
     where: { work_id: task.id },
     select: { user_uuid: true },
   });
@@ -24,31 +24,15 @@ async function toAppTask(task: any): Promise<Task> {
 
 export async function addTask(data: TaskCreationData): Promise<string> {
   try {
-    const category = await prismaClient.work_categories.findFirst({
+    const category = await prisma.work_categories.findFirst({
       where: { name: data.category },
     });
     if (!category) {
       throw new Error(`Category '${data.category}' not found.`);
     }
 
-    const result = await prismaClient.$transaction(
-      async (tx: {
-        work_items: {
-          create: (arg0: {
-            data: {
-              title: string;
-              description: string | undefined;
-              type: string;
-              work_category_id: any;
-            };
-          }) => any;
-        };
-        work_tasks: {
-          create: (arg0: {
-            data: { id: any; deadline: Date | undefined; time_estimate: number | undefined };
-          }) => any;
-        };
-      }) => {
+    const result = await prisma.$transaction(
+      async (tx: any) => {
         const workItem = await tx.work_items.create({
           data: {
             title: data.title,
@@ -78,7 +62,7 @@ export async function addTask(data: TaskCreationData): Promise<string> {
 
 export async function getTask(taskId: string): Promise<Task | undefined> {
   try {
-    const task = await prismaClient.work_tasks.findUnique({
+    const task = await prisma.work_tasks.findUnique({
       where: { id: BigInt(taskId) },
       include: {
         work_items: {
@@ -96,7 +80,7 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
 export async function getTasks(): Promise<Task[]> {
   try {
     // Note: isActive filter is removed as it's not in the new schema
-    const tasks = await prismaClient.work_tasks.findMany({
+    const tasks = await prisma.work_tasks.findMany({
       include: {
         work_items: {
           include: { work_categories: true },
@@ -117,7 +101,7 @@ export async function updateTask(
 ): Promise<void> {
   try {
     const { title, description, deadline, ...rest } = data;
-    await prismaClient.$transaction(
+    await prisma.$transaction(
       async (tx: {
         work_items: {
           update: (arg0: {
@@ -159,7 +143,7 @@ export async function deleteTask(taskId: string): Promise<void> {
 export async function hardDeleteTask(taskId: string): Promise<void> {
   const id = BigInt(taskId);
   try {
-    await prismaClient.$transaction(
+    await prisma.$transaction(
       async (tx: {
         work_assignments: { deleteMany: (arg0: { where: { work_id: bigint } }) => any };
         work_tasks: { delete: (arg0: { where: { id: bigint } }) => any };
@@ -177,7 +161,7 @@ export async function hardDeleteTask(taskId: string): Promise<void> {
 
 export async function joinTask(taskId: string, userId: string): Promise<boolean> {
   try {
-    const existing = await prismaClient.work_assignments.findFirst({
+    const existing = await prisma.work_assignments.findFirst({
       where: { work_id: BigInt(taskId), user_uuid: userId },
     });
 
@@ -186,7 +170,7 @@ export async function joinTask(taskId: string, userId: string): Promise<boolean>
     }
 
     // Note: maxParticipants check is not possible with the new schema.
-    await prismaClient.work_assignments.create({
+    await prisma.work_assignments.create({
       data: {
         work_id: BigInt(taskId),
         user_uuid: userId,
@@ -202,7 +186,7 @@ export async function joinTask(taskId: string, userId: string): Promise<boolean>
 
 export async function leaveTask(taskId: string, userId: string): Promise<boolean> {
   try {
-    await prismaClient.work_assignments.deleteMany({
+    await prisma.work_assignments.deleteMany({
       where: {
         work_id: BigInt(taskId),
         user_uuid: userId,
@@ -216,7 +200,7 @@ export async function leaveTask(taskId: string, userId: string): Promise<boolean
 
 export async function getTasksByUser(userId: string): Promise<Task[]> {
   try {
-    const assignments = await prismaClient.work_assignments.findMany({
+    const assignments = await prisma.work_assignments.findMany({
       where: { user_uuid: userId },
       include: {
         work_items: {
@@ -230,7 +214,7 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
 
     const tasks = assignments
       .filter(
-        (a: { work_items: { type: string; work_tasks: any } }) =>
+        (a: any) =>
           a.work_items.type === 'task' && a.work_items.work_tasks
       )
       .map((a: { work_items: { work_tasks: any } }) => ({
