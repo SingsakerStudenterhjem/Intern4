@@ -1,98 +1,87 @@
-import { prisma } from '../prismaClient';
+import { supabase } from '../supabaseClient';
 import { Category } from '../../shared/types/regi/tasks';
-import { work_categories as PrismaCategory } from '@prisma/client';
 
-function toAppCategory(cat: PrismaCategory): Category {
+function toAppCategory(row: any): Category {
   return {
-    id: cat.id.toString(),
-    name: cat.name ?? '',
-    description: cat.description ?? '',
-    color: cat.color ?? 'gray',
-    isActive: cat.is_active ?? true,
-    createdAt: cat.created_at,
+    id: String(row.id),
+    name: row.name ?? '',
+    description: row.description ?? '',
+    color: row.color ?? 'gray',
+    isActive: row.is_active ?? true,
+    createdAt: row.created_at,
   };
 }
 
 export async function addCategory(data: Omit<Category, 'id' | 'createdAt'>): Promise<string> {
-  try {
-    const newCategory = await prisma.work_categories.create({
-      data: {
-        name: data.name,
-        description: data.description,
-        color: data.color,
-        is_active: data.isActive,
-      },
-    });
-    return newCategory.id.toString();
-  } catch (error: any) {
-    throw new Error(`Could not add category: ${error.message}`);
-  }
+  const { data: inserted, error } = await supabase
+    .from('work_categories')
+    .insert({
+      name: data.name,
+      description: data.description,
+      color: data.color,
+      is_active: data.isActive,
+    })
+    .select('id')
+    .single();
+  if (error) throw new Error(`Could not add category: ${error.message}`);
+  return String(inserted.id);
 }
 
 export async function getCategory(categoryId: string): Promise<Category | undefined> {
-  try {
-    const category = await prisma.work_categories.findUnique({
-      where: { id: BigInt(categoryId) },
-    });
-    return category ? toAppCategory(category) : undefined;
-  } catch (error: any) {
-    throw new Error(`Could not get category: ${error.message}`);
-  }
+  const { data, error } = await supabase
+    .from('work_categories')
+    .select('*')
+    .eq('id', Number(categoryId))
+    .maybeSingle();
+  if (error) throw new Error(`Could not get category: ${error.message}`);
+  return data ? toAppCategory(data) : undefined;
 }
 
 export async function getCategories(): Promise<Category[]> {
-  try {
-    const categories = await prisma.work_categories.findMany({
-      where: { is_active: true },
-      orderBy: { name: 'asc' },
-    });
-    return categories.map(toAppCategory);
-  } catch (error: any) {
-    throw new Error(`Could not get categories: ${error.message}`);
-  }
+  const { data, error } = await supabase
+    .from('work_categories')
+    .select('*')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+  if (error) throw new Error(`Could not get categories: ${error.message}`);
+  return (data ?? []).map(toAppCategory);
 }
 
 export async function updateCategory(categoryId: string, data: Partial<Category>): Promise<void> {
-  try {
-    const { id, createdAt, isActive, ...rest } = data;
-    await prisma.work_categories.update({
-      where: { id: BigInt(categoryId) },
-      data: {
-        ...rest,
-        is_active: isActive,
-      },
-    });
-  } catch (error: any) {
-    throw new Error(`Could not update category: ${error.message}`);
-  }
+  const payload: any = {
+    name: data.name,
+    description: data.description,
+    color: data.color,
+    is_active: data.isActive,
+  };
+  Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+
+  const { error } = await supabase.from('work_categories').update(payload).eq('id', Number(categoryId));
+  if (error) throw new Error(`Could not update category: ${error.message}`);
 }
 
 export async function deleteCategory(categoryId: string): Promise<void> {
-  try {
-    // Soft delete by setting isActive to false
-    await updateCategory(categoryId, { isActive: false });
-  } catch (error: any) {
-    throw new Error(`Could not delete category: ${error.message}`);
-  }
+  const { error } = await supabase
+    .from('work_categories')
+    .update({ is_active: false })
+    .eq('id', Number(categoryId));
+  if (error) throw new Error(`Could not delete category: ${error.message}`);
 }
 
 export async function getCategoryUsageCount(categoryName: string): Promise<number> {
-  try {
-    const category = await prisma.work_categories.findFirst({
-      where: { name: categoryName },
-    });
-    if (!category) return 0;
+  const { data: cat, error: e1 } = await supabase
+    .from('work_categories')
+    .select('id')
+    .eq('name', categoryName)
+    .maybeSingle();
+  if (e1) throw new Error(`Could not get category: ${e1.message}`);
+  if (!cat) return 0;
 
-    // Note: The original implementation checked for `isActive` on tasks.
-    // The new schema doesn't have this field on `work_items` or `work_tasks`.
-    // This function now counts all tasks in a category regardless of an active status.
-    return await prisma.work_items.count({
-      where: {
-        work_category_id: category.id,
-        type: 'task',
-      },
-    });
-  } catch (error: any) {
-    throw new Error(`Could not get category usage count: ${error.message}`);
-  }
+  const { count, error: e2 } = await supabase
+    .from('work_items')
+    .select('*', { count: 'exact', head: true })
+    .eq('work_category_id', cat.id)
+    .eq('type', 'task');
+  if (e2) throw new Error(`Could not get category usage count: ${e2.message}`);
+  return count ?? 0;
 }
