@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { addNewUser } from '../../../server/dao/authentication';
+import { createNewUser } from '../../../server/dao/authentication';
 import { User } from '../../../shared/types/user';
 
 const AddUserPage: React.FC = () => {
@@ -150,7 +150,7 @@ const AddUserPage: React.FC = () => {
     }
 
     try {
-      const result = await addNewUser(userData);
+      const result = await createNewUser(userData);
 
       if (result.success) {
         setMessage({ type: 'success', text: `✓ ${userData.name} ble lagt til som beboer` });

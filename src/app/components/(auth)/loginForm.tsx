@@ -1,9 +1,8 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { logIn } from '../../../server/dao/authentication';
 import { useAuth } from '../../hooks/useAuth';
 import { useEffect } from 'react';
-import { supabase } from '../../../server/supabaseClient';
 
 const LoginForm = () => {
   const router = useNavigate();
@@ -21,13 +20,20 @@ const LoginForm = () => {
     }
   }, [user, router]);
 
-  const handleLogin = async () => {
+  const handleLogin = async (event?: React.FormEvent) => {
+    if (event) event.preventDefault();
+
     setError(null);
     setLoading(true);
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error || !data.user) { setError('Ugyldig e-post eller passord'); setLoading(false); return; }
-    router('/dashboard');
+
+    const result = await logIn(email, password);
+
     setLoading(false);
+
+    if (!result.success) {
+      setError(result.error);
+      return;
+    }
   };
 
   return (
