@@ -12,10 +12,10 @@ export async function logOut() {
   return { success: true };
 }
 
-export async function forgotPassword(email: string) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
-  if (error) throw new Error('Kunne ikke sende tilbakestillings e-post: ' + error.message);
-}
+// export async function forgotPassword(email: string) {
+//   const { error } = await supabase.auth.resetPasswordForEmail(email);
+//   if (error) throw new Error('Kunne ikke sende tilbakestillings e-post: ' + error.message);
+// }
 
 /** Admin or regisjef creates a new user via Edge Function */
 export async function createUserAsAdmin(input: { email: string; password: string; name: string; }) {
