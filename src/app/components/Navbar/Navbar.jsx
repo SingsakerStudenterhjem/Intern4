@@ -4,14 +4,20 @@ import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../constants/routes';
 import { USER_ROLES } from '../../constants/userRoles';
 import DropdownMenu from './DropdownMenu';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { ChevronDown, Menu, X } from 'lucide-react';
+import { logOut } from '../../../server/dao/authentication';
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSections, setOpenSections] = useState({});
 
   const toggleSection = (key) => setOpenSections((s) => ({ ...s, [key]: !s[key] }));
+
+  const handleLogout = async () => {
+    const result = await logOut();
+    setMobileOpen(false);
+  };
 
   const menuItems = [
     { key: 'dash', label: 'Dashboard', to: ROUTES.DASHBOARD },
@@ -85,7 +91,7 @@ const Navbar = () => {
 
             <span className="border-l border-gray-300 h-6" />
 
-            <button onClick={logout} className="hover:text-blue-500">
+            <button onClick={handleLogout} className="hover:text-blue-500">
               Logg ut
             </button>
           </>
@@ -139,13 +145,7 @@ const Navbar = () => {
             ))}
 
             <li>
-              <button
-                onClick={() => {
-                  logout();
-                  setMobileOpen(false);
-                }}
-                className="w-full text-left py-2"
-              >
+              <button onClick={handleLogout} className="w-full text-left py-2">
                 Logg ut
               </button>
             </li>

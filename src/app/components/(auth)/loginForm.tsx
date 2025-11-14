@@ -37,8 +37,8 @@ const LoginForm = () => {
   };
 
   return (
-    <div>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+  <form onSubmit={handleLogin}>
+    {error && <div className="text-red-500 mb-4">{error}</div>}
 
       <div>
         <div className="mb-4">
@@ -67,14 +67,14 @@ const LoginForm = () => {
         </div>
 
         <button
-          onClick={handleLogin}
+          type="submit"
           disabled={loading || !email || !password}
           className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
         >
           {loading ? 'Laster...' : 'Logg inn'}
         </button>
       </div>
-    </div>
+    </form>
   );
 };
 

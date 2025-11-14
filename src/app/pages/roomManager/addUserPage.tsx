@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import { createNewUser } from '../../../server/dao/authentication';
-import { User } from '../../../shared/types/user';
+import { NewUserInput } from '../../../shared/types/user';
+import { createUser } from '../../../server/dao/userDAO';
 
 const AddUserPage: React.FC = () => {
-  const [userData, setUserData] = useState<Omit<User, 'createdAt' | 'lastLogin'>>({
+  const [userData, setUserData] = useState<NewUserInput>({
     name: '',
     email: '',
     phone: '',
@@ -150,37 +150,42 @@ const AddUserPage: React.FC = () => {
     }
 
     try {
-      const result = await createNewUser(userData);
+      const { initialPassword } = await createUser(userData);
 
-      if (result.success) {
-        setMessage({ type: 'success', text: `✓ ${userData.name} ble lagt til som beboer` });
-        setUserData({
-          name: '',
-          email: '',
-          phone: '',
-          birthDate: new Date(),
-          address: { street: '', postalCode: '', city: '' },
-          study: '',
-          studyPlace: '',
-          profilePicture: '',
-          seniority: 0,
-          roomNumber: 0,
-          role: 'Halv/Halv',
-          onLeave: false,
-          isActive: true,
-        });
-        setBirthDateString('');
-        setValidationErrors({});
-        setShowOptionalFields(false);
+      setMessage({
+        type: 'success',
+        text:
+          `✓ ${userData.name} ble lagt til som beboer` +
+          (initialPassword ? ` (midlertidig passord: ${initialPassword})` : ''),
+      });
 
-        setTimeout(() => {
-          setMessage(null);
-        }, 4000);
-      } else {
-        setMessage({ type: 'error', text: result.error || 'En feil oppstod' });
-      }
-    } catch (error) {
-      setMessage({ type: 'error', text: 'En feil oppstod ved oppretting av bruker' });
+      setUserData({
+        name: '',
+        email: '',
+        phone: '',
+        birthDate: new Date(),
+        address: { street: '', postalCode: '', city: '' },
+        study: '',
+        studyPlace: '',
+        profilePicture: '',
+        seniority: 0,
+        roomNumber: 0,
+        role: 'Halv/Halv',
+        onLeave: false,
+        isActive: true,
+      });
+      setBirthDateString('');
+      setValidationErrors({});
+      setShowOptionalFields(false);
+
+      setTimeout(() => {
+        setMessage(null);
+      }, 4000);
+    } catch (error: any) {
+      setMessage({
+        type: 'error',
+        text: error?.message ?? 'En feil oppstod ved oppretting av bruker',
+      });
     } finally {
       setIsSubmitting(false);
     }

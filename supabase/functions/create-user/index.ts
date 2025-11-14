@@ -3,21 +3,124 @@
 // This enables autocomplete, go to definition, etc.
 
 // Setup type definitions for built-in Supabase Runtime APIs
-import "jsr:@supabase/functions-js/edge-runtime.d.ts"
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
-console.log("Hello from Functions!")
+type AddressInput = {
+  street?: string;
+  postalCode?: string;
+  city?: string;
+  country?: string;
+};
+
+type CreateUserInput = {
+  email: string;
+  name: string;
+  phone?: string;
+  birthDate?: string; // ISO date string "YYYY-MM-DD"
+  address?: AddressInput;
+  study?: string;
+  studyPlace?: string;
+  profilePicture?: string;
+  seniority?: number;
+  roomNumber?: number;
+  onLeave?: boolean;
+  isActive?: boolean;
+};
+
+function generatePassword(length = 12): string {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+  const bytes = new Uint8Array(length);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
+}
 
 Deno.serve(async (req) => {
-  const { name } = await req.json()
-  const data = {
-    message: `Hello ${name}!`,
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 });
+  }
+
+  const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+  const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+  const authHeader = req.headers.get('Authorization') ?? '';
+
+  // Client bound to caller’s JWT (RLS checks)
+  const userClient = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authHeader } },
+  });
+
+  // Who is calling?
+  const { data: me, error: meErr } = await userClient.auth.getUser();
+  if (meErr || !me?.user) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  // Check that caller is admin or regisjef
+  const { data: roleRow, error: roleErr } = await userClient
+    .from('user_roles')
+    .select('role')
+    .eq('user_uuid', me.user.id)
+    .maybeSingle();
+
+  if (roleErr || !roleRow || !['admin', 'regisjef'].includes(roleRow.role)) {
+    return new Response('Forbidden', { status: 403 });
+  }
+
+  const body = (await req.json().catch(() => null)) as CreateUserInput | null;
+
+  if (!body || !body.email || !body.name) {
+    return new Response('Bad Request: name and email required', { status: 400 });
+  }
+
+  const password = generatePassword();
+
+  // Service-role client to create auth user and write to tables
+  const adminClient = createClient(supabaseUrl, serviceKey);
+
+  const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
+    email: body.email,
+    password,
+    email_confirm: true,
+    user_metadata: { name: body.name },
+  });
+
+  if (createErr || !created?.user) {
+    const msg = createErr?.message ?? 'Failed to create user';
+    return new Response(msg, { status: 400 });
+  }
+
+  const address = body.address ?? {};
+
+  const { error: profileErr } = await adminClient.from('users').insert({
+    id: created.user.id,
+    email: body.email,
+    name: body.name,
+    phone: body.phone ?? null,
+    birth_date: body.birthDate ? new Date(body.birthDate).toISOString() : null,
+    street: address.street ?? null,
+    postal_code: address.postalCode ?? null,
+    city: address.city ?? null,
+    country: address.country ?? null,
+    place_of_education: body.studyPlace ?? null,
+    profile_picture: body.profilePicture ?? null,
+    study_program: body.study ?? null,
+    seniority: body.seniority ?? 0,
+    room_number: body.roomNumber ?? 0,
+    on_leave: body.onLeave ?? false,
+    is_active: body.isActive ?? true,
+  });
+
+  if (profileErr) {
+    return new Response(profileErr.message, { status: 400 });
   }
 
   return new Response(
-    JSON.stringify(data),
-    { headers: { "Content-Type": "application/json" } },
-  )
-})
+    JSON.stringify({ user: created.user, initialPassword: password }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } },
+  );
+});
 
 /* To invoke locally:
 

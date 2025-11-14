@@ -23,20 +23,25 @@ export async function logIn(email: string, password: string): Promise<LoginResul
   }
 }
 
-export async function logOut() {
-  const { error } = await supabase.auth.signOut();
-  if (error) return { success: false, error: 'Kunne ikke logge ut: ' + error.message };
-  return { success: true };
+export type LogoutResult =
+  | { success: true }
+  | { success: false; error: string };
+
+export async function logOut(): Promise<LogoutResult> {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      return { success: false, error: 'Kunne ikke logge ut: ' + error.message };
+    }
+    return { success: true };
+  } catch (e: unknown) {
+    const message =
+      e instanceof Error ? e.message : 'NetworkError when attempting å kontakte auth-tjenesten';
+    return { success: false, error: 'Kunne ikke logge ut: ' + message };
+  }
 }
 
 // export async function forgotPassword(email: string) {
 //   const { error } = await supabase.auth.resetPasswordForEmail(email);
 //   if (error) throw new Error('Kunne ikke sende tilbakestillings e-post: ' + error.message);
 // }
-
-/** Admin or regisjef creates a new user via Edge Function */
-export async function createNewUser(input: { email: string; password: string; name: string }) {
-  const { data, error } = await supabase.functions.invoke('create-user', { body: input });
-  if (error) return { success: false, error: String(error.message ?? error) };
-  return { success: true, user: (data as any).user };
-}

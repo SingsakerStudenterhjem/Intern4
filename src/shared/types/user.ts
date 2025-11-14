@@ -4,7 +4,7 @@ const UserSchema = z.object({
   name: z.string(),
   email: z.email(),
   phone: z.string(),
-  birthDate: z.date(),
+  birthDate: z.date().optional(),
   address: z.object({
     street: z.string(),
     postalCode: z.string(),
@@ -34,3 +34,18 @@ const UserSchema = z.object({
 });
 
 export type User = z.infer<typeof UserSchema>;
+
+export const NewUserInputSchema = UserSchema.omit({ createdAt: true }).extend({
+  phone: UserSchema.shape.phone.optional(),
+  birthDate: UserSchema.shape.birthDate.optional(),
+  address: UserSchema.shape.address.partial(),
+  study: UserSchema.shape.study.optional(),
+  studyPlace: UserSchema.shape.studyPlace.optional(),
+  profilePicture: UserSchema.shape.profilePicture.optional(),
+  seniority: UserSchema.shape.seniority.default(0),
+  roomNumber: UserSchema.shape.roomNumber.default(0),
+  onLeave: UserSchema.shape.onLeave.default(false),
+  isActive: UserSchema.shape.isActive.default(true),
+});
+
+export type NewUserInput = z.infer<typeof NewUserInputSchema>;
