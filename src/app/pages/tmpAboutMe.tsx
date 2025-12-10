@@ -6,8 +6,6 @@ const AboutMePage = () => {
 
   if (loading || !user) return null;
 
-  console.log(user.name);
-
   return (
     <div>
       <div>

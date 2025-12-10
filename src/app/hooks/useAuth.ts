@@ -38,8 +38,6 @@ export const useAuth = () => {
         .eq('id', session.user.id)
         .maybeSingle();
 
-      console.log(data);
-
       if (!isMounted) return;
 
       if (error) {
