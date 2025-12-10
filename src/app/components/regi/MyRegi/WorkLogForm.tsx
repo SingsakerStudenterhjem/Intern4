@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { z } from 'zod';
 import { RegiLogSchema, WorkTypeSchema } from '../../../../shared/types/regi';
 import { addRegiLog } from '../../../../server/dao/regiDAO';
 import { useAuth } from '../../../hooks/useAuth';
+import { Category } from '../../../../shared/types/regi/tasks/index.ts';
+import { getCategories } from '../../../../server/dao/categoriesDAO.ts';
 
 const FormSchema = z.object({
   title: z.string().min(1, 'Påkrevd'),
@@ -18,18 +20,47 @@ async function uploadRegiImages(uid: any, files: File[]) {
   return [];
 }
 
+
+
 const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [categories, setCategories] = useState<Category[]>([]);
   const [form, setForm] = useState({
     title: '',
     description: '',
     date: '',
     hours: '',
-    type: 'annet',
+    type: '',
   });
+
+  useEffect(() => {
+    let mounted = true;
+
+    (async () => {
+      try {
+        const data = await getCategories();
+        if (!mounted) return;
+
+        setCategories(data);
+
+        if (data.length > 0) {
+          setForm((prev) => ({
+            ...prev,
+            type: prev.type || data[0].name,
+          }));
+        }
+      } catch (error) {
+        console.error('Kunne ikke laste kategorier', error);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const setField = (k: string, v: string) => setForm((s) => ({ ...s, [k]: v }));
 
@@ -70,7 +101,13 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         type: payload.type,
       });
 
-      setForm({ title: '', description: '', date: '', hours: '', type: 'annet' });
+      setForm({
+        title: '',
+        description: '',
+        date: '',
+        hours: '',
+        type: categories[0]?.name ?? '',
+      });
       setFiles([]);
       onCreated && onCreated();
     } finally {
@@ -98,12 +135,12 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
           onChange={(e) => setField('type', e.target.value)}
           className="w-full border rounded px-3 py-2"
         >
-          <option value="vedlikehold">Vedlikehold</option>
-          <option value="rengjoring">Rengjøring</option>
-          <option value="arrangement">Arrangement</option>
-          <option value="kafe">Kafé</option>
-          <option value="dugnad">Dugnad</option>
-          <option value="annet">Annet</option>
+          <option value="">Velg type</option>
+          {categories.map((category) => (
+            <option key={category.id} value={category.name}>
+              {category.name}
+            </option>
+          ))}
         </select>
       </div>
 

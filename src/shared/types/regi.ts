@@ -1,12 +1,6 @@
 import { z } from 'zod';
 
-export const WorkTypeSchema = z
-  .string()
-  .refine((value) =>
-    ['vedlikehold', 'rengjoring', 'arrangement', 'kafe', 'dugnad', 'annet', 'misc', 'task'].includes(
-      value
-    )
-  );
+export const WorkTypeSchema = z.string().min(1, 'Arbeidets art er påkrevd');
 export type WorkType = z.infer<typeof WorkTypeSchema>;
 
 export const WorkStatusSchema = z

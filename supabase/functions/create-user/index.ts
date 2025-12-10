@@ -74,11 +74,11 @@ Deno.serve(async (req) => {
     .eq('user_uuid', me.user.id)
     .maybeSingle();
 
-  if (roleErr || !meRow || !meRow.roles) {
+  if (roleErr || !roleRow || !roleRow.roles) {
     return new Response('Forbidden', { status: 403, headers: corsHeaders });
   }
 
-  const myRole = (meRow as any).roles.name as string;
+  const myRole = (roleRow as any).roles.name as string;
 
   const allowedRoles = ['Data Åpmand', 'Regisjef'];
 
