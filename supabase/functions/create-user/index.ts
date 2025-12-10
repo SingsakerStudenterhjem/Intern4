@@ -6,6 +6,12 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+};
+
 type AddressInput = {
   street?: string;
   postalCode?: string;
@@ -36,8 +42,15 @@ function generatePassword(length = 12): string {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { status: 200, headers: corsHeaders });
+  }
+
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405 });
+    return new Response('Method not allowed', {
+      status: 405,
+      headers: corsHeaders,
+    });
   }
 
   const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
@@ -46,37 +59,43 @@ Deno.serve(async (req) => {
 
   const authHeader = req.headers.get('Authorization') ?? '';
 
-  // Client bound to caller’s JWT (RLS checks)
   const userClient = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authHeader } },
   });
 
-  // Who is calling?
   const { data: me, error: meErr } = await userClient.auth.getUser();
   if (meErr || !me?.user) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response('Unauthorized', { status: 401, headers: corsHeaders });
   }
 
-  // Check that caller is admin or regisjef
   const { data: roleRow, error: roleErr } = await userClient
     .from('user_roles')
-    .select('role')
+    .select('roles(name)')
     .eq('user_uuid', me.user.id)
     .maybeSingle();
 
-  if (roleErr || !roleRow || !['admin', 'regisjef'].includes(roleRow.role)) {
-    return new Response('Forbidden', { status: 403 });
+  if (roleErr || !meRow || !meRow.roles) {
+    return new Response('Forbidden', { status: 403, headers: corsHeaders });
+  }
+
+  const myRole = (meRow as any).roles.name as string;
+
+  const allowedRoles = ['Data Åpmand', 'Regisjef'];
+
+  if (!allowedRoles.includes(myRole)) {
+    return new Response('Forbidden', { status: 403, headers: corsHeaders });
   }
 
   const body = (await req.json().catch(() => null)) as CreateUserInput | null;
-
   if (!body || !body.email || !body.name) {
-    return new Response('Bad Request: name and email required', { status: 400 });
+    return new Response('Bad Request: name and email required', {
+      status: 400,
+      headers: corsHeaders,
+    });
   }
 
   const password = generatePassword();
 
-  // Service-role client to create auth user and write to tables
   const adminClient = createClient(supabaseUrl, serviceKey);
 
   const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
@@ -88,7 +107,7 @@ Deno.serve(async (req) => {
 
   if (createErr || !created?.user) {
     const msg = createErr?.message ?? 'Failed to create user';
-    return new Response(msg, { status: 400 });
+    return new Response(msg, { status: 400, headers: corsHeaders });
   }
 
   const address = body.address ?? {};
@@ -113,12 +132,12 @@ Deno.serve(async (req) => {
   });
 
   if (profileErr) {
-    return new Response(profileErr.message, { status: 400 });
+    return new Response(profileErr.message, { status: 400, headers: corsHeaders });
   }
 
   return new Response(
     JSON.stringify({ user: created.user, initialPassword: password }),
-    { status: 200, headers: { 'Content-Type': 'application/json' } },
+    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   );
 });
 

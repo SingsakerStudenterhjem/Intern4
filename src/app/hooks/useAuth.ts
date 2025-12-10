@@ -34,21 +34,28 @@ export const useAuth = () => {
 
       const { data, error } = await supabase
         .from('users')
-        .select('name, role, email')
+        .select('name, email, roles(name)')
         .eq('id', session.user.id)
         .maybeSingle();
+
+      console.log(data);
 
       if (!isMounted) return;
 
       if (error) {
         setError('Kunne ikke laste brukerprofil');
-        setUser({ id: session.user.id, email: session.user.email ?? undefined });
-      } else {
         setUser({
           id: session.user.id,
-          name: data?.name,
-          role: data?.role,
-          email: data?.email,
+          email: session.user.email ?? undefined,
+        });
+      } else {
+        const roleName = (data as any)?.roles?.name as string | undefined;
+
+        setUser({
+          id: session.user.id,
+          name: data?.name ?? undefined,
+          email: data?.email ?? undefined,
+          role: roleName,
         });
       }
 
@@ -67,7 +74,7 @@ export const useAuth = () => {
 
       supabase
         .from('users')
-        .select('name, role, email')
+        .select('name, email, roles(name)')
         .eq('id', session.user.id)
         .maybeSingle()
         .then(({ data, error }) => {
@@ -75,20 +82,28 @@ export const useAuth = () => {
 
           if (error) {
             setError('Kunne ikke laste brukerprofil');
-            setUser({ id: session.user.id, email: session.user.email ?? undefined });
-          } else {
             setUser({
               id: session.user.id,
-              name: data?.name,
-              role: data?.role,
-              email: data?.email,
+              email: session.user.email ?? undefined,
+            });
+          } else {
+            const roleName = (data as any)?.roles?.name as string | undefined;
+
+            setUser({
+              id: session.user.id,
+              name: data?.name ?? undefined,
+              email: data?.email ?? undefined,
+              role: roleName,
             });
           }
         })
         .catch(() => {
           if (!isMounted) return;
           setError('Kunne ikke laste brukerprofil');
-          setUser({ id: session.user.id, email: session.user.email ?? undefined });
+          setUser({
+            id: session.user.id,
+            email: session.user.email ?? undefined,
+          });
         });
     });
 

@@ -32,7 +32,7 @@ import {
 import { canManageCategories, canManageTasks } from '../../constants/userRoles';
 
 interface LocalUser {
-  uid: string;
+  id: string;
   name: string;
   email: string;
   role: string;
@@ -66,7 +66,7 @@ const WorkTasksPage: React.FC = () => {
     prevPage,
     categories: availableCategories,
     filteredTasks,
-  } = useTasks(tasks, categories, user?.uid || '', 10);
+  } = useTasks(tasks, categories, user?.id || '', 10);
 
   const canCreateTasksCheck = canManageTasks(user?.role);
   const canManageCategoriesCheck = canManageCategories(user?.role);
@@ -136,10 +136,10 @@ const WorkTasksPage: React.FC = () => {
   };
 
   const handleJoinTask = async (taskId: string): Promise<void> => {
-    if (!user?.uid) return;
+    if (!user?.id) return;
 
     try {
-      await joinTask(taskId, user.uid);
+      await joinTask(taskId, user.id);
       await loadData();
       showSuccessMessage('Du er nå påmeldt oppgaven!');
     } catch (err) {
@@ -149,10 +149,10 @@ const WorkTasksPage: React.FC = () => {
   };
 
   const handleLeaveTask = async (taskId: string): Promise<void> => {
-    if (!user?.uid) return;
+    if (!user?.id) return;
 
     try {
-      await leaveTask(taskId, user.uid);
+      await leaveTask(taskId, user.id);
       await loadData();
       showSuccessMessage('Du er nå avmeldt oppgaven');
     } catch (err) {
@@ -195,7 +195,7 @@ const WorkTasksPage: React.FC = () => {
     try {
       await addCategory({
         ...categoryData,
-        //createdBy: user?.uid || '',
+        //createdBy: user?.id || '',
       });
       await loadData();
       showSuccessMessage('Kategori opprettet!');
@@ -391,7 +391,7 @@ const WorkTasksPage: React.FC = () => {
               tasks={paginatedTasks}
               onRowClick={setSelectedTask}
               onJoinTask={handleJoinTask}
-              currentUserId={user?.uid}
+              currentUserId={user?.id}
               userRole={user?.role}
             />
 
@@ -433,7 +433,7 @@ const WorkTasksPage: React.FC = () => {
         <TaskModal
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
-          currentUserId={user?.uid}
+          currentUserId={user?.id}
           userRole={user?.role}
           onJoinTask={handleJoinTask}
           onLeaveTask={handleLeaveTask}

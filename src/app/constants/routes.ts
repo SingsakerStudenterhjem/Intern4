@@ -6,4 +6,5 @@ export const ROUTES = {
   LEGG_TIL_BEBOER: '/regisjef/legg_til_beboer',
   HOME: '/',
   ADMIN: '/admin',
+  ABOUTME: '/about_me'
 };

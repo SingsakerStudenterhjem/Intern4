@@ -43,9 +43,29 @@ export async function addTask(data: TaskCreationData): Promise<string> {
 export async function getTask(taskId: string): Promise<Task | undefined> {
   const { data, error } = await supabase
     .from('work_tasks')
-    .select('*, work_items(*, work_categories(*)), participants:work_assignments(user_uuid)')
-    .eq('id', Number(taskId))
-    .maybeSingle();
+    .select(`
+    id,
+    created_at,
+    deadline,
+    time_estimate,
+    contact_person_uuid,
+    work_items (
+      id,
+      title,
+      description,
+      work_categories (
+        id,
+        name,
+        description,
+        color
+      ),
+      participants:work_assignments (
+        user_uuid
+      )
+    )
+  `)
+    .order('deadline', { ascending: true });
+
   if (error) throw new Error(`Could not get task: ${error.message}`);
   return data ? toAppTask(data) : undefined;
 }
@@ -53,11 +73,43 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
 export async function getTasks(): Promise<Task[]> {
   const { data, error } = await supabase
     .from('work_tasks')
-    .select('*, work_items(*, work_categories(*)), participants:work_assignments(user_uuid)')
+    .select(`
+      id,
+      created_at,
+      deadline,
+      time_estimate,
+      contact_person_uuid,
+      work_items (
+        title,
+        description,
+        work_categories ( name ),
+        participants:work_assignments ( user_uuid )
+      )
+    `)
     .order('deadline', { ascending: true });
-  if (error) throw new Error(`Could not get tasks: ${error.message}`);
-  return (data ?? []).map(toAppTask);
+
+  if (error) {
+    throw new Error(`Could not get tasks: ${error.message}`);
+  }
+
+  return (data ?? []).map((row) => ({
+    id: String(row.id),
+    taskName: row.work_items.title,
+    description: row.work_items.description ?? '',
+    category: row.work_items.work_categories.name,
+    contactPerson: '', // evt. hentes via userDAO på contact_person_uuid
+    contactPersonId: row.contact_person_uuid ?? null,
+    deadline: row.deadline ?? null,
+    hourEstimate: row.time_estimate ?? null,
+    maxParticipants: null, // tilpasses din modell
+    participants: (row.work_items.participants ?? []).map((p: any) => p.user_uuid),
+    completed: false, // tilpasses
+    isApproved: false, // tilpasses
+    createdBy: row.contact_person_uuid ?? null,
+    isActive: true, // tilpasses
+  }));
 }
+
 
 export async function updateTask(taskId: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<void> {
   // update work_items if title/description

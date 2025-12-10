@@ -23,7 +23,7 @@ const WorkPage = () => {
           </div>
 
           <div className="md:col-span-1">
-            <WorkLogList userId={user.uid} refreshKey={refreshKey} />{' '}
+            <WorkLogList userId={user.id} refreshKey={refreshKey} />{' '}
           </div>
         </div>
       </div>

@@ -97,14 +97,14 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       category: formData.category,
       description: formData.description.trim() || undefined,
       contactPerson: currentUser?.name || 'Ukjent',
-      contactPersonId: currentUser?.uid || '',
+      contactPersonId: currentUser?.id || '',
       deadline: formData.deadline ? new Date(formData.deadline) : undefined,
       hourEstimate: formData.hourEstimate ? Number(formData.hourEstimate) : undefined,
       maxParticipants: Number(formData.maxParticipants), // Always a number now, never undefined
       participants: [],
       completed: false,
       isApproved: false,
-      createdBy: currentUser?.uid || '',
+      createdBy: currentUser?.id || '',
       isActive: true,
     };
   };

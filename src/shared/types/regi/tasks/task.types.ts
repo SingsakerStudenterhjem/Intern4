@@ -11,15 +11,6 @@ export const TaskSchema = z.object({
   hourEstimate: z.number().positive().optional(), // Represents time_estimate
   participants: z.array(z.string().uuid()).default([]),
   createdAt: z.date(),
-  // Fields that are no longer in the new schema:
-  // taskName -> title
-  // contactPerson (name) -> can be fetched via contactPersonId
-  // maxParticipants -> no longer supported
-  // completed -> no longer supported
-  // completedAt -> no longer supported
-  // isApproved -> no longer supported
-  // createdBy -> no longer supported
-  // isActive -> no longer supported
 });
 
 // Task Form Data Schema (for forms with string inputs)

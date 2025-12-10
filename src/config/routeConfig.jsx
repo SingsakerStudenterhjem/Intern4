@@ -9,6 +9,7 @@ import NotFoundPage from '../app/pages/notFoundPage';
 import ProtectedRoute from '../app/components/common/protectedRoute';
 import { ROUTES } from '../app/constants/routes';
 import AdminPage from '../app/pages/adminPage';
+import AboutMePage from '../app/pages/tmpAboutMe';
 
 // Public routes (no authentication required)
 export const publicRoutes = [
@@ -49,6 +50,14 @@ export const protectedRoutes = [
     element: (
       <ProtectedRoute>
         <WorkTasksPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: ROUTES.ABOUTME,
+    element: (
+      <ProtectedRoute>
+        <AboutMePage />
       </ProtectedRoute>
     ),
   },
