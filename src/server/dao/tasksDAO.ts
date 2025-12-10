@@ -49,6 +49,7 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
     deadline,
     time_estimate,
     contact_person_uuid,
+    max_participants,  
     work_items (
       id,
       title,
@@ -79,6 +80,7 @@ export async function getTasks(): Promise<Task[]> {
       deadline,
       time_estimate,
       contact_person_uuid,
+      max_participants, 
       work_items (
         title,
         description,
@@ -101,12 +103,12 @@ export async function getTasks(): Promise<Task[]> {
     contactPersonId: row.contact_person_uuid ?? null,
     deadline: row.deadline ?? null,
     hourEstimate: row.time_estimate ?? null,
-    maxParticipants: null, // tilpasses din modell
+    maxParticipants: row.max_participants ?? null,
     participants: (row.work_items.participants ?? []).map((p: any) => p.user_uuid),
-    completed: false, // tilpasses
-    isApproved: false, // tilpasses
+    completed: false,
+    isApproved: false,
     createdBy: row.contact_person_uuid ?? null,
-    isActive: true, // tilpasses
+    isActive: true,
   }));
 }
 
