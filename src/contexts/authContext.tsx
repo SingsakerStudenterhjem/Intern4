@@ -1,5 +1,5 @@
 import React, { createContext } from 'react';
-import { useAuth as useAuthHook, type UseAuthReturn } from '../hooks/useAuth';
+import { useAuth as useAuthHook, type UseAuthReturn } from '../app/hooks/useAuth';
 
 const AuthContext = createContext<UseAuthReturn | undefined>(undefined);
 
