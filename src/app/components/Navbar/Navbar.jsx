@@ -29,7 +29,7 @@ const Navbar = () => {
         { label: 'Oppgaver', to: ROUTES.TASKS },
         {
           label: 'Regisjef',
-          to: '/regisjef',
+          to: ROUTES.REGISJEF,
           roles: [USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
         },
       ],
