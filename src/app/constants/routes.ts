@@ -3,8 +3,9 @@ export const ROUTES = {
   DASHBOARD: '/dashboard',
   REGI: '/regi',
   TASKS: '/regi/oppgaver',
-  LEGG_TIL_BEBOER: '/regisjef/legg_til_beboer',
+  REGISJEF: '/regisjef',
+  LEGG_TIL_BEBOER: '/romsjef/legg_til_beboer',
   HOME: '/',
   ADMIN: '/admin',
-  ABOUTME: '/about_me'
+  ABOUTME: '/about_me',
 };

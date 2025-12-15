@@ -5,6 +5,7 @@ import DashboardPage from '../app/pages/dashboardPage';
 import WorkPage from '../app/pages/work/workPage';
 import AddUserPage from '../app/pages/roomManager/addUserPage';
 import WorkTasksPage from '../app/pages/work/workTasksPage';
+import WorkManagerPage from '../app/pages/workManager/workManagerPage';
 import NotFoundPage from '../app/pages/notFoundPage';
 import ProtectedRoute from '../app/components/common/protectedRoute';
 import { ROUTES } from '../app/constants/routes';
@@ -36,6 +37,14 @@ export const protectedRoutes = [
         <WorkPage />
       </ProtectedRoute>
     ),
+  },
+  {
+    path: ROUTES.REGISJEF,
+    element: (
+      <ProtectedRoute>
+        <WorkManagerPage/>
+      </ProtectedRoute>
+    )
   },
   {
     path: ROUTES.LEGG_TIL_BEBOER,
