@@ -1,5 +1,6 @@
 import React from 'react';
 import WorkApprovalList from '../../components/regi/WorkManager/WorkApprovalList.tsx';
+import Registatus from '../../components/regi/WorkManager/Registatus';
 
 const WorkManagerPage: React.FC = () => {
   return (
@@ -18,7 +19,8 @@ const WorkManagerPage: React.FC = () => {
           </div>
           <div className="md:col-span-1">
             <h2 className="font-bold text-xl">Registatus</h2>
-            <p>List over beboere og registatusen deres</p>
+            <p className="text-sm text-gray-600 mb-2">Liste over aktive beboere og gjenstående timer.</p>
+            <Registatus />
           </div>
           <div className="md:col-span-1">
             <h2 className="font-bold text-xl">Annet</h2>
