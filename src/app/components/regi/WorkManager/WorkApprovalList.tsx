@@ -54,10 +54,13 @@ const WorkApprovalList: React.FC = () => {
     });
   }, [approvals, query]);
 
-  const handleApprove = async (assignmentId: string): Promise<void> => {
+  const handleApprove = async (assignmentId: string, approvalComment?: string): Promise<void> => {
     try {
+      if (!user) return;
+
       setActionLoadingId(assignmentId);
-      await approveRegiLog(assignmentId);
+      await approveRegiLog(assignmentId, user.id, approvalComment);
+
       setApprovals((prev) => prev.filter((a) => a.id !== assignmentId));
       if (selected?.id === assignmentId) setSelected(null);
     } catch (e) {
