@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Users, Clock, Calendar, User, Trash2 } from 'lucide-react';
-import { Task } from '../../../../shared/types/regi/tasks/task.types';
+import { Task } from '../../../../shared/types/regi/tasks/index.ts';
+import { canManageTasks, canViewAllParticipants } from '../../../constants/userRoles.ts';
 
 interface TaskModalProps {
   task: Task | null;
@@ -47,8 +48,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const isUserJoined = currentUserId && task.participants.includes(currentUserId);
   const isFull = task.maxParticipants && task.participants.length >= task.maxParticipants;
   const canJoin = !isFull && !isUserJoined && !task.completed;
-  const canViewParticipants = userRole === 'Data Åpmand' || userRole === 'Regisjef' || isUserJoined;
-  const canDeleteTask = (userRole === 'Data Åpmand' || userRole === 'Regisjef') && onDeleteTask;
 
   const handleJoin = () => {
     if (onJoinTask && task.id) {
@@ -125,7 +124,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
             </span>
           </div>
           <div className="flex items-center space-x-2">
-            {canDeleteTask && (
+            {canManageTasks(userRole) && (
               <button
                 onClick={startDelete}
                 className="text-red-400 hover:text-red-600 transition-colors"
@@ -162,7 +161,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   Deltakere ({task.participants.length}/{task.maxParticipants})
                 </h3>
 
-                {canViewParticipants ? (
+                {canViewAllParticipants(userRole) ? (
                   <div className="space-y-2">
                     {task.participants.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
