@@ -92,3 +92,31 @@ export async function createUser(
     initialPassword: anyResult.initialPassword as string | undefined,
   };
 }
+
+export type BasicUserWithRole = {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+  onLeave: boolean;
+  isActive: boolean;
+};
+
+export async function getActiveUsersWithRole(): Promise<BasicUserWithRole[]> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, name, email, is_active, on_leave, roles(name)')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    name: row.name ?? 'Ukjent',
+    email: row.email ?? '',
+    role: row.roles?.name ?? undefined,
+    onLeave: row.on_leave ?? false,
+    isActive: row.is_active ?? false,
+  }));
+}

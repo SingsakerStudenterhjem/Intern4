@@ -158,6 +158,31 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
   });
 }
 
+export async function getApprovedRegiHoursByUserSince(
+  startDate?: Date
+): Promise<Record<string, number>> {
+  let query = supabase
+    .from('work_assignments')
+    .select('user_uuid, hours_used, created_at, approved_state')
+    .eq('approved_state', 1);
+
+  if (startDate) {
+    query = query.gte('created_at', startDate.toISOString());
+  }
+
+  const { data, error } = await query;
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).reduce((acc, row) => {
+    const uid = row.user_uuid ? String(row.user_uuid) : '';
+    if (!uid) return acc;
+
+    const hours = Number(row.hours_used) || 0;
+    acc[uid] = (acc[uid] ?? 0) + hours;
+    return acc;
+  }, {} as Record<string, number>);
+}
+
 async function setApprovalState(assignmentId: string, approvedState: 1 | 2): Promise<void> {
   const { error } = await supabase
     .from('work_assignments')
