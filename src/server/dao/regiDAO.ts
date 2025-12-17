@@ -167,9 +167,23 @@ async function setApprovalState(assignmentId: string, approvedState: 1 | 2): Pro
   if (error) throw new Error(error.message);
 }
 
-export async function approveRegiLog(assignmentId: string): Promise<void> {
-  await setApprovalState(assignmentId, 1);
+export async function approveRegiLog(
+  assignmentId: string,
+  approvedByUuid: string,
+  approvalComment?: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('work_assignments')
+    .update({
+      approved_state: 1,
+      approved_by_uuid: approvedByUuid,
+      approval_comment: approvalComment?.trim() ? approvalComment.trim() : null,
+    })
+    .eq('id', assignmentId);
+
+  if (error) throw error;
 }
+
 
 export async function rejectRegiLog(assignmentId: string): Promise<void> {
   await setApprovalState(assignmentId, 2);

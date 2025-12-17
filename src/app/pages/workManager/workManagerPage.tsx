@@ -17,10 +17,6 @@ const WorkManagerPage: React.FC = () => {
             <WorkApprovalList/>
           </div>
           <div className="md:col-span-1">
-            <h2 className="font-bold text-xl">Ny regioppgave</h2>
-            <p>Enkel form for å lage en ny regioppgave. Regivakt kanskje som "regioppgave"?</p>
-          </div>
-          <div className="md:col-span-2">
             <h2 className="font-bold text-xl">Registatus</h2>
             <p>List over beboere og registatusen deres</p>
           </div>
