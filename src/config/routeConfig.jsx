@@ -11,6 +11,7 @@ import ProtectedRoute from '../app/components/common/protectedRoute';
 import { ROUTES } from '../app/constants/routes';
 import AdminPage from '../app/pages/adminPage';
 import AboutMePage from '../app/pages/tmpAboutMe';
+import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
 
 // Public routes (no authentication required)
 export const publicRoutes = [
@@ -43,6 +44,14 @@ export const protectedRoutes = [
     element: (
       <ProtectedRoute>
         <WorkManagerPage/>
+      </ProtectedRoute>
+    )
+  },
+  {
+    path: ROUTES.REGIGODKJENNING,
+    element: (
+      <ProtectedRoute>
+        <WorkApprovalsPage/>
       </ProtectedRoute>
     )
   },
