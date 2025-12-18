@@ -69,18 +69,22 @@ Deno.serve(async (req) => {
   }
 
   const { data: roleRow, error: roleErr } = await userClient
-    .from('user_roles')
-    .select('roles(name)')
-    .eq('user_uuid', me.user.id)
+    .from('users')
+    .select('role_id, roles(name)')
+    .eq('id', me.user.id)
     .maybeSingle();
 
-  if (roleErr || !roleRow || !roleRow.roles) {
+  if (roleErr) {
+    return new Response('Unable to verify role', { status: 500, headers: corsHeaders });
+  }
+
+  const myRole = roleRow?.roles?.name as string | undefined;
+
+  if (!myRole) {
     return new Response('Forbidden', { status: 403, headers: corsHeaders });
   }
 
-  const myRole = (roleRow as any).roles.name as string;
-
-  const allowedRoles = ['Data Åpmand', 'Regisjef'];
+  const allowedRoles = ['Admin', 'Data Åpmand', 'Regisjef'];
 
   if (!allowedRoles.includes(myRole)) {
     return new Response('Forbidden', { status: 403, headers: corsHeaders });
