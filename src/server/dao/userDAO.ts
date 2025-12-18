@@ -76,6 +76,7 @@ export async function createUser(
     roomNumber: data.roomNumber,
     onLeave: data.onLeave,
     isActive: data.isActive,
+    role: data.role,
   };
 
   const { data: result, error } = await supabase.functions.invoke('create-user', {
