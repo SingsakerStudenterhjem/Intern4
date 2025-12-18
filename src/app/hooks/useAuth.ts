@@ -122,6 +122,6 @@ export const useAuth = () => {
     error,
     logout,
     isAuthenticated: !!user,
-    isAdmin: user?.role === 'Data Åpmand' || user?.role === 'Daglig leder',
+    isAdmin: user?.role === 'Data' || user?.role === 'Daglig leder',
   };
 };

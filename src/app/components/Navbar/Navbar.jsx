@@ -30,19 +30,19 @@ const Navbar = () => {
         {
           label: 'Regisjef',
           to: ROUTES.REGISJEF,
-          roles: [USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
+          roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
         },
       ],
     },
     {
       key: 'rom',
       label: 'Rom',
-      roles: [USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
+      roles: [USER_ROLES.ADMIN, USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
       children: [
         {
           label: 'Legg til beboer',
           to: ROUTES.LEGG_TIL_BEBOER,
-          roles: [USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
+          roles: [USER_ROLES.ADMIN, USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
         },
       ],
     },
@@ -54,11 +54,22 @@ const Navbar = () => {
     },
   ];
 
-  const visibleItems = menuItems.filter((item) => {
-    if (!item.roles) return true;
+  const canAccess = (roles) => {
+    if (!roles) return true;
     if (!user) return false;
-    return item.roles.includes(user.role) || item.roles.includes(USER_ROLES.DATA);
-  });
+    return roles.includes(user.role);
+  };
+
+  const visibleItems = menuItems
+    .map((item) => {
+      if (item.children) {
+        const visibleChildren = item.children.filter((child) => canAccess(child.roles));
+        if (!canAccess(item.roles) || visibleChildren.length === 0) return null;
+        return { ...item, children: visibleChildren };
+      }
+      return canAccess(item.roles) ? item : null;
+    })
+    .filter(Boolean);
 
   return (
     <nav className="bg-white shadow px-8 py-2 flex justify-between items-center relative">

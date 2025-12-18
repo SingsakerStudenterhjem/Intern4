@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
     return new Response('Forbidden', { status: 403, headers: corsHeaders });
   }
 
-  const allowedRoles = ['Admin', 'Data Åpmand', 'Regisjef'];
+  const allowedRoles = ['Admin', 'Data', 'Regisjef'];
 
   if (!allowedRoles.includes(myRole)) {
     return new Response('Forbidden', { status: 403, headers: corsHeaders });
