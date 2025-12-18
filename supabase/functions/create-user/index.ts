@@ -32,6 +32,7 @@ type CreateUserInput = {
   roomNumber?: number;
   onLeave?: boolean;
   isActive?: boolean;
+  role?: string;
 };
 
 function generatePassword(length = 12): string {
@@ -84,7 +85,7 @@ Deno.serve(async (req) => {
     return new Response('Forbidden', { status: 403, headers: corsHeaders });
   }
 
-  const allowedRoles = ['Admin', 'Data', 'Regisjef'];
+  const allowedRoles = ['Admin', 'Data Åpmand', 'Regisjef'];
 
   if (!allowedRoles.includes(myRole)) {
     return new Response('Forbidden', { status: 403, headers: corsHeaders });
@@ -101,6 +102,21 @@ Deno.serve(async (req) => {
   const password = generatePassword();
 
   const adminClient = createClient(supabaseUrl, serviceKey);
+
+  const roleName = body.role ?? 'Halv/Halv';
+  const { data: roleLookup, error: roleLookupErr } = await adminClient
+    .from('roles')
+    .select('id')
+    .eq('name', roleName)
+    .maybeSingle();
+
+  if (roleLookupErr) {
+    return new Response('Failed to look up role', { status: 500, headers: corsHeaders });
+  }
+
+  if (!roleLookup?.id) {
+    return new Response(`Ugyldig rolle: ${roleName}`, { status: 400, headers: corsHeaders });
+  }
 
   const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
     email: body.email,
@@ -133,6 +149,7 @@ Deno.serve(async (req) => {
     room_number: body.roomNumber ?? 0,
     on_leave: body.onLeave ?? false,
     is_active: body.isActive ?? true,
+    role_id: roleLookup.id,
   });
 
   if (profileErr) {
