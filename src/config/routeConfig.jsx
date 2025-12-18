@@ -9,6 +9,7 @@ import WorkManagerPage from '../app/pages/workManager/workManagerPage';
 import NotFoundPage from '../app/pages/notFoundPage';
 import ProtectedRoute from '../app/components/common/protectedRoute';
 import { ROUTES } from '../app/constants/routes';
+import { USER_ROLES } from '../app/constants/userRoles';
 import AdminPage from '../app/pages/adminPage';
 import AboutMePage from '../app/pages/tmpAboutMe';
 import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
@@ -42,18 +43,22 @@ export const protectedRoutes = [
   {
     path: ROUTES.REGISJEF,
     element: (
-      <ProtectedRoute>
-        <WorkManagerPage/>
+      <ProtectedRoute
+        allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
+      >
+        <WorkManagerPage />
       </ProtectedRoute>
-    )
+    ),
   },
   {
     path: ROUTES.REGIGODKJENNING,
     element: (
-      <ProtectedRoute>
-        <WorkApprovalsPage/>
+      <ProtectedRoute
+        allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
+      >
+        <WorkApprovalsPage />
       </ProtectedRoute>
-    )
+    ),
   },
   {
     path: ROUTES.LEGG_TIL_BEBOER,

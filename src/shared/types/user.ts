@@ -24,7 +24,7 @@ const UserSchema = z.object({
         'Full Regi',
         'Full Vakt',
         'Utvalgsmedlem',
-        'Data Åpmand',
+        'Data',
         'Daglig leder',
       ].includes(value)
     ),

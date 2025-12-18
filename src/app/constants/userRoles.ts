@@ -1,5 +1,5 @@
 export const USER_ROLES = {
-  DATA: 'Data Åpmand',
+  DATA: 'Data',
   WORKMANAGER: 'Regisjef',
   ROOMMANAGER: 'Romsjef',
   FULL_WORK: 'Full Regi',

@@ -53,7 +53,10 @@ export const DataGuard = ({ children, fallback }) => (
 
 // Guard for regisjef role
 export const RegisjefGuard = ({ children, fallback }) => (
-  <AuthGuard allowedRoles={[USER_ROLES.DATA, USER_ROLES.REGISJEF]} fallback={fallback}>
+  <AuthGuard
+    allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
+    fallback={fallback}
+  >
     {children}
   </AuthGuard>
 );
@@ -61,7 +64,7 @@ export const RegisjefGuard = ({ children, fallback }) => (
 // Guard for commonors (aka peasants)
 export const UserGuard = ({ children, fallback }) => (
   <AuthGuard
-    allowedRoles={[USER_ROLES.DATA, USER_ROLES.REGISJEF, USER_ROLES.USER]}
+    allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER, USER_ROLES.USER]}
     fallback={fallback}
   >
     {children}
