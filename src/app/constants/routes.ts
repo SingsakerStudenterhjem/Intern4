@@ -5,6 +5,7 @@ export const ROUTES = {
   TASKS: '/regi/oppgaver',
   REGISJEF: '/regisjef',
   REGIGODKJENNING: '/regisjef/godkjenning',
+  REGILOGS: '/regisjef/logg',
   LEGG_TIL_BEBOER: '/romsjef/legg_til_beboer',
   HOME: '/',
   ADMIN: '/admin',

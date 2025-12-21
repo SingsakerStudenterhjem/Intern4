@@ -1,7 +1,10 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 import WorkApprovalList from '../../components/regi/WorkManager/WorkApprovalList.tsx';
 import Registatus from '../../components/regi/WorkManager/Registatus';
 import GrantRegiForm from '../../components/regi/WorkManager/GrantRegiForm';
+import { ROUTES } from '../../constants/routes';
 
 const WorkManagerPage: React.FC = () => {
   return (
@@ -44,6 +47,24 @@ const WorkManagerPage: React.FC = () => {
               </div>
               <div className="min-h-0">
                 <Registatus />
+              </div>
+            </section>
+
+            <section className="bg-white border rounded-xl shadow-sm p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold text-gray-900">Full regilogger</h3>
+                  <p className="text-sm text-gray-600">
+                    Se alle registrerte timer og status for hele huset.
+                  </p>
+                </div>
+                <Link
+                  to={ROUTES.REGILOGS}
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                >
+                  Åpne logg
+                  <ArrowRight className="w-4 h-4 ml-1" />
+                </Link>
               </div>
             </section>
           </div>
