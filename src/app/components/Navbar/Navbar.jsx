@@ -1,23 +1,36 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../constants/routes';
 import { USER_ROLES } from '../../constants/userRoles';
 import DropdownMenu from './DropdownMenu';
-import { ChevronDown, Menu, X } from 'lucide-react';
+import { ChevronDown, Menu, UserCircle, X } from 'lucide-react';
 import { logOut } from '../../../server/dao/authentication';
 
 const Navbar = () => {
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openSections, setOpenSections] = useState({});
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
 
   const toggleSection = (key) => setOpenSections((s) => ({ ...s, [key]: !s[key] }));
 
   const handleLogout = async () => {
-    const result = await logOut();
+    await logOut();
     setMobileOpen(false);
+    setUserMenuOpen(false);
   };
+
+  useEffect(() => {
+    const handler = (e) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const menuItems = [
     { key: 'dash', label: 'Dashboard', to: ROUTES.DASHBOARD },
@@ -105,11 +118,40 @@ const Navbar = () => {
               )
             )}
 
-            <span className="border-l border-gray-300 h-6" />
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={() => setUserMenuOpen((o) => !o)}
+                className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100"
+              >
+                <div className="flex items-center gap-2 text-left">
+                  <UserCircle className="w-6 h-6 text-gray-600" />
+                  <div className="text-sm leading-tight">
+                    <div className="font-semibold text-gray-900 truncate max-w-[140px]">
+                      {user.name || 'Bruker'}
+                    </div>
+                  </div>
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-600" />
+              </button>
 
-            <button onClick={handleLogout} className="hover:text-blue-500">
-              Logg ut
-            </button>
+              {userMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                  <Link
+                    to={ROUTES.ABOUTME}
+                    onClick={() => setUserMenuOpen(false)}
+                    className="block px-4 py-2 text-sm hover:bg-gray-100"
+                  >
+                    Profil
+                  </Link>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+                  >
+                    Logg ut
+                  </button>
+                </div>
+              )}
+            </div>
           </>
         ) : (
           <Link to={ROUTES.LOGIN} className="hover:text-blue-500">
@@ -166,6 +208,24 @@ const Navbar = () => {
               </button>
             </li>
           </ul>
+          <div className="border-t border-gray-200 pt-3 mt-3 text-sm text-gray-700">
+            <div className="mb-2">
+              <div className="font-semibold">{user.name || 'Bruker'}</div>
+              <div className="text-gray-500">{user.email || ''}</div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Link
+                to={ROUTES.ABOUTME}
+                onClick={() => setMobileOpen(false)}
+                className="text-blue-600"
+              >
+                Profil
+              </Link>
+              <button onClick={handleLogout} className="text-left text-red-600">
+                Logg ut
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </nav>
