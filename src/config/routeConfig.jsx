@@ -13,6 +13,7 @@ import { USER_ROLES } from '../app/constants/userRoles';
 import AdminPage from '../app/pages/adminPage';
 import AboutMePage from '../app/pages/tmpAboutMe';
 import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
+import RegiLogsPage from '../app/pages/workManager/regiLogsPage';
 
 // Public routes (no authentication required)
 export const publicRoutes = [
@@ -57,6 +58,16 @@ export const protectedRoutes = [
         allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
       >
         <WorkApprovalsPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: ROUTES.REGILOGS,
+    element: (
+      <ProtectedRoute
+        allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
+      >
+        <RegiLogsPage />
       </ProtectedRoute>
     ),
   },

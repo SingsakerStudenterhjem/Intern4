@@ -32,6 +32,11 @@ const Navbar = () => {
           to: ROUTES.REGISJEF,
           roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
         },
+        {
+          label: 'Regilogger',
+          to: ROUTES.REGILOGS,
+          roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
+        },
       ],
     },
     {

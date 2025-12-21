@@ -166,6 +166,83 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
   });
 }
 
+export type RegiLogWithUser = {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  title: string;
+  description: string;
+  category: string;
+  hours: number;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: any;
+  approvedByName?: string;
+  approvalComment?: string | null;
+};
+
+export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
+  const { data, error } = await supabase
+    .from('work_assignments')
+    .select(
+      'id, user_uuid, hours_used, created_at, approved_state, approval_comment, approved_by_uuid, work_items(title, description, type, work_categories(name))'
+    )
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  const rows = data ?? [];
+  const uniqueUserIds = Array.from(
+    new Set(
+      rows.flatMap((r: any) =>
+        [r.user_uuid, r.approved_by_uuid].filter(Boolean).map((id: any) => String(id))
+      )
+    )
+  );
+
+  const userMap: Record<string, { name: string; email: string }> = {};
+  await Promise.all(
+    uniqueUserIds.map(async (uid) => {
+      try {
+        const u = await getUser(uid);
+        if (u) {
+          userMap[uid] = { name: u.name ?? 'Ukjent', email: u.email ?? '' };
+        }
+      } catch {
+        // ignore missing users
+      }
+    })
+  );
+
+  const statusMap: Record<number, 'pending' | 'approved' | 'rejected'> = {
+    0: 'pending',
+    1: 'approved',
+    2: 'rejected',
+  };
+
+  return rows.map((row: any) => {
+    const uid = row.user_uuid ? String(row.user_uuid) : '';
+    const owner = uid ? userMap[uid] : undefined;
+    const approverId = row.approved_by_uuid ? String(row.approved_by_uuid) : '';
+    const approver = approverId ? userMap[approverId] : undefined;
+
+    return {
+      id: String(row.id),
+      userId: uid,
+      userName: owner?.name ?? 'Ukjent',
+      userEmail: owner?.email ?? '',
+      title: row.work_items?.title ?? '',
+      description: row.work_items?.description ?? '',
+      category: row.work_items?.work_categories?.name ?? 'Regi',
+      hours: Number(row.hours_used ?? 0),
+      status: statusMap[row.approved_state] ?? 'pending',
+      createdAt: row.created_at,
+      approvedByName: approver?.name,
+      approvalComment: row.approval_comment ?? null,
+    };
+  });
+}
+
 export async function getApprovedRegiHoursByUserSince(
   startDate?: Date
 ): Promise<Record<string, number>> {
