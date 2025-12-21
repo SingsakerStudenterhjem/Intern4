@@ -41,7 +41,10 @@ async function getCategoryIdByNameOrDefault(categoryName?: string): Promise<numb
   return getOrCreateDefaultCategoryId();
 }
 
-export async function addRegiLog(data: Omit<RegiLog, 'id' | 'createdAt' | 'status'>) {
+export async function addRegiLog(
+  data: Omit<RegiLog, 'id' | 'createdAt' | 'status'>,
+  options?: { autoApprove?: boolean }
+) {
   const catId = await getCategoryIdByNameOrDefault(data.type);
 
   const { data: item, error: e1 } = await supabase
@@ -62,7 +65,7 @@ export async function addRegiLog(data: Omit<RegiLog, 'id' | 'createdAt' | 'statu
       user_uuid: data.userId,
       work_id: item.id,
       hours_used: data.hours,
-      approved_state: 0,
+      approved_state: options?.autoApprove ? 1 : 0,
     })
     .select('id')
     .single();
@@ -74,7 +77,9 @@ export async function addRegiLog(data: Omit<RegiLog, 'id' | 'createdAt' | 'statu
 export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]> {
   const { data, error } = await supabase
     .from('work_assignments')
-    .select('id, hours_used, created_at, approved_state, work_items(title, type, work_categories(name))')
+    .select(
+      'id, hours_used, created_at, approved_state, work_items(title, type, work_categories(name))'
+    )
     .eq('user_uuid', userId)
     .order('created_at', { ascending: false });
 
@@ -135,10 +140,13 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
     })
   );
 
-  const userMap = userRows.reduce((acc, u) => {
-    acc[u.uid] = u;
-    return acc;
-  }, {} as Record<string, { uid: string; name: string; email: string }>);
+  const userMap = userRows.reduce(
+    (acc, u) => {
+      acc[u.uid] = u;
+      return acc;
+    },
+    {} as Record<string, { uid: string; name: string; email: string }>
+  );
 
   return pendingMisc.map((row: any) => {
     const uid = String(row.user_uuid);
@@ -173,14 +181,17 @@ export async function getApprovedRegiHoursByUserSince(
   const { data, error } = await query;
   if (error) throw new Error(error.message);
 
-  return (data ?? []).reduce((acc, row) => {
-    const uid = row.user_uuid ? String(row.user_uuid) : '';
-    if (!uid) return acc;
+  return (data ?? []).reduce(
+    (acc, row) => {
+      const uid = row.user_uuid ? String(row.user_uuid) : '';
+      if (!uid) return acc;
 
-    const hours = Number(row.hours_used) || 0;
-    acc[uid] = (acc[uid] ?? 0) + hours;
-    return acc;
-  }, {} as Record<string, number>);
+      const hours = Number(row.hours_used) || 0;
+      acc[uid] = (acc[uid] ?? 0) + hours;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 }
 
 async function setApprovalState(assignmentId: string, approvedState: 1 | 2): Promise<void> {
@@ -208,7 +219,6 @@ export async function approveRegiLog(
 
   if (error) throw error;
 }
-
 
 export async function rejectRegiLog(assignmentId: string): Promise<void> {
   await setApprovalState(assignmentId, 2);
