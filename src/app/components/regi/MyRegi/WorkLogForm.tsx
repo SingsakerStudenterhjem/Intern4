@@ -31,7 +31,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    date: '',
+    date: new Date().toISOString().split('T')[0],
     hours: '',
     type: '',
   });
@@ -104,7 +104,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       setForm({
         title: '',
         description: '',
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         hours: '',
         type: categories[0]?.name ?? '',
       });
