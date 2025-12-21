@@ -97,7 +97,7 @@ const Registatus: React.FC = () => {
   if (authLoading) return null;
   if (!user || !canApproveWork(user.role)) {
     return (
-      <div className="p-4 border rounded-md bg-gray-50 text-sm text-gray-700">
+      <div className="p-4 shadow-sm rounded-md bg-gray-50 text-sm text-gray-700">
         Du har ikke tilgang til registatus.
       </div>
     );
@@ -132,24 +132,36 @@ const Registatus: React.FC = () => {
         </div>
       )}
 
-      <div className="p-3 border rounded-md bg-gray-50 text-sm text-gray-700">
+      <div className="p-3 shadow-sm rounded-md bg-gray-50 text-sm text-gray-700">
         Aktive beboere: <span className="font-semibold">{filtered.length}</span> • Semesterstart:{' '}
         <span className="font-semibold">{semesterLabel}</span>
       </div>
 
-      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border rounded-md">
-        <table className="w-full text-sm">
+      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border border-gray-200 rounded-xl bg-white shadow-sm">
+        <table className="min-w-full text-sm">
           <thead className="bg-gray-50 sticky top-0">
             <tr>
-              <th className="text-left p-2">Navn</th>
-              <th className="text-left p-2">Rolle</th>
-              <th className="text-left p-2">Godkjent</th>
-              <th className="text-left p-2">Krav</th>
-              <th className="text-left p-2">Gjenstår</th>
-              <th className="text-left p-2">Status</th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Navn
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Rolle
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Godkjent
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Krav
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Gjenstår
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Status
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-200">
             {loading && (
               <tr>
                 <td className="p-3 text-gray-600" colSpan={6}>
@@ -160,16 +172,16 @@ const Registatus: React.FC = () => {
 
             {!loading &&
               filtered.map((row) => (
-                <tr key={row.id} className="border-t">
-                  <td className="p-2">
+                <tr key={row.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3">
                     <div className="font-medium">{row.name}</div>
                     <div className="text-xs text-gray-500">{row.email}</div>
                   </td>
-                  <td className="p-2">{row.role ?? 'Uten rolle'}</td>
-                  <td className="p-2">{row.approvedHours.toFixed(2)} t</td>
-                  <td className="p-2">{row.requiredHours.toFixed(0)} t</td>
-                  <td className="p-2">{row.remainingHours.toFixed(2)} t</td>
-                  <td className="p-2">
+                  <td className="px-4 py-3">{row.role ?? 'Uten rolle'}</td>
+                  <td className="px-4 py-3">{row.approvedHours.toFixed(2)} t</td>
+                  <td className="px-4 py-3">{row.requiredHours.toFixed(0)} t</td>
+                  <td className="px-4 py-3">{row.remainingHours.toFixed(2)} t</td>
+                  <td className="px-4 py-3">
                     {row.onLeave ? (
                       <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
                         Permisjon

@@ -25,7 +25,6 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
     setApprovalComment('');
   }, [approval?.id]);
 
-
   if (!approval) return null;
 
   const formatDateTime = (value: any) => {
@@ -41,7 +40,6 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
     onClose();
   };
 
-
   const confirmReject = async () => {
     await onReject(approval.id);
     onClose();
@@ -49,7 +47,7 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div
@@ -170,7 +168,6 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
               </div>
             </div>
           )}
-
 
           {mode === 'reject' && (
             <div className="space-y-3">

@@ -33,8 +33,8 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
 
   return (
     <div className="space-y-4">
-      <div className="p-3 border rounded-md bg-gray-50">
-        <div className="font-medium mb-1">Oversikt over min regi</div>
+      <div className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
+        <div className="font-semibold text-gray-900 mb-1">Oversikt over min regi</div>
         <div className="text-sm text-gray-700">
           Godkjent: <span className="font-semibold">{totals.approved.toFixed(2)}</span> t • Venter:{' '}
           <span className="font-semibold">{totals.pending.toFixed(2)}</span> t • Totalt registrert:{' '}
@@ -43,32 +43,54 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
         </div>
       </div>
 
-      <div className="border rounded-md">
-        <div className="p-3 border-b font-medium">Regi logg</div>
+      <div className="border border-gray-200 rounded-xl bg-white shadow-sm">
+        <div className="p-4 border-b border-gray-200 font-semibold text-gray-900">Regi logg</div>
         <div className="max-h-[480px] overflow-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50 sticky top-0">
               <tr>
-                <th className="text-left p-2">Tittel</th>
-                <th className="text-left p-2">Dato</th>
-                <th className="text-left p-2">Timer</th>
-                <th className="text-left p-2">Type</th>
-                <th className="text-left p-2">Status</th>
+                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Tittel
+                </th>
+                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Dato
+                </th>
+                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Timer
+                </th>
+                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Type
+                </th>
+                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Status
+                </th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-gray-200">
               {logs.map((l) => (
-                <tr key={l.id} className="border-t">
-                  <td className="p-2">{l.title}</td>
-                  <td className="p-2">
+                <tr key={l.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-4 py-3">{l.title}</td>
+                  <td className="px-4 py-3">
                     {new Date(l.date.seconds * 1000).toLocaleDateString('no-NO')}
                   </td>
-                  <td className="p-2">{l.hours.toFixed(2)}</td>
-                  <td className="p-2 capitalize">{l.type}</td>
-                  <td className="p-2 capitalize">
-                    {l.status === 'pending' && <span className="text-amber-700">venter</span>}
-                    {l.status === 'approved' && <span className="text-green-700">godkjent</span>}
-                    {l.status === 'rejected' && <span className="text-red-700">avvist</span>}
+                  <td className="px-4 py-3">{l.hours.toFixed(2)}</td>
+                  <td className="px-4 py-3 capitalize">{l.type}</td>
+                  <td className="px-4 py-3 capitalize">
+                    {l.status === 'pending' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">
+                        venter
+                      </span>
+                    )}
+                    {l.status === 'approved' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">
+                        godkjent
+                      </span>
+                    )}
+                    {l.status === 'rejected' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">
+                        avvist
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}

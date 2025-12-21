@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { z } from 'zod';
 import { RegiLogSchema, WorkTypeSchema } from '../../../../shared/types/regi';
 import { addRegiLog } from '../../../../server/dao/regiDAO';
@@ -19,8 +19,6 @@ async function uploadRegiImages(uid: any, files: File[]) {
   // TODO: move and implement with supabase
   return [];
 }
-
-
 
 const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const { user } = useAuth();
@@ -115,25 +113,25 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     }
   };
   return (
-    <form onSubmit={handleSubmit} className="p-4 border rounded-md bg-gray-50">
-      <h2 className="font-medium text-xl mb-2">Registrer regi</h2>
-      <div className="mb-3">
-        <label className="block mb-1">Tittel</label>
+    <form onSubmit={handleSubmit} className="space-y-3">
+      <h2 className="font-semibold text-xl text-gray-900">Registrer regi</h2>
+      <div>
+        <label className="block mb-1 text-sm font-medium text-gray-700">Tittel</label>
         <input
           value={form.title}
           onChange={(e) => setField('title', e.target.value)}
-          className="w-full border rounded px-3 py-2"
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           placeholder="Arbeidet oppsummert"
         />
         {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title}</p>}
       </div>
 
       <div className="mb-3">
-        <label className="block mb-1">Arbeidets art</label>
+        <label className="block mb-1 text-sm font-medium text-gray-700">Arbeidets art</label>
         <select
           value={form.type}
           onChange={(e) => setField('type', e.target.value)}
-          className="w-full border rounded px-3 py-2"
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Velg type</option>
           {categories.map((category) => (
@@ -145,11 +143,11 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       </div>
 
       <div className="mb-3">
-        <label className="block mb-1">Beskrivelse</label>
+        <label className="block mb-1 text-sm font-medium text-gray-700">Beskrivelse</label>
         <textarea
           value={form.description}
           onChange={(e) => setField('description', e.target.value)}
-          className="w-full border rounded px-3 py-2"
+          className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           rows={4}
           placeholder="Forklaring av arbeidet"
         />
@@ -158,23 +156,23 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
 
       <div className="mb-3 grid grid-cols-2 gap-3">
         <div>
-          <label className="block mb-1">Dato</label>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Dato</label>
           <input
             type="date"
             value={form.date}
             onChange={(e) => setField('date', e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
           {errors.date && <p className="text-red-600 text-sm mt-1">{errors.date}</p>}
         </div>
         <div>
-          <label className="block mb-1">Timer</label>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Timer</label>
           <input
             type="number"
             step="0.25"
             value={form.hours}
             onChange={(e) => setField('hours', e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="1.5"
           />
           {errors.hours && <p className="text-red-600 text-sm mt-1">{errors.hours}</p>}
@@ -182,7 +180,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       </div>
 
       <div className="mb-4">
-        <label className="block mb-1">Bilder (valgfritt)</label>
+        <label className="block mb-1 text-sm font-medium text-gray-700">Bilder (valgfritt)</label>
         <input
           type="file"
           multiple

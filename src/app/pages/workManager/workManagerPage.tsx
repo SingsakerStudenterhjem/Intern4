@@ -21,7 +21,7 @@ const WorkManagerPage: React.FC = () => {
         </header>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="lg:col-span-1 bg-white border rounded-xl shadow-sm p-5 flex flex-col min-h-[60vh]">
+          <section className="lg:col-span-1 bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col min-h-[60vh]">
             <div className="mb-4">
               <h2 className="text-xl font-semibold text-gray-900">Godkjenningsliste</h2>
               <p className="text-sm text-gray-600">
@@ -34,11 +34,11 @@ const WorkManagerPage: React.FC = () => {
           </section>
 
           <div className="space-y-6">
-            <section className="bg-white border rounded-xl shadow-sm p-5">
+            <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
               <GrantRegiForm />
             </section>
 
-            <section className="bg-white border rounded-xl shadow-sm p-5">
+            <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
               <div className="mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">Registatus</h2>
                 <p className="text-sm text-gray-600">
@@ -50,7 +50,7 @@ const WorkManagerPage: React.FC = () => {
               </div>
             </section>
 
-            <section className="bg-white border rounded-xl shadow-sm p-4">
+            <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="font-semibold text-gray-900">Full regilogger</h3>

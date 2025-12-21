@@ -3,14 +3,17 @@ import WorkApprovalList from '../../components/regi/WorkManager/WorkApprovalList
 
 const WorkApprovalsPage: React.FC = () => {
   return (
-    <div className="flex justify-center min-h-screen bg-gray-100 overflow-x-hidden">
-      <div className="bg-white p-8 rounded-md shadow-md w-full mx-4 my-4 space-y-4 max-w-[80rem] min-w-0">
-        <div className="space-y-1">
-          <h1 className="font-bold text-2xl">Godkjenning</h1>
-          <p className="text-gray-600 text-sm">Godkjenn eller avvis innsendt regi.</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-6xl mx-auto px-4 space-y-4">
+        <header className="space-y-2">
+          <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">Regisjef</p>
+          <h1 className="text-3xl font-bold text-gray-900">Godkjenning</h1>
+          <p className="text-gray-600">Godkjenn eller avvis innsendte regitimer.</p>
+        </header>
 
-        <WorkApprovalList />
+        <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+          <WorkApprovalList />
+        </section>
       </div>
     </div>
   );

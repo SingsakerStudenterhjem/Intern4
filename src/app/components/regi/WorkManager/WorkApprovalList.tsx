@@ -133,23 +133,35 @@ const WorkApprovalList: React.FC = () => {
         </div>
       )}
 
-      <div className="p-3 border rounded-md bg-gray-50 text-sm text-gray-700">
+      <div className="p-3 shadow-sm bg-gray-50 text-sm text-gray-700">
         Venter: <span className="font-semibold">{filtered.length}</span>
       </div>
 
-      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border rounded-md">
-        <table className="w-full text-sm">
+      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border border-gray-200 rounded-xl bg-white shadow-sm">
+        <table className="min-w-full text-sm">
           <thead className="bg-gray-50 sticky top-0">
             <tr>
-              <th className="text-left p-2">Navn</th>
-              <th className="text-left p-2">Regitype</th>
-              <th className="text-left p-2">Tittel</th>
-              <th className="text-left p-2">Dato</th>
-              <th className="text-left p-2">Timer</th>
-              <th className="text-left p-2">Action</th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Navn
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Regitype
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Tittel
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Dato
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Timer
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Action
+              </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-200">
             {loading && (
               <tr>
                 <td className="p-3 text-gray-600" colSpan={6}>
@@ -165,15 +177,19 @@ const WorkApprovalList: React.FC = () => {
                 return (
                   <tr
                     key={a.id}
-                    className="border-t hover:bg-gray-50 cursor-pointer"
+                    className="hover:bg-gray-50 cursor-pointer transition-colors"
                     onClick={() => setSelected(a)}
                   >
-                    <td className="p-2">{a.userName}</td>
-                    <td className="p-2">{a.category}</td>
-                    <td className="p-2">{a.title}</td>
-                    <td className="p-2">{formatDate(a.createdAt)}</td>
-                    <td className="p-2">{a.hours.toFixed(2)}</td>
-                    <td className="p-2">
+                    <td className="px-4 py-3">{a.userName}</td>
+                    <td className="px-4 py-3">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium">
+                        {a.category}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">{a.title}</td>
+                    <td className="px-4 py-3">{formatDate(a.createdAt)}</td>
+                    <td className="px-4 py-3">{a.hours.toFixed(2)}</td>
+                    <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <button
                           disabled={busy}

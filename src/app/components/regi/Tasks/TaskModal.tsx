@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Users, Clock, Calendar, User, Trash2 } from 'lucide-react';
+import { Calendar, Clock, Trash2, User, Users, X } from 'lucide-react';
 import { Task } from '../../../../shared/types/regi/tasks/index.ts';
 import { canManageTasks, canViewAllParticipants } from '../../../constants/userRoles.ts';
 
@@ -106,7 +106,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4"
       onClick={onClose}
     >
       <div

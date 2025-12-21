@@ -70,9 +70,7 @@ const RegiLogsPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">
-              Regisjef
-            </p>
+            <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">Regisjef</p>
             <h1 className="text-3xl font-bold text-gray-900">Regilogger</h1>
             <p className="text-gray-600">Alle registrerte timer, inkludert godkjente og avviste.</p>
           </div>
@@ -81,7 +79,7 @@ const RegiLogsPage: React.FC = () => {
           </Link>
         </div>
 
-        <div className="bg-white border rounded-xl shadow-sm p-5 space-y-4">
+        <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 space-y-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -120,20 +118,34 @@ const RegiLogsPage: React.FC = () => {
             </div>
           )}
 
-          <div className="max-h-[70vh] overflow-auto border rounded-md">
-            <table className="w-full text-sm">
+          <div className="max-h-[70vh] overflow-auto border border-gray-200 rounded-xl bg-white shadow-sm">
+            <table className="min-w-full text-sm">
               <thead className="bg-gray-50 sticky top-0">
                 <tr>
-                  <th className="text-left p-2">Bruker</th>
-                  <th className="text-left p-2">Tittel</th>
-                  <th className="text-left p-2">Kategori</th>
-                  <th className="text-left p-2">Timer</th>
-                  <th className="text-left p-2">Dato</th>
-                  <th className="text-left p-2">Status</th>
-                  <th className="text-left p-2">Godkjent av</th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    Bruker
+                  </th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    Tittel
+                  </th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    Kategori
+                  </th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    Timer
+                  </th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    Dato
+                  </th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    Status
+                  </th>
+                  <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                    Godkjent av
+                  </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-gray-200">
                 {loading && (
                   <tr>
                     <td className="p-3 text-gray-600" colSpan={7}>
@@ -144,7 +156,7 @@ const RegiLogsPage: React.FC = () => {
 
                 {!loading &&
                   filtered.map((log) => (
-                    <tr key={log.id} className="border-t">
+                    <tr key={log.id} className="hover:bg-gray-50 transition-colors">
                       <td className="p-2">
                         <div className="font-medium">{log.userName}</div>
                         <div className="text-xs text-gray-500">{log.userEmail}</div>

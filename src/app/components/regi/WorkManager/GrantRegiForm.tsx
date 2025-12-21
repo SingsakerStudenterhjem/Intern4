@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { useAuth } from '../../../hooks/useAuth';
 import { WorkTypeSchema } from '../../../../shared/types/regi';
 import { addRegiLog } from '../../../../server/dao/regiDAO';
-import { getActiveUsersWithRole, BasicUserWithRole } from '../../../../server/dao/userDAO';
+import { BasicUserWithRole, getActiveUsersWithRole } from '../../../../server/dao/userDAO';
 import { getCategories } from '../../../../server/dao/categoriesDAO';
 
 const FormSchema = z.object({
@@ -140,11 +140,11 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       </p>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block mb-1">Bruker</label>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Bruker</label>
           <select
             value={form.userId}
             onChange={(e) => setField('userId', e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             disabled={loading}
           >
             <option value="">Velg bruker</option>
@@ -158,22 +158,22 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         </div>
 
         <div>
-          <label className="block mb-1">Tittel</label>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Tittel</label>
           <input
             value={form.title}
             onChange={(e) => setField('title', e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             placeholder="Arbeidet oppsummert"
           />
           {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title}</p>}
         </div>
 
         <div>
-          <label className="block mb-1">Arbeidets art</label>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Arbeidets art</label>
           <select
             value={form.type}
             onChange={(e) => setField('type', e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
             <option value="">Velg type</option>
             {categories.map((category) => (
@@ -186,11 +186,11 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         </div>
 
         <div>
-          <label className="block mb-1">Beskrivelse</label>
+          <label className="block mb-1 text-sm font-medium text-gray-700">Beskrivelse</label>
           <textarea
             value={form.description}
             onChange={(e) => setField('description', e.target.value)}
-            className="w-full border rounded px-3 py-2"
+            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             rows={3}
             placeholder="Forklaring av arbeidet"
           />
@@ -199,23 +199,23 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block mb-1">Dato</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Dato</label>
             <input
               type="date"
               value={form.date}
               onChange={(e) => setField('date', e.target.value)}
-              className="w-full border rounded px-3 py-2"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             />
             {errors.date && <p className="text-red-600 text-sm mt-1">{errors.date}</p>}
           </div>
           <div>
-            <label className="block mb-1">Timer</label>
+            <label className="block mb-1 text-sm font-medium text-gray-700">Timer</label>
             <input
               type="number"
               step="0.25"
               value={form.hours}
               onChange={(e) => setField('hours', e.target.value)}
-              className="w-full border rounded px-3 py-2"
+              className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="1.5"
             />
             {errors.hours && <p className="text-red-600 text-sm mt-1">{errors.hours}</p>}

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import WorkLogForm from '../../components/regi/MyRegi/WorkLogForm';
 import WorkLogList from '../../components/regi/MyRegi/WorkLogList';
 import { useAuth } from '../../hooks/useAuth';
+import { ROUTES } from '../../constants/routes';
 
 const WorkPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -10,21 +12,44 @@ const WorkPage = () => {
   if (loading || !user) return null;
 
   return (
-    <div className="flex justify-center min-h-screen bg-gray-100 overflow-x-hidden">
-      <div className="bg-white p-8 rounded-md shadow-md w-full mx-4 my-4 space-y-4 max-w-[80rem] min-w-0">
-        <div className="space-y-1">
-          <h1 className="font-bold text-2xl">Min regi</h1>
-          <p className="text-gray-600 text-sm">Her kan du registrere arbeid du har utført.</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 space-y-6">
+        <header className="space-y-3">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="space-y-1">
+              <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">Regi</p>
+              <h1 className="text-3xl font-bold text-gray-900">Min regi</h1>
+              <p className="text-gray-600">
+                Registrer egne regitimer og følg med på innsendte registreringer.
+              </p>
+            </div>
 
-        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
+            <div className="flex items-center gap-2">
+              <Link
+                to={ROUTES.TASKS}
+                className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Se oppgaver
+              </Link>
+            </div>
+          </div>
+        </header>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <section
+            id="regi-form"
+            className="lg:col-span-1 bg-white border border-gray-200 rounded-xl shadow-sm p-5"
+          >
             <WorkLogForm onCreated={() => setRefreshKey((k) => k + 1)} />
-          </div>
+          </section>
 
-          <div className="md:col-span-1">
-            <WorkLogList userId={user.id} refreshKey={refreshKey} />{' '}
-          </div>
+          <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+            <h2 className="text-lg font-semibold text-gray-900 mb-2">Mine registreringer</h2>
+            <p className="text-sm text-gray-600 mb-3">
+              Nyeste først. Godkjenning skjer av regisjef.
+            </p>
+            <WorkLogList userId={user.id} refreshKey={refreshKey} />
+          </section>
         </div>
       </div>
     </div>
