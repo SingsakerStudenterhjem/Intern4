@@ -137,7 +137,7 @@ const Registatus: React.FC = () => {
         <span className="font-semibold">{semesterLabel}</span>
       </div>
 
-      <div className="max-h-[480px] overflow-auto border rounded-md">
+      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border rounded-md">
         <table className="w-full text-sm">
           <thead className="bg-gray-50 sticky top-0">
             <tr>

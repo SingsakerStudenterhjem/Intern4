@@ -133,7 +133,7 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   };
 
   return (
-    <div className="p-4 border rounded-md bg-gray-50">
+    <div className="space-y-1">
       <h2 className="font-medium text-xl mb-2">Gi regitimer</h2>
       <p className="text-sm text-gray-600 mb-4">
         Registrer regi på vegne av aktive brukere. Registreringer må fortsatt godkjennes.
