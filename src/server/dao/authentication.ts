@@ -1,7 +1,8 @@
+import type { User, Session } from '@supabase/supabase-js';
 import { supabase } from '../supabaseClient';
 
 export type LoginResult =
-  | { success: true; user: SupabaseUser; session: Session }
+  | { success: true; user: User; session: Session }
   | { success: false; error: string };
 
 export async function logIn(email: string, password: string): Promise<LoginResult> {
@@ -41,7 +42,34 @@ export async function logOut(): Promise<LogoutResult> {
   }
 }
 
-// export async function forgotPassword(email: string) {
-//   const { error } = await supabase.auth.resetPasswordForEmail(email);
-//   if (error) throw new Error('Kunne ikke sende tilbakestillings e-post: ' + error.message);
-// }
+export type ForgotPasswordResult = { success: true } | { success: false; error: string };
+
+export async function forgotPassword(email: string): Promise<ForgotPasswordResult> {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) {
+      return { success: false, error: 'Kunne ikke sende e-post: ' + error.message };
+    }
+    return { success: true };
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Ukjent feil';
+    return { success: false, error: 'Kunne ikke sende e-post: ' + message };
+  }
+}
+
+export type ResetPasswordResult = { success: true } | { success: false; error: string };
+
+export async function resetPassword(newPassword: string): Promise<ResetPasswordResult> {
+  try {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) {
+      return { success: false, error: 'Kunne ikke oppdatere passord: ' + error.message };
+    }
+    return { success: true };
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : 'Ukjent feil';
+    return { success: false, error: 'Kunne ikke oppdatere passord: ' + message };
+  }
+}

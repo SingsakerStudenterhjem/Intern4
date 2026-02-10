@@ -14,12 +14,22 @@ import AdminPage from '../app/pages/adminPage';
 import AboutMePage from '../app/pages/tmpAboutMe';
 import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
 import RegiLogsPage from '../app/pages/workManager/regiLogsPage';
+import ForgotPasswordPage from '../app/pages/forgotPasswordPage';
+import ResetPasswordPage from '../app/pages/resetPasswordPage';
 
 // Public routes (no authentication required)
 export const publicRoutes = [
   {
     path: ROUTES.LOGIN,
     element: <LoginPage />,
+  },
+  {
+    path: ROUTES.FORGOT_PASSWORD,
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: ROUTES.RESET_PASSWORD,
+    element: <ResetPasswordPage />,
   },
 ];
 
