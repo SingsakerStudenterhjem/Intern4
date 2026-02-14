@@ -38,7 +38,6 @@ const Navbar = () => {
       key: 'regi',
       label: 'Regi',
       children: [
-        { label: 'Min regi', to: ROUTES.REGI },
         { label: 'Oppgaver', to: ROUTES.TASKS },
         {
           label: 'Regisjef',

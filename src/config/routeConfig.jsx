@@ -1,8 +1,6 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import LoginPage from '../app/pages/loginPage';
-import DashboardPage from '../app/pages/dashboardPage';
-import WorkPage from '../app/pages/work/workPage';
 import AddUserPage from '../app/pages/roomManager/addUserPage';
 import WorkTasksPage from '../app/pages/work/workTasksPage';
 import WorkManagerPage from '../app/pages/workManager/workManagerPage';
@@ -29,17 +27,13 @@ export const protectedRoutes = [
     path: ROUTES.DASHBOARD,
     element: (
       <ProtectedRoute>
-        <DashboardPage />
+        <WorkTasksPage />
       </ProtectedRoute>
     ),
   },
   {
     path: ROUTES.REGI,
-    element: (
-      <ProtectedRoute>
-        <WorkPage />
-      </ProtectedRoute>
-    ),
+    element: <Navigate to={ROUTES.TASKS} replace />,
   },
   {
     path: ROUTES.REGISJEF,
