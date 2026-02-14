@@ -145,6 +145,16 @@ export type Role = {
   name: string;
 };
 
+export async function deleteUser(userId: string): Promise<void> {
+  const { error } = await supabase.functions.invoke('delete-user', {
+    body: { userId },
+  });
+
+  if (error) {
+    throw new Error(error.message ?? 'Kunne ikke slette bruker');
+  }
+}
+
 export async function getRoles(): Promise<Role[]> {
   const { data, error } = await supabase
     .from('roles')

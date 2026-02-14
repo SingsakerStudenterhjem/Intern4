@@ -1,0 +1,410 @@
+-- ============================================================
+-- Enable Row Level Security (RLS) on all tables
+-- Run this in the Supabase SQL Editor (Dashboard > SQL Editor)
+-- ============================================================
+
+-- ============================================================
+-- 0. DROP ALL EXISTING RLS POLICIES
+-- ============================================================
+-- This dynamically finds and drops every policy on our tables,
+-- so we start from a clean slate regardless of what was there.
+-- ============================================================
+
+DO $$
+DECLARE
+  _tbl  text;
+  _pol  text;
+BEGIN
+  FOR _tbl, _pol IN
+    SELECT tablename, policyname
+    FROM pg_policies
+    WHERE schemaname = 'public'
+      AND tablename IN (
+        'roles',
+        'users',
+        'work_categories',
+        'work_items',
+        'work_tasks',
+        'work_assignments',
+        'work_misc'
+      )
+  LOOP
+    EXECUTE format('DROP POLICY IF EXISTS %I ON %I', _pol, _tbl);
+    RAISE NOTICE 'Dropped policy "%" on table "%"', _pol, _tbl;
+  END LOOP;
+END
+$$;
+
+-- ============================================================
+-- 1. ROLES TABLE
+-- ============================================================
+-- Roles are reference data (Admin, Regisjef, Halv/Halv, etc.)
+-- Everyone authenticated can read them, but only service_role
+-- (edge functions) should insert/update/delete.
+-- ============================================================
+
+ALTER TABLE roles ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read roles"
+  ON roles FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- ============================================================
+-- 2. USERS TABLE
+-- ============================================================
+-- All authenticated users can read all user profiles (needed
+-- for user lists, participant names, etc.)
+-- Users can update ONLY their own profile.
+-- Inserts/deletes are handled by edge functions using
+-- service_role_key, which bypasses RLS entirely.
+-- ============================================================
+
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read all users"
+  ON users FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Users can update own profile"
+  ON users FOR UPDATE
+  TO authenticated
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+
+-- Admins (Data, Regisjef, Romsjef) can update any user profile
+-- This uses a subquery to check the caller's role.
+CREATE POLICY "Admins can update any user"
+  ON users FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef', 'Romsjef')
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef', 'Romsjef')
+    )
+  );
+
+-- INSERT handled by create-user edge function (service_role bypasses RLS)
+-- DELETE handled by delete-user edge function (service_role bypasses RLS)
+
+-- Admins/managers can delete non-admin users
+-- (Defense-in-depth: edge function also enforces this)
+CREATE POLICY "Managers can delete non-admin users"
+  ON users FOR DELETE
+  TO authenticated
+  USING (
+    -- Caller must be Admin, Data, or Regisjef
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+    -- Target user must NOT be Admin
+    AND NOT EXISTS (
+      SELECT 1 FROM roles r
+      WHERE r.id = role_id
+        AND r.name = 'Admin'
+    )
+  );
+
+-- ============================================================
+-- 3. WORK_CATEGORIES TABLE
+-- ============================================================
+-- Everyone authenticated can read categories.
+-- Only managers can insert/update (soft-delete via is_active).
+-- ============================================================
+
+ALTER TABLE work_categories ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read categories"
+  ON work_categories FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Managers can insert categories"
+  ON work_categories FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+CREATE POLICY "Managers can update categories"
+  ON work_categories FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+-- ============================================================
+-- 4. WORK_ITEMS TABLE
+-- ============================================================
+-- Everyone authenticated can read work items.
+-- Managers can create/update/delete work items (tasks + misc).
+-- Regular users can insert misc items (regi logs via regiDAO).
+-- ============================================================
+
+ALTER TABLE work_items ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read work items"
+  ON work_items FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Authenticated users can insert work items"
+  ON work_items FOR INSERT
+  TO authenticated
+  WITH CHECK (true);
+
+CREATE POLICY "Managers can update work items"
+  ON work_items FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+CREATE POLICY "Managers can delete work items"
+  ON work_items FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+-- ============================================================
+-- 5. WORK_TASKS TABLE
+-- ============================================================
+-- Everyone authenticated can read tasks.
+-- Managers can create/update/delete tasks.
+-- ============================================================
+
+ALTER TABLE work_tasks ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read tasks"
+  ON work_tasks FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Managers can insert tasks"
+  ON work_tasks FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+CREATE POLICY "Managers can update tasks"
+  ON work_tasks FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+CREATE POLICY "Managers can delete tasks"
+  ON work_tasks FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+-- ============================================================
+-- 6. WORK_ASSIGNMENTS TABLE
+-- ============================================================
+-- Everyone authenticated can read assignments (needed to show
+-- participants, hours, approvals, etc.)
+-- Users can insert their own assignments (join task, log regi).
+-- Users can delete their own assignments (leave task).
+-- Managers can insert/update/delete any assignment.
+-- ============================================================
+
+ALTER TABLE work_assignments ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read assignments"
+  ON work_assignments FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- Users can insert their own assignments (join task, log hours)
+CREATE POLICY "Users can insert own assignments"
+  ON work_assignments FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_uuid);
+
+-- Users can delete their own assignments (leave task)
+CREATE POLICY "Users can delete own assignments"
+  ON work_assignments FOR DELETE
+  TO authenticated
+  USING (auth.uid() = user_uuid);
+
+-- Managers can insert assignments for anyone
+CREATE POLICY "Managers can insert any assignment"
+  ON work_assignments FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+-- Managers can update any assignment (approve/reject)
+CREATE POLICY "Managers can update any assignment"
+  ON work_assignments FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+-- Managers can delete any assignment
+CREATE POLICY "Managers can delete any assignment"
+  ON work_assignments FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+-- ============================================================
+-- 7. WORK_MISC TABLE
+-- ============================================================
+-- Simple table with just id, created_at, image.
+-- Everyone authenticated can read. Only managers can modify.
+-- ============================================================
+
+ALTER TABLE work_misc ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read work_misc"
+  ON work_misc FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Managers can insert work_misc"
+  ON work_misc FOR INSERT
+  TO authenticated
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+CREATE POLICY "Managers can update work_misc"
+  ON work_misc FOR UPDATE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );
+
+CREATE POLICY "Managers can delete work_misc"
+  ON work_misc FOR DELETE
+  TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM users u
+      JOIN roles r ON u.role_id = r.id
+      WHERE u.id = auth.uid()
+        AND r.name IN ('Admin', 'Data', 'Regisjef')
+    )
+  );

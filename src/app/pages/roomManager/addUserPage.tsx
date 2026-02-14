@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Trash2 } from 'lucide-react';
 import { NewUserInput } from '../../../shared/types/user';
 import {
   createUser,
+  deleteUser,
   getRoles,
   getAllUsersWithRole,
   Role,
@@ -44,6 +45,23 @@ const AddUserPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
   const [showAddForm, setShowAddForm] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<BasicUserWithRole | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteUser = async (user: BasicUserWithRole) => {
+    setIsDeleting(true);
+    try {
+      await deleteUser(user.id);
+      setMessage({ type: 'success', text: `${user.name} ble slettet` });
+      setDeleteConfirm(null);
+      await loadUsers();
+      setTimeout(() => setMessage(null), 4000);
+    } catch (err: any) {
+      setMessage({ type: 'error', text: err?.message ?? 'Kunne ikke slette bruker' });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   useEffect(() => {
     getRoles()
@@ -561,7 +579,7 @@ const AddUserPage: React.FC = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
-                  placeholder="Sok etter navn eller e-post..."
+                  placeholder="Søk etter navn eller e-post..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -603,12 +621,14 @@ const AddUserPage: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={4} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
                         Ingen brukere funnet.
                       </td>
                     </tr>
@@ -641,6 +661,17 @@ const AddUserPage: React.FC = () => {
                             </span>
                           )}
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
+                          {user.role !== 'Admin' ? (
+                            <button
+                              onClick={() => setDeleteConfirm(user)}
+                              className="text-gray-400 hover:text-red-600 transition-colors"
+                              title="Slett bruker"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          ) : null}
+                        </td>
                       </tr>
                     ))
                   )}
@@ -654,6 +685,34 @@ const AddUserPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Slett bruker</h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Er du sikker pa at du vil slette <strong>{deleteConfirm.name}</strong>? Denne handlingen kan ikke angres.
+            </p>
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                Avbryt
+              </button>
+              <button
+                onClick={() => handleDeleteUser(deleteConfirm)}
+                disabled={isDeleting}
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? 'Sletter...' : 'Slett'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

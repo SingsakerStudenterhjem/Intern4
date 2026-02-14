@@ -136,7 +136,6 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
           description: formData.description.trim() || undefined,
           color: formData.color,
           isActive: true,
-          createdBy: '', // This will be set by the parent component
         });
       }
       cancelEdit();
