@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NewUserInput } from '../../../shared/types/user';
-import { createUser } from '../../../server/dao/userDAO';
+import { createUser, getRoles, Role } from '../../../server/dao/userDAO';
 
 const AddUserPage: React.FC = () => {
   const [userData, setUserData] = useState<NewUserInput>({
@@ -28,6 +28,15 @@ const AddUserPage: React.FC = () => {
   const [showOptionalFields, setShowOptionalFields] = useState(false);
   const [validationErrors, setValidationErrors] = useState<{ [key: string]: string }>({});
   const [birthDateString, setBirthDateString] = useState('');
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesLoading, setRolesLoading] = useState(true);
+
+  useEffect(() => {
+    getRoles()
+      .then((data) => setRoles(data))
+      .catch((err) => console.error('Failed to load roles:', err))
+      .finally(() => setRolesLoading(false));
+  }, []);
 
   const validateField = (name: string, value: any) => {
     const errors: { [key: string]: string } = {};
@@ -308,13 +317,18 @@ const AddUserPage: React.FC = () => {
                   name="role"
                   value={userData.role}
                   onChange={handleInputChange}
+                  disabled={rolesLoading}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 >
-                  <option value="Halv/Halv">Halv/Halv</option>
-                  <option value="Full Regi">Full Regi</option>
-                  <option value="Full Vakt">Full Vakt</option>
-                  <option value="Utvalgsmedlem">Utvalgsmedlem</option>
-                  <option value="Daglig leder">Daglig leder</option>
+                  {rolesLoading ? (
+                    <option>Laster roller...</option>
+                  ) : (
+                    roles.map((r) => (
+                      <option key={r.id} value={r.name}>
+                        {r.name}
+                      </option>
+                    ))
+                  )}
                 </select>
               </div>
 
