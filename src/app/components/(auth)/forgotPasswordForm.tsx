@@ -1,16 +1,47 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../../../server/dao/authentication';
 import { ROUTES } from '../../constants/routes';
+
+const COOLDOWN_SECONDS = 60;
 
 const ForgotPasswordForm = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  const [countdown, setCountdown] = useState(0);
 
-  const handleSubmit = async (event: React.FormEvent) => {
-    event.preventDefault();
+  useEffect(() => {
+    if (countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const handleSubmit = useCallback(
+    async (event: React.FormEvent) => {
+      event.preventDefault();
+      setError(null);
+      setLoading(true);
+
+      const result = await forgotPassword(email);
+
+      setLoading(false);
+
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      setSent(true);
+      setCountdown(COOLDOWN_SECONDS);
+    },
+    [email],
+  );
+
+  const handleResend = async () => {
     setError(null);
     setLoading(true);
 
@@ -23,7 +54,7 @@ const ForgotPasswordForm = () => {
       return;
     }
 
-    setSent(true);
+    setCountdown(COOLDOWN_SECONDS);
   };
 
   if (sent) {
@@ -35,9 +66,22 @@ const ForgotPasswordForm = () => {
             for å tilbakestille passordet ditt.
           </p>
         </div>
-        <Link to={ROUTES.LOGIN} className="text-sm text-blue-600 hover:underline">
-          Tilbake til innlogging
-        </Link>
+
+        {error && <div className="text-red-500 mb-4 text-sm">{error}</div>}
+
+        <div className="flex items-center justify-between">
+          <Link to={ROUTES.LOGIN} className="text-sm text-blue-600 hover:underline">
+            Tilbake til innlogging
+          </Link>
+          <button
+            type="button"
+            onClick={handleResend}
+            disabled={countdown > 0 || loading}
+            className="text-sm text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
+          >
+            {countdown > 0 ? `Send på nytt (${countdown}s)` : 'Send på nytt'}
+          </button>
+        </div>
       </div>
     );
   }
