@@ -3,21 +3,31 @@ import { Navigate } from 'react-router-dom';
 import LoginPage from '../app/pages/loginPage';
 import AddUserPage from '../app/pages/roomManager/addUserPage';
 import WorkTasksPage from '../app/pages/work/workTasksPage';
+import WorkPage from '../app/pages/work/workPage';
 import WorkManagerPage from '../app/pages/workManager/workManagerPage';
 import NotFoundPage from '../app/pages/notFoundPage';
 import ProtectedRoute from '../app/components/common/protectedRoute';
 import { ROUTES } from '../app/constants/routes';
 import { USER_ROLES } from '../app/constants/userRoles';
-import AdminPage from '../app/pages/adminPage';
 import AboutMePage from '../app/pages/tmpAboutMe';
 import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
 import RegiLogsPage from '../app/pages/workManager/regiLogsPage';
+import ForgotPasswordPage from '../app/pages/forgotPasswordPage';
+import ResetPasswordPage from '../app/pages/resetPasswordPage';
 
 // Public routes (no authentication required)
 export const publicRoutes = [
   {
     path: ROUTES.LOGIN,
     element: <LoginPage />,
+  },
+  {
+    path: ROUTES.FORGOT_PASSWORD,
+    element: <ForgotPasswordPage />,
+  },
+  {
+    path: ROUTES.RESET_PASSWORD,
+    element: <ResetPasswordPage />,
   },
 ];
 
@@ -96,9 +106,7 @@ export const adminRoutes = [
   {
     path: ROUTES.ADMIN,
     element: (
-      <ProtectedRoute>
-        <AdminPage />
-      </ProtectedRoute>
+      <ProtectedRoute></ProtectedRoute>
     ),
   },
 ];

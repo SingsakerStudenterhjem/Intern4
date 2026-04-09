@@ -121,3 +121,46 @@ export async function getActiveUsersWithRole(): Promise<BasicUserWithRole[]> {
     isActive: row.is_active ?? false,
   }));
 }
+
+export async function getAllUsersWithRole(): Promise<BasicUserWithRole[]> {
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, name, email, is_active, on_leave, roles(name)')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row: any) => ({
+    id: row.id,
+    name: row.name ?? 'Ukjent',
+    email: row.email ?? '',
+    role: row.roles?.name ?? undefined,
+    onLeave: row.on_leave ?? false,
+    isActive: row.is_active ?? false,
+  }));
+}
+
+export type Role = {
+  id: string;
+  name: string;
+};
+
+export async function deleteUser(userId: string): Promise<void> {
+  const { error } = await supabase.functions.invoke('delete-user', {
+    body: { userId },
+  });
+
+  if (error) {
+    throw new Error(error.message ?? 'Kunne ikke slette bruker');
+  }
+}
+
+export async function getRoles(): Promise<Role[]> {
+  const { data, error } = await supabase
+    .from('roles')
+    .select('id, name')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}

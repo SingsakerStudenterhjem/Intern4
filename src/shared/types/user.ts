@@ -16,18 +16,7 @@ const UserSchema = z.object({
   profilePicture: z.string().optional(),
   seniority: z.number().int(),
   roomNumber: z.number().int(),
-  role: z
-    .string()
-    .refine((value) =>
-      [
-        'Halv/Halv',
-        'Full Regi',
-        'Full Vakt',
-        'Utvalgsmedlem',
-        'Data',
-        'Daglig leder',
-      ].includes(value)
-    ),
+  role: z.string(),
   onLeave: z.boolean(),
   isActive: z.boolean(),
   createdAt: z.date(),

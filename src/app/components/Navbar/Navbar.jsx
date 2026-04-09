@@ -39,6 +39,7 @@ const Navbar = () => {
       label: 'Regi',
       children: [
         { label: 'Oppgaver', to: ROUTES.TASKS },
+        { label: 'Min regi', to: ROUTES.REGI },
         {
           label: 'Regisjef',
           to: ROUTES.REGISJEF,
@@ -57,7 +58,7 @@ const Navbar = () => {
       roles: [USER_ROLES.ADMIN, USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
       children: [
         {
-          label: 'Legg til beboer',
+          label: 'Administrer brukere',
           to: ROUTES.LEGG_TIL_BEBOER,
           roles: [USER_ROLES.ADMIN, USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
         },
