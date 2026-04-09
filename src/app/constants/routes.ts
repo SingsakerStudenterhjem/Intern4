@@ -10,4 +10,6 @@ export const ROUTES = {
   HOME: '/',
   ADMIN: '/admin',
   ABOUTME: '/about_me',
+  FORGOT_PASSWORD: '/glemt-passord',
+  RESET_PASSWORD: '/reset-password',
 };
