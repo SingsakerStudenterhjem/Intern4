@@ -3,6 +3,7 @@ import { Navigate } from 'react-router-dom';
 import LoginPage from '../app/pages/loginPage';
 import AddUserPage from '../app/pages/roomManager/addUserPage';
 import WorkTasksPage from '../app/pages/work/workTasksPage';
+import WorkPage from '../app/pages/work/workPage';
 import WorkManagerPage from '../app/pages/workManager/workManagerPage';
 import NotFoundPage from '../app/pages/notFoundPage';
 import ProtectedRoute from '../app/components/common/protectedRoute';
