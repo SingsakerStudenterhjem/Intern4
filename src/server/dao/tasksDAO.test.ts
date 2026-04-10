@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { joinTask, leaveTask, submitTaskCompletion } from './tasksDAO';
+import { getTasksByUser, joinTask, leaveTask, submitTaskCompletion } from './tasksDAO';
 import { supabase } from '../supabaseClient';
 
 vi.mock('../supabaseClient', () => ({
@@ -37,6 +37,25 @@ function createUpdateBuilder() {
   const builder: any = {
     update: vi.fn(() => builder),
     eq: vi.fn(async () => ({ error: null })),
+  };
+
+  return builder;
+}
+
+function createEqSelectBuilder(data: any[]) {
+  const builder: any = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(async () => ({ data, error: null })),
+  };
+
+  return builder;
+}
+
+function createInOrderBuilder(data: any[]) {
+  const builder: any = {
+    select: vi.fn(() => builder),
+    in: vi.fn(() => builder),
+    order: vi.fn(async () => ({ data, error: null })),
   };
 
   return builder;
@@ -124,5 +143,60 @@ describe('tasksDAO', () => {
       approval_comment: null,
     });
     expect(updateBuilder.eq).toHaveBeenCalledWith('id', 9);
+  });
+
+  it('queries only the current user assignment task ids in getTasksByUser', async () => {
+    const assignmentsBuilder = createEqSelectBuilder([{ work_id: 1 }, { work_id: 2 }, { work_id: 1 }]);
+    const tasksBuilder = createInOrderBuilder([
+      createTaskRow({
+        id: 1,
+        work_items: {
+          title: 'Oppgave 1',
+          description: 'Beskrivelse',
+          work_categories: { name: 'Generelt' },
+          participants: [
+            {
+              id: 10,
+              user_uuid: '11111111-1111-1111-1111-111111111111',
+              hours_used: null,
+              approved_state: 0,
+              approval_comment: null,
+              approved_by_uuid: null,
+              created_at: '2026-04-10T10:00:00.000Z',
+            },
+          ],
+        },
+      }),
+      createTaskRow({
+        id: 2,
+        work_items: {
+          title: 'Oppgave 2',
+          description: 'Beskrivelse',
+          work_categories: { name: 'Generelt' },
+          participants: [
+            {
+              id: 11,
+              user_uuid: '11111111-1111-1111-1111-111111111111',
+              hours_used: 2,
+              approved_state: 0,
+              approval_comment: null,
+              approved_by_uuid: null,
+              created_at: '2026-04-10T10:00:00.000Z',
+            },
+          ],
+        },
+      }),
+    ]);
+    const fromMock = vi.mocked(supabase.from);
+
+    fromMock
+      .mockImplementationOnce(() => assignmentsBuilder)
+      .mockImplementationOnce(() => tasksBuilder);
+
+    const result = await getTasksByUser('11111111-1111-1111-1111-111111111111');
+
+    expect(assignmentsBuilder.eq).toHaveBeenCalledWith('user_uuid', '11111111-1111-1111-1111-111111111111');
+    expect(tasksBuilder.in).toHaveBeenCalledWith('id', [1, 2]);
+    expect(result.map((task) => task.id)).toEqual(['1', '2']);
   });
 });
