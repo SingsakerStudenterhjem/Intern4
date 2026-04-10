@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import { Task } from '../../shared/types/regi/tasks';
-import { Category } from '../../shared/types/regi/tasks';
+import { Category, Task, canUserJoinTask } from '../../shared/types/regi/tasks';
 
 export const useTasks = (
   tasks: Task[],
   categories: Category[],
   currentUser: string,
+  participantNames: Record<string, string>,
   tasksPerPage = 10
 ) => {
   const [query, setQuery] = useState('');
@@ -17,13 +17,10 @@ export const useTasks = (
     let filtered = tasks;
 
     if (filter === 'available') {
-      // Updated filter logic for the new Task structure
-      filtered = filtered.filter(
-        (t) => !t.completed && (!t.maxParticipants || t.participants.length < t.maxParticipants)
-      );
+      filtered = filtered.filter((task) => canUserJoinTask(task, currentUser));
     } else if (filter === 'myTasks') {
-      filtered = filtered.filter(
-        (t) => t.participants.includes(currentUser) || t.createdBy === currentUser
+      filtered = filtered.filter((task) =>
+        task.participants.some((participant) => participant.userId === currentUser)
       );
     }
 
@@ -35,15 +32,17 @@ export const useTasks = (
       const lowerCaseQuery = query.toLowerCase();
       filtered = filtered.filter(
         (t) =>
-          t.taskName.toLowerCase().includes(lowerCaseQuery) ||
+          t.title.toLowerCase().includes(lowerCaseQuery) ||
           t.category.toLowerCase().includes(lowerCaseQuery) ||
           t.description?.toLowerCase().includes(lowerCaseQuery) ||
-          t.contactPerson.toLowerCase().includes(lowerCaseQuery)
+          (t.contactPersonId ? (participantNames[t.contactPersonId] ?? '').toLowerCase() : '').includes(
+            lowerCaseQuery
+          )
       );
     }
 
     return filtered;
-  }, [tasks, query, filter, category, currentUser]);
+  }, [tasks, query, filter, category, currentUser, participantNames]);
 
   const paginatedTasks = useMemo(() => {
     const startIndex = (currentPage - 1) * tasksPerPage;

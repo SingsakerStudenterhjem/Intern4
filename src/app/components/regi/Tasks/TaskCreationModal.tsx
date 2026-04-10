@@ -17,12 +17,12 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   currentUser,
 }) => {
   const [formData, setFormData] = useState<TaskFormData>({
-    taskName: '',
+    title: '',
     category: '',
     description: '',
     deadline: '',
     hourEstimate: '',
-    maxParticipants: '1', // Default to 1 participant required
+    maxParticipants: '1',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -31,12 +31,12 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     if (isOpen) {
       // Reset form when modal opens
       setFormData({
-        taskName: '',
+        title: '',
         category: categories.length > 0 ? categories[0].name : '',
         description: '',
         deadline: '',
         hourEstimate: '',
-        maxParticipants: '1', // Default to 1 participant required
+        maxParticipants: '1',
       });
       setErrors({});
     }
@@ -61,22 +61,23 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     // Additional custom validation
     const newErrors: FormErrors = {};
 
-    if (!formData.taskName.trim()) {
-      newErrors.taskName = 'Oppgavenavn er påkrevd';
+    if (!formData.title.trim()) {
+      newErrors.title = 'Oppgavenavn er påkrevd';
     }
 
     if (!formData.category) {
       newErrors.category = 'Kategori er påkrevd';
     }
 
-    if (formData.hourEstimate) {
+    if (!formData.hourEstimate) {
+      newErrors.hourEstimate = 'Timeestimat er påkrevd';
+    } else {
       const hours = Number(formData.hourEstimate);
       if (isNaN(hours) || hours <= 0) {
         newErrors.hourEstimate = 'Timeestimat må være et positivt tall';
       }
     }
 
-    // Max participants is now required and must be at least 1
     if (!formData.maxParticipants) {
       newErrors.maxParticipants = 'Maksimalt antall deltakere er påkrevd';
     } else {
@@ -92,19 +93,13 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
   const transformFormDataToCreationData = (formData: TaskFormData): TaskCreationData => {
     return {
-      taskName: formData.taskName.trim(),
+      title: formData.title.trim(),
       category: formData.category,
       description: formData.description.trim() || undefined,
-      contactPerson: currentUser?.name || 'Ukjent',
-      contactPersonId: currentUser?.id || '',
+      contactPersonId: currentUser?.id || undefined,
       deadline: formData.deadline ? new Date(formData.deadline) : undefined,
-      hourEstimate: formData.hourEstimate ? Number(formData.hourEstimate) : undefined,
-      maxParticipants: Number(formData.maxParticipants), // Always a number now, never undefined
-      participants: [],
-      completed: false,
-      isApproved: false,
-      createdBy: currentUser?.id || '',
-      isActive: true,
+      hourEstimate: Number(formData.hourEstimate),
+      maxParticipants: Number(formData.maxParticipants),
     };
   };
 
@@ -171,26 +166,26 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
           {/* Task Name */}
           <div>
-            <label htmlFor="taskName" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
               Oppgavenavn *
             </label>
             <input
               type="text"
-              id="taskName"
-              value={formData.taskName}
-              onChange={(e) => handleInputChange('taskName', e.target.value)}
+              id="title"
+              value={formData.title}
+              onChange={(e) => handleInputChange('title', e.target.value)}
               className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.taskName
+                errors.title
                   ? 'border-red-300 focus:border-red-500'
                   : 'border-gray-300 focus:border-blue-500'
               }`}
               placeholder="Begå lovbrudd"
-              aria-invalid={!!errors.taskName}
-              aria-describedby={errors.taskName ? 'taskName-error' : undefined}
+              aria-invalid={!!errors.title}
+              aria-describedby={errors.title ? 'title-error' : undefined}
             />
-            {errors.taskName && (
-              <p id="taskName-error" className="mt-1 text-sm text-red-600" role="alert">
-                {errors.taskName}
+            {errors.title && (
+              <p id="title-error" className="mt-1 text-sm text-red-600" role="alert">
+                {errors.title}
               </p>
             )}
           </div>
