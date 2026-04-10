@@ -12,7 +12,6 @@ const WorkManagerPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 space-y-6">
         <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">Regisjef</p>
             <h1 className="font-bold text-3xl text-gray-900">Arbeidsflyt og regioversikt</h1>
             <p className="text-gray-600 mt-1">
               Godkjenn innsendte timer, gi regi til beboere og følg status for hele huset.

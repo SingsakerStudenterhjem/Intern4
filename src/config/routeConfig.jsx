@@ -43,7 +43,11 @@ export const protectedRoutes = [
   },
   {
     path: ROUTES.REGI,
-    element: <Navigate to={ROUTES.TASKS} replace />,
+    element: (
+      <ProtectedRoute>
+        <WorkPage />
+      </ProtectedRoute>
+    ),
   },
   {
     path: ROUTES.REGISJEF,

@@ -17,7 +17,6 @@ const WorkPage = () => {
         <header className="space-y-3">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">Regi</p>
               <h1 className="text-3xl font-bold text-gray-900">Min regi</h1>
               <p className="text-gray-600">
                 Registrer egne regitimer og følg med på innsendte registreringer.
