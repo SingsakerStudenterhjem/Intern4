@@ -47,7 +47,7 @@ const WorkPage = () => {
             <p className="text-sm text-gray-600 mb-3">
               Nyeste først. Godkjenning skjer av regisjef.
             </p>
-            <WorkLogList userId={user.id} refreshKey={refreshKey} />
+            <WorkLogList userId={user.id} userRole={user.role} refreshKey={refreshKey} />
           </section>
         </div>
       </div>
