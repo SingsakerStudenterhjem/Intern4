@@ -57,7 +57,10 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="space-y-1">
             <h2 className="text-xl font-semibold text-gray-900">Godkjenn regi</h2>
-            <p className="text-sm text-gray-600">{approval.category}</p>
+            <p className="text-sm text-gray-600">
+              {approval.sourceType === 'task' ? 'Oppgave' : 'Manuell registrering'} •{' '}
+              {approval.category}
+            </p>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="w-6 h-6" />

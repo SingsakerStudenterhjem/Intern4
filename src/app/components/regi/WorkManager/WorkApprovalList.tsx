@@ -182,9 +182,20 @@ const WorkApprovalList: React.FC = () => {
                   >
                     <td className="px-4 py-3">{a.userName}</td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium">
-                        {a.category}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium">
+                          {a.category}
+                        </span>
+                        <span
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                            a.sourceType === 'task'
+                              ? 'bg-purple-50 text-purple-800'
+                              : 'bg-gray-100 text-gray-700'
+                          }`}
+                        >
+                          {a.sourceType === 'task' ? 'Oppgave' : 'Manuell'}
+                        </span>
+                      </div>
                     </td>
                     <td className="px-4 py-3">{a.title}</td>
                     <td className="px-4 py-3">{formatDate(a.createdAt)}</td>
