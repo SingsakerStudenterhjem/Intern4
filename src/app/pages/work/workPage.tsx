@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import WorkLogForm from '../../components/regi/MyRegi/WorkLogForm';
 import WorkLogList from '../../components/regi/MyRegi/WorkLogList';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../../contexts/authContext';
 import { ROUTES } from '../../constants/routes';
 
 const WorkPage = () => {

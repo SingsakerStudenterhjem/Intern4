@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../../server/supabaseClient';
 import { resetPassword } from '../../../server/dao/authentication';
 import { ROUTES } from '../../constants/routes';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../../contexts/authContext';
 
 const ResetPasswordForm = () => {
   const navigate = useNavigate();

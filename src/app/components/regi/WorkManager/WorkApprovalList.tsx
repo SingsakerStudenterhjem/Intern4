@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Ban, Check, RefreshCw, Search } from 'lucide-react';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../../contexts/authContext';
 import {
   approveRegiLog,
   getPendingRegiApprovals,

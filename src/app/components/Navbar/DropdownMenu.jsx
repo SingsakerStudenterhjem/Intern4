@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../../contexts/authContext';
 import { USER_ROLES } from '../../constants/userRoles';
 import { LucideChevronDown } from 'lucide-react';
 

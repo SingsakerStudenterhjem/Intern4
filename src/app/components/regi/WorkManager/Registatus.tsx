@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Search } from 'lucide-react';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../../contexts/authContext';
 import { canApproveWork } from '../../../constants/userRoles';
 import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
 import { getApprovedRegiHoursByUserSince } from '../../../../server/dao/regiDAO';

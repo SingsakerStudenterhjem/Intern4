@@ -5,7 +5,7 @@ import TaskModal from '../../components/regi/Tasks/TaskModal';
 import TaskCreationModal from '../../components/regi/Tasks/TaskCreationModal';
 import CategoryManagement from '../../components/admin/CategoryManagement';
 import { useTasks } from '../../hooks/useTasks';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../../contexts/authContext';
 import {
   addTask,
   deleteTask,

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import React from 'react';
+import { useAuth } from '../../contexts/authContext';
 
 const AboutMePage = () => {
   const { user, loading } = useAuth();

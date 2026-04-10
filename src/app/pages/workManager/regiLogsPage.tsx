@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { RefreshCw, Search } from 'lucide-react';
 import { getAllRegiLogs, RegiLogWithUser } from '../../../server/dao/regiDAO';
 import { ROUTES } from '../../constants/routes';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../../contexts/authContext';
 import { canApproveWork } from '../../constants/userRoles';
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';

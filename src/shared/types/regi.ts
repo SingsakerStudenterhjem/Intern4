@@ -19,6 +19,7 @@ export const RegiLogSchema = z.object({
   createdAt: z.date(),
   reviewedBy: z.string().optional(),
   reviewerComment: z.string().optional(),
+  imageUrl: z.url().optional(),
 });
 export type RegiLog = z.infer<typeof RegiLogSchema>;
 

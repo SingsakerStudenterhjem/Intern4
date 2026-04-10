@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuth } from '../../../../contexts/authContext';
 import { WorkTypeSchema } from '../../../../shared/types/regi';
 import { addRegiLog } from '../../../../server/dao/regiDAO';
 import { BasicUserWithRole, getActiveUsersWithRole } from '../../../../server/dao/userDAO';

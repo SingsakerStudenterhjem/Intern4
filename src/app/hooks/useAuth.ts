@@ -8,13 +8,65 @@ export type AuthUser = {
   role?: string;
 } | null;
 
-export const useAuth = () => {
+export type UseAuthReturn = {
+  user: AuthUser;
+  loading: boolean;
+  error: string | null;
+  logout: () => Promise<void>;
+  isAuthenticated: boolean;
+  isAdmin: boolean;
+};
+
+type UserProfileRow = {
+  name: string | null;
+  email: string | null;
+  roles?: { name: string | null } | Array<{ name: string | null }> | null;
+};
+
+const getRoleName = (profile: UserProfileRow | null | undefined): string | undefined => {
+  if (!profile?.roles) return undefined;
+  if (Array.isArray(profile.roles)) return profile.roles[0]?.name ?? undefined;
+  return profile.roles.name ?? undefined;
+};
+
+export const useProvideAuth = (): UseAuthReturn => {
   const [user, setUser] = useState<AuthUser>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
+
+    const setBasicUser = (id: string, email?: string | null) => {
+      setUser({
+        id,
+        email: email ?? undefined,
+      });
+    };
+
+    const loadProfile = async (id: string, email?: string | null) => {
+      const { data, error: profileError } = await supabase
+        .from('users')
+        .select('name, email, roles(name)')
+        .eq('id', id)
+        .maybeSingle();
+
+      if (!isMounted) return;
+
+      if (profileError) {
+        setError('Kunne ikke laste brukerprofil');
+        setBasicUser(id, email);
+        return;
+      }
+
+      const profile = data as UserProfileRow | null;
+      setUser({
+        id,
+        name: profile?.name ?? undefined,
+        email: profile?.email ?? email ?? undefined,
+        role: getRoleName(profile),
+      });
+    };
 
     const loadInitialSession = async () => {
       setLoading(true);
@@ -32,31 +84,7 @@ export const useAuth = () => {
         return;
       }
 
-      const { data, error } = await supabase
-        .from('users')
-        .select('name, email, roles(name)')
-        .eq('id', session.user.id)
-        .maybeSingle();
-
-      if (!isMounted) return;
-
-      if (error) {
-        setError('Kunne ikke laste brukerprofil');
-        setUser({
-          id: session.user.id,
-          email: session.user.email ?? undefined,
-        });
-      } else {
-        const roleName = (data as any)?.roles?.name as string | undefined;
-
-        setUser({
-          id: session.user.id,
-          name: data?.name ?? undefined,
-          email: data?.email ?? undefined,
-          role: roleName,
-        });
-      }
-
+      await loadProfile(session.user.id, session.user.email);
       setLoading(false);
     };
 
@@ -67,42 +95,15 @@ export const useAuth = () => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session?.user) {
         setUser(null);
+        setLoading(false);
         return;
       }
 
-      supabase
-        .from('users')
-        .select('name, email, roles(name)')
-        .eq('id', session.user.id)
-        .maybeSingle()
-        .then(({ data, error }) => {
-          if (!isMounted) return;
-
-          if (error) {
-            setError('Kunne ikke laste brukerprofil');
-            setUser({
-              id: session.user.id,
-              email: session.user.email ?? undefined,
-            });
-          } else {
-            const roleName = (data as any)?.roles?.name as string | undefined;
-
-            setUser({
-              id: session.user.id,
-              name: data?.name ?? undefined,
-              email: data?.email ?? undefined,
-              role: roleName,
-            });
-          }
-        })
-        .catch(() => {
-          if (!isMounted) return;
-          setError('Kunne ikke laste brukerprofil');
-          setUser({
-            id: session.user.id,
-            email: session.user.email ?? undefined,
-          });
-        });
+      loadProfile(session.user.id, session.user.email).catch(() => {
+        if (!isMounted) return;
+        setError('Kunne ikke laste brukerprofil');
+        setBasicUser(session.user.id, session.user.email);
+      });
     });
 
     return () => {
