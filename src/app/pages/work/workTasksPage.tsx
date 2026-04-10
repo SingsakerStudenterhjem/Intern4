@@ -12,7 +12,7 @@ import {
   getTasks,
   joinTask,
   leaveTask,
-  updateTask,
+  submitTaskCompletion,
 } from '../../../server/dao/tasksDAO';
 import {
   addCategory,
@@ -134,10 +134,11 @@ const WorkTasksPage: React.FC = () => {
     try {
       await joinTask(taskId, user.id);
       await loadData();
+      setSelectedTask(null);
       showSuccessMessage('Du er nå påmeldt oppgaven!');
     } catch (err) {
       console.error('Error joining task:', err);
-      showErrorMessage('Kunne ikke melde deg på oppgaven');
+      showErrorMessage(err instanceof Error ? err.message : 'Kunne ikke melde deg på oppgaven');
     }
   };
 
@@ -147,24 +148,25 @@ const WorkTasksPage: React.FC = () => {
     try {
       await leaveTask(taskId, user.id);
       await loadData();
+      setSelectedTask(null);
       showSuccessMessage('Du er nå avmeldt oppgaven');
     } catch (err) {
       console.error('Error leaving task:', err);
-      showErrorMessage('Kunne ikke melde deg av oppgaven');
+      showErrorMessage(err instanceof Error ? err.message : 'Kunne ikke melde deg av oppgaven');
     }
   };
 
   const handleCompleteTask = async (taskId: string): Promise<void> => {
+    if (!user?.id) return;
+
     try {
-      await updateTask(taskId, {
-        //completed: true,
-        //completedAt: new Date(),
-      });
+      await submitTaskCompletion(taskId, user.id);
       await loadData();
-      showSuccessMessage('Oppgave markert som fullført!');
+      setSelectedTask(null);
+      showSuccessMessage('Oppgaven er sendt inn til godkjenning!');
     } catch (err) {
       console.error('Error completing task:', err);
-      showErrorMessage('Kunne ikke markere oppgave som fullført');
+      showErrorMessage(err instanceof Error ? err.message : 'Kunne ikke sende inn oppgaven');
     }
   };
 
@@ -177,10 +179,11 @@ const WorkTasksPage: React.FC = () => {
     try {
       await deleteTask(taskId);
       await loadData();
+      setSelectedTask(null);
       showSuccessMessage('Oppgave slettet!');
     } catch (err) {
       console.error('Error deleting task:', err);
-      showErrorMessage('Kunne ikke slette oppgave');
+      showErrorMessage(err instanceof Error ? err.message : 'Kunne ikke slette oppgave');
     }
   };
 
