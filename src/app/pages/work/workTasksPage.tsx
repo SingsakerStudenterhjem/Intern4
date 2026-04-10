@@ -13,6 +13,7 @@ import {
   joinTask,
   leaveTask,
   submitTaskCompletion,
+  updateTask,
 } from '../../../server/dao/tasksDAO';
 import {
   addCategory,
@@ -21,12 +22,13 @@ import {
   getCategoryUsageCount,
   updateCategory,
 } from '../../../server/dao/categoriesDAO';
-import { getUser } from '../../../server/dao/userDAO';
+import { getActiveUsersWithRole, getUser } from '../../../server/dao/userDAO';
 import {
   Category,
   CategoryCreationData,
   ParticipantNames,
   Task,
+  TaskContactPersonOption,
   TaskCreationData,
 } from '../../../shared/types/regi/tasks';
 import { canManageCategories, canManageTasks } from '../../constants/userRoles';
@@ -37,10 +39,13 @@ const WorkTasksPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showCategoryManagement, setShowCategoryManagement] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [participantNames, setParticipantNames] = useState<ParticipantNames>({});
+  const [contactPeople, setContactPeople] = useState<TaskContactPersonOption[]>([]);
 
   const user = authData?.user ?? null;
   const authLoading = authData?.loading || false;
@@ -66,6 +71,13 @@ const WorkTasksPage: React.FC = () => {
   const canDeleteTasksCheck = canManageTasks(user?.role);
 
   useEffect(() => {
+    if (!message) return undefined;
+
+    const timeout = window.setTimeout(() => setMessage(null), 5000);
+    return () => window.clearTimeout(timeout);
+  }, [message]);
+
+  useEffect(() => {
     loadData();
   }, []);
 
@@ -74,10 +86,21 @@ const WorkTasksPage: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const [tasksData, categoriesData] = await Promise.all([getTasks(), getCategories()]);
+      const [tasksData, categoriesData, activeUsers] = await Promise.all([
+        getTasks(),
+        getCategories(),
+        getActiveUsersWithRole(),
+      ]);
 
       setTasks(tasksData);
       setCategories(categoriesData);
+      setContactPeople(
+        activeUsers.map((activeUser) => ({
+          id: activeUser.id,
+          name: activeUser.name,
+          email: activeUser.email,
+        }))
+      );
 
       if (tasksData.length > 0) {
         await loadParticipantNames(tasksData);
@@ -121,10 +144,24 @@ const WorkTasksPage: React.FC = () => {
     try {
       await addTask(taskData);
       await loadData();
+      setIsCreateModalOpen(false);
       showSuccessMessage('Oppgave opprettet!');
     } catch (err) {
       console.error('Error creating task:', err);
-      showErrorMessage('Kunne ikke opprette oppgave');
+      showErrorMessage(err instanceof Error ? err.message : 'Kunne ikke opprette oppgave');
+    }
+  };
+
+  const handleUpdateTask = async (taskId: string, taskData: TaskCreationData): Promise<void> => {
+    try {
+      await updateTask(taskId, taskData);
+      await loadData();
+      setEditingTask(null);
+      setSelectedTask(null);
+      showSuccessMessage('Oppgave oppdatert!');
+    } catch (err) {
+      console.error('Error updating task:', err);
+      showErrorMessage(err instanceof Error ? err.message : 'Kunne ikke oppdatere oppgave');
     }
   };
 
@@ -187,6 +224,22 @@ const WorkTasksPage: React.FC = () => {
     }
   };
 
+  const handleOpenCreateTask = (): void => {
+    setEditingTask(null);
+    setIsCreateModalOpen(true);
+  };
+
+  const handleOpenEditTask = (task: Task): void => {
+    setSelectedTask(null);
+    setIsCreateModalOpen(false);
+    setEditingTask(task);
+  };
+
+  const handleCloseTaskEditor = (): void => {
+    setIsCreateModalOpen(false);
+    setEditingTask(null);
+  };
+
   const handleAddCategory = async (categoryData: CategoryCreationData): Promise<void> => {
     try {
       await addCategory({
@@ -227,14 +280,13 @@ const WorkTasksPage: React.FC = () => {
   };
 
   const showSuccessMessage = (message: string): void => {
-    // TODO: Implement toast notification system
-    console.log('Success:', message);
+    setError(null);
+    setMessage({ type: 'success', text: message });
   };
 
   const showErrorMessage = (message: string): void => {
     console.error('Error:', message);
-    setError(message);
-    setTimeout(() => setError(null), 5000);
+    setMessage({ type: 'error', text: message });
   };
 
   if (loading || authLoading) {
@@ -269,7 +321,7 @@ const WorkTasksPage: React.FC = () => {
               )}
               {canCreateTasksCheck && (
                 <button
-                  onClick={() => setIsCreateModalOpen(true)}
+                  onClick={handleOpenCreateTask}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -284,6 +336,18 @@ const WorkTasksPage: React.FC = () => {
         {error && (
           <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
             <p className="text-sm text-red-600">{error}</p>
+          </div>
+        )}
+
+        {message && (
+          <div
+            className={`mb-6 p-4 border rounded-md ${
+              message.type === 'success'
+                ? 'bg-green-50 border-green-200 text-green-700'
+                : 'bg-red-50 border-red-200 text-red-700'
+            }`}
+          >
+            <p className="text-sm">{message.text}</p>
           </div>
         )}
 
@@ -434,18 +498,22 @@ const WorkTasksPage: React.FC = () => {
           onJoinTask={handleJoinTask}
           onLeaveTask={handleLeaveTask}
           onCompleteTask={handleCompleteTask}
+          onEditTask={canCreateTasksCheck ? handleOpenEditTask : undefined}
           onDeleteTask={canDeleteTasksCheck ? handleDeleteTask : undefined}
           participantNames={participantNames}
         />
       )}
 
-      {isCreateModalOpen && (
+      {(isCreateModalOpen || !!editingTask) && (
         <TaskCreationModal
-          isOpen={isCreateModalOpen}
-          onClose={() => setIsCreateModalOpen(false)}
+          isOpen={isCreateModalOpen || !!editingTask}
+          onClose={handleCloseTaskEditor}
           onCreateTask={handleCreateTask}
+          onUpdateTask={handleUpdateTask}
           categories={categories}
           currentUser={user}
+          editingTask={editingTask}
+          contactPeople={contactPeople}
         />
       )}
     </div>

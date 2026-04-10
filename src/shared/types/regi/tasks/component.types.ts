@@ -16,6 +16,12 @@ export interface ParticipantNames {
   [userId: string]: string;
 }
 
+export interface TaskContactPersonOption {
+  id: string;
+  name: string;
+  email?: string;
+}
+
 // Task Component Props
 export interface TasksTableProps {
   tasks: Task[];
@@ -42,8 +48,11 @@ export interface TaskCreationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreateTask: (taskData: TaskCreationData) => Promise<void>;
+  onUpdateTask?: (taskId: string, taskData: TaskCreationData) => Promise<void>;
   categories: Category[];
   currentUser: AuthUser | null;
+  editingTask?: Task | null;
+  contactPeople?: TaskContactPersonOption[];
 }
 
 export interface CategoryManagementProps {

@@ -28,6 +28,7 @@ export type {
   AuthUser,
   FormErrors,
   ParticipantNames,
+  TaskContactPersonOption,
   TasksTableProps,
   TaskModalProps,
   TaskCreationModalProps,
