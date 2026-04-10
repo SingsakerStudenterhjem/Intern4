@@ -1,10 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { RegiLogWithId } from '../../../../shared/types/regi';
 import { getRegiLogsByUser } from '../../../../server/dao/regiDAO';
+import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
 
-const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId, refreshKey }) => {
+const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: number }> = ({
+  userId,
+  userRole,
+  refreshKey,
+}) => {
   const [logs, setLogs] = useState<RegiLogWithId[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [_loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -24,9 +29,15 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
   const totals = useMemo(() => {
     const approved = logs.filter((l) => l.status === 'approved').reduce((s, l) => s + l.hours, 0);
     const pending = logs.filter((l) => l.status === 'pending').reduce((s, l) => s + l.hours, 0);
-    // TODO: calculate remaining from users total regitimer (full-regi, halv-halv, full-vakt)
-    return { approved, pending, total: approved + pending, remaining: 36 - approved };
-  }, [logs]);
+    const requiredHours = getRequiredRegiHoursForRole(userRole);
+
+    return {
+      approved,
+      pending,
+      total: approved + pending,
+      remaining: Math.max(requiredHours - approved, 0),
+    };
+  }, [logs, userRole]);
 
   // TODO: uncomment after connecting to the db
   //if (loading) return <div>Laster...</div>;
@@ -39,7 +50,7 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
           Godkjent: <span className="font-semibold">{totals.approved.toFixed(2)}</span> t • Venter:{' '}
           <span className="font-semibold">{totals.pending.toFixed(2)}</span> t • Totalt registrert:{' '}
           <span className="font-semibold">{totals.total.toFixed(2)}</span> t • Gjenstående timer:{' '}
-          <span className="font-semibold">{totals.remaining}</span> t
+          <span className="font-semibold">{totals.remaining.toFixed(2)}</span> t
         </div>
       </div>
 
