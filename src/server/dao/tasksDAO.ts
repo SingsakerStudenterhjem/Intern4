@@ -39,6 +39,29 @@ function toAppTask(row: any): Task {
   };
 }
 
+async function getTaskOrThrow(taskId: string): Promise<Task> {
+  const task = await getTask(taskId);
+  if (!task) {
+    throw new Error('Oppgaven ble ikke funnet');
+  }
+  return task;
+}
+
+async function getAssignmentRow(taskId: string, userId: string) {
+  const { data, error } = await supabase
+    .from('work_assignments')
+    .select('id, user_uuid, approved_state, hours_used')
+    .eq('work_id', Number(taskId))
+    .eq('user_uuid', userId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(`Could not get assignment: ${error.message}`);
+  }
+
+  return data;
+}
+
 export async function addTask(data: TaskCreationData): Promise<string> {
   const { data: cat, error: e1 } = await supabase
     .from('work_categories')
@@ -175,8 +198,13 @@ export async function updateTask(taskId: string, data: Partial<TaskCreationData>
 }
 
 export async function deleteTask(taskId: string): Promise<void> {
-  // hard delete: remove assignments, then task, then item
   const id = Number(taskId);
+  const task = await getTaskOrThrow(taskId);
+
+  if (task.participants.length > 0) {
+    throw new Error('Kan ikke slette oppgaver som har deltakere eller innsendte timer');
+  }
+
   const { error: e1 } = await supabase.from('work_assignments').delete().eq('work_id', id);
   if (e1) throw new Error(`Could not delete task: ${e1.message}`);
   const { error: e2 } = await supabase.from('work_tasks').delete().eq('id', id);
@@ -186,6 +214,22 @@ export async function deleteTask(taskId: string): Promise<void> {
 }
 
 export async function joinTask(taskId: string, userId: string): Promise<boolean> {
+  const task = await getTaskOrThrow(taskId);
+
+  if (task.isArchived) {
+    throw new Error('Oppgaven er arkivert');
+  }
+
+  const existingAssignment = await getAssignmentRow(taskId, userId);
+  if (existingAssignment) {
+    throw new Error('Du er allerede meldt på denne oppgaven');
+  }
+
+  const participantCount = task.participants.length;
+  if (participantCount >= task.maxParticipants) {
+    throw new Error('Oppgaven er full');
+  }
+
   const { error } = await supabase.from('work_assignments').insert({
     work_id: Number(taskId),
     user_uuid: userId,
@@ -197,11 +241,55 @@ export async function joinTask(taskId: string, userId: string): Promise<boolean>
 }
 
 export async function leaveTask(taskId: string, userId: string): Promise<boolean> {
+  const assignment = await getAssignmentRow(taskId, userId);
+  if (!assignment) {
+    throw new Error('Du er ikke meldt på denne oppgaven');
+  }
+
+  const status = getTaskAssignmentStatus(assignment);
+  if (status !== 'joined' && status !== 'rejected') {
+    throw new Error('Du kan ikke melde deg av etter at oppgaven er sendt inn eller godkjent');
+  }
+
   const { error } = await supabase
-    .from('work_assignments').delete()
-    .eq('work_id', Number(taskId)).eq('user_uuid', userId);
+    .from('work_assignments')
+    .delete()
+    .eq('id', assignment.id);
+
   if (error) throw new Error(`Could not leave task: ${error.message}`);
   return true;
+}
+
+export async function submitTaskCompletion(taskId: string, userId: string): Promise<void> {
+  const task = await getTaskOrThrow(taskId);
+  const assignment = await getAssignmentRow(taskId, userId);
+
+  if (!assignment) {
+    throw new Error('Du må være påmeldt før du kan sende inn oppgaven');
+  }
+
+  const status = getTaskAssignmentStatus(assignment);
+  if (status !== 'joined' && status !== 'rejected') {
+    throw new Error('Oppgaven er allerede sendt inn eller ferdig behandlet');
+  }
+
+  if (!task.hourEstimate) {
+    throw new Error('Oppgaven mangler timeestimat og kan ikke sendes inn');
+  }
+
+  const { error } = await supabase
+    .from('work_assignments')
+    .update({
+      hours_used: task.hourEstimate,
+      approved_state: 0,
+      approved_by_uuid: null,
+      approval_comment: null,
+    })
+    .eq('id', assignment.id);
+
+  if (error) {
+    throw new Error(`Could not submit task completion: ${error.message}`);
+  }
 }
 
 export async function getTasksByUser(userId: string): Promise<Task[]> {

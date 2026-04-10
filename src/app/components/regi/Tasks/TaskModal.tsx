@@ -285,7 +285,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
             <div className="space-y-4">
               <div className="text-center">
                 <p className="text-sm text-gray-700">
-                  Er du sikker på at du vil markere denne oppgaven som fullført?
+                  Er du sikker på at du vil sende denne oppgaven inn til godkjenning?
                 </p>
               </div>
               <div className="flex justify-end space-x-3">
@@ -299,7 +299,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   onClick={confirmComplete}
                   className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                 >
-                  Marker som fullført
+                  Send inn til godkjenning
                 </button>
               </div>
             </div>
@@ -349,14 +349,12 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 )}
 
                 {canSubmitCompletion && (
-                  <>
-                    <button
-                      onClick={startComplete}
-                      className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
-                    >
-                        Marker fullført
-                    </button>
-                  </>
+                  <button
+                    onClick={startComplete}
+                    className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                  >
+                    Send inn til godkjenning
+                  </button>
                 )}
                 {canLeave && (
                   <button
