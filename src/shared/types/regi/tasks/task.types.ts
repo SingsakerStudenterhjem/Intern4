@@ -30,6 +30,7 @@ export const TaskFormDataSchema = z.object({
   title: z.string(),
   category: z.string(),
   description: z.string().default(''),
+  contactPersonId: z.string().default(''),
   deadline: z.string().default(''),
   hourEstimate: z.string().default(''),
   maxParticipants: z.string().default('1'),

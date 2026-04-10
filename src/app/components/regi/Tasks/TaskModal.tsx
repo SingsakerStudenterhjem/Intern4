@@ -74,7 +74,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
       onCompleteTask(task.id);
     }
     setIsCompleting(false);
-    onClose();
   };
 
   const startDelete = () => {
@@ -90,7 +89,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
       onDeleteTask(task.id);
     }
     setIsDeleting(false);
-    onClose();
   };
 
   const getCategoryColor = (category: string) => {

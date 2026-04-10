@@ -13,13 +13,18 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   isOpen,
   onClose,
   onCreateTask,
+  onUpdateTask,
   categories,
   currentUser,
+  editingTask,
+  contactPeople = [],
 }) => {
+  const isEditing = !!editingTask;
   const [formData, setFormData] = useState<TaskFormData>({
     title: '',
     category: '',
     description: '',
+    contactPersonId: '',
     deadline: '',
     hourEstimate: '',
     maxParticipants: '1',
@@ -27,20 +32,33 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
+  const toDateTimeLocalValue = (value?: string | null): string => {
+    if (!value) return '';
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+    return localDate.toISOString().slice(0, 16);
+  };
+
   useEffect(() => {
     if (isOpen) {
-      // Reset form when modal opens
       setFormData({
-        title: '',
-        category: categories.length > 0 ? categories[0].name : '',
-        description: '',
-        deadline: '',
-        hourEstimate: '',
-        maxParticipants: '1',
+        title: editingTask?.title ?? '',
+        category: editingTask?.category ?? (categories.length > 0 ? categories[0].name : ''),
+        description: editingTask?.description ?? '',
+        contactPersonId: editingTask?.contactPersonId ?? currentUser?.id ?? '',
+        deadline: toDateTimeLocalValue(editingTask?.deadline),
+        hourEstimate:
+          editingTask?.hourEstimate != null && editingTask.hourEstimate !== undefined
+            ? String(editingTask.hourEstimate)
+            : '',
+        maxParticipants: String(editingTask?.maxParticipants ?? 1),
       });
       setErrors({});
     }
-  }, [isOpen, categories]);
+  }, [isOpen, categories, currentUser?.id, editingTask]);
 
   if (!isOpen) return null;
 
@@ -96,7 +114,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       title: formData.title.trim(),
       category: formData.category,
       description: formData.description.trim() || undefined,
-      contactPersonId: currentUser?.id || undefined,
+      contactPersonId: formData.contactPersonId || undefined,
       deadline: formData.deadline ? new Date(formData.deadline) : undefined,
       hourEstimate: Number(formData.hourEstimate),
       maxParticipants: Number(formData.maxParticipants),
@@ -118,14 +136,22 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       // Validate the creation data with Zod
       const validatedData = validateTaskCreationData(taskCreationData);
 
-      await onCreateTask(validatedData);
+      if (editingTask && onUpdateTask) {
+        await onUpdateTask(editingTask.id, validatedData);
+      } else {
+        await onCreateTask(validatedData);
+      }
       onClose();
     } catch (error) {
-      console.error('Error creating task:', error);
+      console.error('Error saving task:', error);
       if (error instanceof Error) {
-        setErrors({ submit: `Kunne ikke opprette oppgave: ${error.message}` });
+        setErrors({
+          submit: `Kunne ikke ${isEditing ? 'oppdatere' : 'opprette'} oppgave: ${error.message}`,
+        });
       } else {
-        setErrors({ submit: 'Kunne ikke opprette oppgave. Prøv igjen.' });
+        setErrors({
+          submit: `Kunne ikke ${isEditing ? 'oppdatere' : 'opprette'} oppgave. Prøv igjen.`,
+        });
       }
     } finally {
       setIsSubmitting(false);
@@ -146,7 +172,9 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Opprett ny oppgave</h2>
+          <h2 className="text-xl font-semibold text-gray-900">
+            {isEditing ? 'Rediger oppgave' : 'Opprett ny oppgave'}
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -236,6 +264,30 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
             />
           </div>
 
+          <div>
+            <label
+              htmlFor="contactPersonId"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              <User className="w-4 h-4 inline mr-1" />
+              Kontaktperson
+            </label>
+            <select
+              id="contactPersonId"
+              value={formData.contactPersonId}
+              onChange={(e) => handleInputChange('contactPersonId', e.target.value)}
+              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Ingen valgt</option>
+              {contactPeople.map((person) => (
+                <option key={person.id} value={person.id}>
+                  {person.name}
+                  {person.email ? ` (${person.email})` : ''}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Two column layout for smaller fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Deadline */}
@@ -320,18 +372,6 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
             )}
           </div>
 
-          {/* Contact Person Info */}
-          <div className="bg-gray-50 rounded-md p-4">
-            <div className="flex items-center space-x-2 text-sm text-gray-700">
-              <User className="w-4 h-4" />
-              <span className="font-medium">Kontaktperson:</span>
-              <span>{currentUser?.name || 'Ukjent'}</span>
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Du vil bli registrert som kontaktperson for denne oppgaven
-            </p>
-          </div>
-
           {/* Form Actions */}
           <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
             <button
@@ -346,7 +386,13 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               disabled={isSubmitting}
               className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {isSubmitting ? 'Oppretter...' : 'Opprett oppgave'}
+              {isSubmitting
+                ? isEditing
+                  ? 'Lagrer...'
+                  : 'Oppretter...'
+                : isEditing
+                  ? 'Lagre endringer'
+                  : 'Opprett oppgave'}
             </button>
           </div>
         </form>
