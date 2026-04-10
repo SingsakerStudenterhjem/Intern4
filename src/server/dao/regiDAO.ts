@@ -4,7 +4,7 @@ import { getUser } from './userDAO';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
 
-function isCountableRegiAssignment(row: any): boolean {
+export function isCountableRegiAssignment(row: any): boolean {
   const workType = row.work_items?.type;
 
   if (workType === 'misc') {
