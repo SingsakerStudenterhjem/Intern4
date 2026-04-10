@@ -31,13 +31,6 @@ import {
 } from '../../../shared/types/regi/tasks';
 import { canManageCategories, canManageTasks } from '../../constants/userRoles';
 
-interface LocalUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
-
 const WorkTasksPage: React.FC = () => {
   const authData = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -49,7 +42,7 @@ const WorkTasksPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [participantNames, setParticipantNames] = useState<ParticipantNames>({});
 
-  const user = authData?.user as LocalUser | null;
+  const user = authData?.user ?? null;
   const authLoading = authData?.loading || false;
 
   const {
@@ -66,7 +59,7 @@ const WorkTasksPage: React.FC = () => {
     prevPage,
     categories: availableCategories,
     filteredTasks,
-  } = useTasks(tasks, categories, user?.id || '', 10);
+  } = useTasks(tasks, categories, user?.id || '', participantNames, 10);
 
   const canCreateTasksCheck = canManageTasks(user?.role);
   const canManageCategoriesCheck = canManageCategories(user?.role);
@@ -100,7 +93,7 @@ const WorkTasksPage: React.FC = () => {
   const loadParticipantNames = async (tasksData: Task[]): Promise<void> => {
     const allParticipantIds = new Set<string>();
     tasksData.forEach((task) => {
-      task.participants.forEach((id) => allParticipantIds.add(id));
+      task.participants.forEach((participant) => allParticipantIds.add(participant.userId));
       if (task.contactPersonId) {
         allParticipantIds.add(task.contactPersonId);
       }
@@ -392,7 +385,7 @@ const WorkTasksPage: React.FC = () => {
               onRowClick={setSelectedTask}
               onJoinTask={handleJoinTask}
               currentUserId={user?.id}
-              userRole={user?.role}
+              participantNames={participantNames}
             />
 
             {/* Pagination */}

@@ -1,21 +1,20 @@
 import React from 'react';
 import { Users, Clock, Calendar, User } from 'lucide-react';
-import { Task } from '../../../../shared/types/regi/tasks/task.types';
-
-interface TasksTableProps {
-  tasks: Task[];
-  onRowClick?: (task: Task) => void;
-  onJoinTask?: (taskId: string) => void;
-  currentUserId?: string;
-  userRole?: string;
-}
+import {
+  Task,
+  TasksTableProps,
+  canUserJoinTask,
+  getCurrentUserTaskParticipant,
+  getTaskParticipantCount,
+  isTaskFull,
+} from '../../../../shared/types/regi/tasks';
 
 const TasksTable: React.FC<TasksTableProps> = ({
   tasks,
   onRowClick,
   onJoinTask,
   currentUserId,
-  userRole,
+  participantNames = {},
 }) => {
   const formatDeadline = (deadline: any) => {
     if (!deadline) return 'Ingen frist';
@@ -34,17 +33,15 @@ const TasksTable: React.FC<TasksTableProps> = ({
   };
 
   const getParticipantStatus = (task: Task) => {
-    const count = task.participants.length;
-    const max = task.maxParticipants || 0;
-    const isUserJoined = currentUserId && task.participants.includes(currentUserId);
-
-    // maxParticipants should always be defined and > 0 now
-    const isFull = count >= max;
+    const currentParticipant = getCurrentUserTaskParticipant(task, currentUserId);
+    const count = getTaskParticipantCount(task);
+    const max = task.maxParticipants;
+    const full = isTaskFull(task);
     return {
       text: `${count}/${max}`,
-      isFull,
-      isUserJoined,
-      canJoin: !isFull && !isUserJoined && !task.completed,
+      isFull: full,
+      currentParticipant,
+      canJoin: canUserJoinTask(task, currentUserId),
     };
   };
 
@@ -111,7 +108,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
               >
                 <td className="px-4 py-4">
                   <div className="flex flex-col">
-                    <div className="font-medium text-gray-900">{task.taskName}</div>
+                    <div className="font-medium text-gray-900">{task.title}</div>
                     {task.description && (
                       <div className="text-sm text-gray-500 truncate max-w-xs">
                         {task.description.length > 50
@@ -128,7 +125,9 @@ const TasksTable: React.FC<TasksTableProps> = ({
                     {task.category}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-sm text-gray-900">{task.contactPerson}</td>
+                <td className="px-4 py-4 text-sm text-gray-900">
+                  {task.contactPersonId ? participantNames[task.contactPersonId] ?? 'Ukjent bruker' : '-'}
+                </td>
                 <td className="px-4 py-4 text-sm text-gray-900">{formatDeadline(task.deadline)}</td>
                 <td className="px-4 py-4 text-sm text-gray-900">
                   {task.hourEstimate ? `${task.hourEstimate}t` : '-'}
@@ -142,12 +141,27 @@ const TasksTable: React.FC<TasksTableProps> = ({
                     >
                       {participantStatus.text}
                     </span>
-                    {participantStatus.isUserJoined && (
+                    {participantStatus.currentParticipant?.status === 'joined' && (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
                         Påmeldt
                       </span>
                     )}
-                    {participantStatus.isFull && !participantStatus.isUserJoined && (
+                    {participantStatus.currentParticipant?.status === 'submitted' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                        Sendt inn
+                      </span>
+                    )}
+                    {participantStatus.currentParticipant?.status === 'approved' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        Godkjent
+                      </span>
+                    )}
+                    {participantStatus.currentParticipant?.status === 'rejected' && (
+                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        Avvist
+                      </span>
+                    )}
+                    {participantStatus.isFull && !participantStatus.currentParticipant && (
                       <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                         Full
                       </span>
@@ -166,13 +180,17 @@ const TasksTable: React.FC<TasksTableProps> = ({
                       Meld deg på
                     </button>
                   )}
-                  {participantStatus.isUserJoined && (
+                  {participantStatus.currentParticipant?.status === 'joined' && (
                     <span className="text-xs text-green-600 font-medium">Du er påmeldt</span>
                   )}
-                  {task.completed && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      Fullført
-                    </span>
+                  {participantStatus.currentParticipant?.status === 'submitted' && (
+                    <span className="text-xs text-yellow-700 font-medium">Sendt inn</span>
+                  )}
+                  {participantStatus.currentParticipant?.status === 'approved' && (
+                    <span className="text-xs text-blue-700 font-medium">Godkjent</span>
+                  )}
+                  {participantStatus.currentParticipant?.status === 'rejected' && (
+                    <span className="text-xs text-red-700 font-medium">Avvist</span>
                   )}
                 </td>
               </tr>

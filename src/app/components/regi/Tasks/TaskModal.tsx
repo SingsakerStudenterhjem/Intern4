@@ -1,19 +1,15 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, Trash2, User, Users, X } from 'lucide-react';
-import { Task } from '../../../../shared/types/regi/tasks/index.ts';
+import { Calendar, CheckCircle2, Clock, Pencil, Trash2, User, Users, X } from 'lucide-react';
+import {
+  TaskModalProps,
+  canUserJoinTask,
+  canUserLeaveTask,
+  canUserSubmitTaskCompletion,
+  getCurrentUserTaskParticipant,
+  getTaskParticipantCount,
+  isTaskFull,
+} from '../../../../shared/types/regi/tasks';
 import { canManageTasks, canViewAllParticipants } from '../../../constants/userRoles.ts';
-
-interface TaskModalProps {
-  task: Task | null;
-  onClose: () => void;
-  currentUserId?: string;
-  userRole?: string;
-  onJoinTask?: (taskId: string) => void;
-  onLeaveTask?: (taskId: string) => void;
-  onCompleteTask?: (taskId: string) => void;
-  onDeleteTask?: (taskId: string) => void;
-  participantNames?: { [userId: string]: string };
-}
 
 const TaskModal: React.FC<TaskModalProps> = ({
   task,
@@ -23,6 +19,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   onJoinTask,
   onLeaveTask,
   onCompleteTask,
+  onEditTask,
   onDeleteTask,
   participantNames = {},
 }) => {
@@ -45,9 +42,12 @@ const TaskModal: React.FC<TaskModalProps> = ({
     return 'Ugyldig dato';
   };
 
-  const isUserJoined = currentUserId && task.participants.includes(currentUserId);
-  const isFull = task.maxParticipants && task.participants.length >= task.maxParticipants;
-  const canJoin = !isFull && !isUserJoined && !task.completed;
+  const currentParticipant = getCurrentUserTaskParticipant(task, currentUserId);
+  const participantCount = getTaskParticipantCount(task);
+  const taskIsFull = isTaskFull(task);
+  const canJoin = canUserJoinTask(task, currentUserId);
+  const canLeave = canUserLeaveTask(task, currentUserId);
+  const canSubmitCompletion = canUserSubmitTaskCompletion(task, currentUserId);
 
   const handleJoin = () => {
     if (onJoinTask && task.id) {
@@ -56,7 +56,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   };
 
   const handleLeave = () => {
-    if (onLeaveTask && task.id) {
+    if (canLeave && onLeaveTask && task.id) {
       onLeaveTask(task.id);
     }
   };
@@ -70,7 +70,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   };
 
   const confirmComplete = () => {
-    if (onCompleteTask && task.id) {
+    if (canSubmitCompletion && onCompleteTask && task.id) {
       onCompleteTask(task.id);
     }
     setIsCompleting(false);
@@ -116,7 +116,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <h2 className="text-xl font-semibold text-gray-900">{task.taskName}</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{task.title}</h2>
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(task.category)}`}
             >
@@ -124,6 +124,15 @@ const TaskModal: React.FC<TaskModalProps> = ({
             </span>
           </div>
           <div className="flex items-center space-x-2">
+            {canManageTasks(userRole) && onEditTask && (
+              <button
+                onClick={() => onEditTask(task)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+                title="Rediger oppgave"
+              >
+                <Pencil className="w-5 h-5" />
+              </button>
+            )}
             {canManageTasks(userRole) && (
               <button
                 onClick={startDelete}
@@ -158,25 +167,25 @@ const TaskModal: React.FC<TaskModalProps> = ({
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
                   <Users className="w-4 h-4 mr-1" />
-                  Deltakere ({task.participants.length}/{task.maxParticipants})
+                  Deltakere ({participantCount}/{task.maxParticipants})
                 </h3>
 
                 {canViewAllParticipants(userRole) ? (
                   <div className="space-y-2">
-                    {task.participants.length > 0 ? (
+                    {participantCount > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {task.participants.map((participantId) => (
+                        {task.participants.map((participant) => (
                           <div
-                            key={participantId}
+                            key={participant.assignmentId}
                             className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md"
                           >
                             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                               <User className="w-4 h-4 text-blue-600" />
                             </div>
                             <span className="text-sm font-medium text-gray-900">
-                              {participantNames[participantId] || 'Ukjent bruker'}
+                              {participantNames[participant.userId] || 'Ukjent bruker'}
                             </span>
-                            {participantId === currentUserId && (
+                            {participant.userId === currentUserId && (
                               <span className="text-xs text-blue-600">(deg)</span>
                             )}
                           </div>
@@ -189,7 +198,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 ) : (
                   <div className="p-3 bg-gray-50 rounded-md">
                     <p className="text-sm text-gray-600">
-                      {task.participants.length} person{task.participants.length !== 1 ? 'er' : ''}{' '}
+                      {participantCount} person{participantCount !== 1 ? 'er' : ''}{' '}
                       påmeldt av {task.maxParticipants} plasser
                     </p>
                   </div>
@@ -204,7 +213,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   <User className="w-4 h-4 text-gray-500" />
                   <span className="font-medium text-gray-700">Kontaktperson:</span>
                 </div>
-                <p className="text-sm text-gray-900 ml-6">{task.contactPerson}</p>
+                <p className="text-sm text-gray-900 ml-6">
+                  {task.contactPersonId ? participantNames[task.contactPersonId] ?? 'Ukjent bruker' : '-'}
+                </p>
 
                 <div className="flex items-center space-x-2 text-sm">
                   <Calendar className="w-4 h-4 text-gray-500" />
@@ -229,24 +240,38 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
               {/* Status indicators */}
               <div className="space-y-2">
-                {task.completed && (
+                {currentParticipant?.status === 'approved' && (
                   <div className="flex items-center space-x-2 p-2 bg-green-50 border border-green-200 rounded-md">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-green-800">Fullført</span>
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-800">Godkjent som regi</span>
                   </div>
                 )}
 
-                {isFull && !task.completed && (
+                {taskIsFull && !currentParticipant && (
                   <div className="flex items-center space-x-2 p-2 bg-red-50 border border-red-200 rounded-md">
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                     <span className="text-sm font-medium text-red-800">Full</span>
                   </div>
                 )}
 
-                {isUserJoined && !task.completed && (
+                {currentParticipant?.status === 'joined' && (
                   <div className="flex items-center space-x-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
                     <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                     <span className="text-sm font-medium text-blue-800">Du er påmeldt</span>
+                  </div>
+                )}
+
+                {currentParticipant?.status === 'submitted' && (
+                  <div className="flex items-center space-x-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-yellow-800">Sendt inn til godkjenning</span>
+                  </div>
+                )}
+
+                {currentParticipant?.status === 'rejected' && (
+                  <div className="flex items-center space-x-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                    <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-red-800">Avvist, send inn på nytt</span>
                   </div>
                 )}
               </div>
@@ -323,21 +348,23 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   </button>
                 )}
 
-                {isUserJoined && !task.completed && (
+                {canSubmitCompletion && (
                   <>
                     <button
                       onClick={startComplete}
                       className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                     >
-                      Marker fullført
-                    </button>
-                    <button
-                      onClick={handleLeave}
-                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
-                    >
-                      Meld deg av
+                        Marker fullført
                     </button>
                   </>
+                )}
+                {canLeave && (
+                  <button
+                    onClick={handleLeave}
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                  >
+                    Meld deg av
+                  </button>
                 )}
               </div>
             </div>

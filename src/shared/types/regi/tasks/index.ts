@@ -39,3 +39,11 @@ export type {
 } from './component.types';
 
 export { isAuthUser } from './component.types';
+export {
+  canUserJoinTask,
+  canUserLeaveTask,
+  canUserSubmitTaskCompletion,
+  getCurrentUserTaskParticipant,
+  getTaskParticipantCount,
+  isTaskFull,
+} from './task.utils';

@@ -2,7 +2,7 @@ import { Task, TaskCreationData } from './task.types';
 import { Category, CategoryCreationData } from './category.types';
 
 export interface AuthUser {
-  uid: string;
+  id: string;
   email: string;
   name: string;
   role: string;
@@ -22,7 +22,7 @@ export interface TasksTableProps {
   onRowClick?: (task: Task) => void;
   onJoinTask?: (taskId: string) => void;
   currentUserId?: string;
-  userRole?: string;
+  participantNames?: ParticipantNames;
 }
 
 export interface TaskModalProps {
@@ -32,7 +32,9 @@ export interface TaskModalProps {
   userRole?: string;
   onJoinTask?: (taskId: string) => void;
   onLeaveTask?: (taskId: string) => void;
-  onCompleteTask?: (taskId: string, hours: number) => void;
+  onCompleteTask?: (taskId: string) => void;
+  onEditTask?: (task: Task) => void;
+  onDeleteTask?: (taskId: string) => void;
   participantNames?: ParticipantNames;
 }
 
@@ -81,7 +83,7 @@ export const isAuthUser = (user: unknown): user is AuthUser => {
   return (
     typeof user === 'object' &&
     user !== null &&
-    typeof (user as any).uid === 'string' &&
+    typeof (user as any).id === 'string' &&
     typeof (user as any).name === 'string' &&
     typeof (user as any).role === 'string'
   );

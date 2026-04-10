@@ -1,5 +1,27 @@
 import { supabase } from '../supabaseClient';
-import { Task, TaskCreationData } from '../../shared/types/regi/tasks';
+import { Task, TaskAssignmentStatus, TaskCreationData, TaskParticipant } from '../../shared/types/regi/tasks';
+
+export const getTaskAssignmentStatus = (row: {
+  approved_state?: number | null;
+  hours_used?: number | null;
+}): TaskAssignmentStatus => {
+  if (row.approved_state === 1) return 'approved';
+  if (row.approved_state === 2) return 'rejected';
+  if (row.hours_used != null) return 'submitted';
+  return 'joined';
+};
+
+function toTaskParticipant(row: any): TaskParticipant {
+  return {
+    assignmentId: String(row.id),
+    userId: String(row.user_uuid),
+    status: getTaskAssignmentStatus(row),
+    joinedAt: row.created_at,
+    hoursUsed: row.hours_used != null ? Number(row.hours_used) : null,
+    approvalComment: row.approval_comment ?? null,
+    approvedByUuid: row.approved_by_uuid ? String(row.approved_by_uuid) : null,
+  };
+}
 
 function toAppTask(row: any): Task {
   return {
@@ -7,33 +29,43 @@ function toAppTask(row: any): Task {
     title: row.work_items?.title ?? '',
     description: row.work_items?.description ?? '',
     category: row.work_items?.work_categories?.name ?? '',
+    contactPersonId: row.contact_person_uuid ? String(row.contact_person_uuid) : undefined,
     deadline: row.deadline ?? null,
-    participants: (row.participants ?? []).map((p: any) => p.user_uuid),
+    hourEstimate: row.time_estimate != null ? Number(row.time_estimate) : null,
+    maxParticipants: Math.max(Number(row.max_participants ?? 1), 1),
+    participants: (row.work_items?.participants ?? []).map(toTaskParticipant),
     createdAt: row.created_at,
+    isArchived: false,
   };
 }
 
 export async function addTask(data: TaskCreationData): Promise<string> {
-  // find category
   const { data: cat, error: e1 } = await supabase
-    .from('work_categories').select('id').eq('name', data.category).maybeSingle();
+    .from('work_categories')
+    .select('id')
+    .eq('name', data.category)
+    .maybeSingle();
   if (e1) throw new Error(`Could not add task: ${e1.message}`);
   if (!cat) throw new Error(`Category '${data.category}' not found`);
 
-  // create item then task in a single RPC or two calls:
   const { data: item, error: e2 } = await supabase
-    .from('work_items').insert({
+    .from('work_items')
+    .insert({
       title: data.title,
-      description: data.description,
+      description: data.description ?? null,
       type: 'task',
       work_category_id: cat.id,
-    }).select('id').single();
+    })
+    .select('id')
+    .single();
   if (e2) throw new Error(`Could not add task: ${e2.message}`);
 
   const { error: e3 } = await supabase.from('work_tasks').insert({
     id: item.id,
     deadline: data.deadline ?? null,
-    time_estimate: data.hourEstimate ?? null,
+    time_estimate: data.hourEstimate,
+    contact_person_uuid: data.contactPersonId ?? null,
+    max_participants: data.maxParticipants,
   });
   if (e3) throw new Error(`Could not add task: ${e3.message}`);
 
@@ -44,28 +76,30 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
   const { data, error } = await supabase
     .from('work_tasks')
     .select(`
-    id,
-    created_at,
-    deadline,
-    time_estimate,
-    contact_person_uuid,
-    max_participants,  
-    work_items (
       id,
-      title,
-      description,
-      work_categories (
+      created_at,
+      deadline,
+      time_estimate,
+      contact_person_uuid,
+      max_participants,
+      work_items (
         id,
-        name,
+        title,
         description,
-        color
-      ),
-      participants:work_assignments (
-        user_uuid
+        work_categories ( name ),
+        participants:work_assignments (
+          id,
+          user_uuid,
+          hours_used,
+          approved_state,
+          approval_comment,
+          approved_by_uuid,
+          created_at
+        )
       )
-    )
-  `)
-    .order('deadline', { ascending: true });
+    `)
+    .eq('id', Number(taskId))
+    .maybeSingle();
 
   if (error) throw new Error(`Could not get task: ${error.message}`);
   return data ? toAppTask(data) : undefined;
@@ -80,12 +114,20 @@ export async function getTasks(): Promise<Task[]> {
       deadline,
       time_estimate,
       contact_person_uuid,
-      max_participants, 
+      max_participants,
       work_items (
         title,
         description,
         work_categories ( name ),
-        participants:work_assignments ( user_uuid )
+        participants:work_assignments (
+          id,
+          user_uuid,
+          hours_used,
+          approved_state,
+          approval_comment,
+          approved_by_uuid,
+          created_at
+        )
       )
     `)
     .order('deadline', { ascending: true });
@@ -94,36 +136,37 @@ export async function getTasks(): Promise<Task[]> {
     throw new Error(`Could not get tasks: ${error.message}`);
   }
 
-  return (data ?? []).map((row) => ({
-    id: String(row.id),
-    taskName: row.work_items.title,
-    description: row.work_items.description ?? '',
-    category: row.work_items.work_categories.name,
-    contactPerson: '', // evt. hentes via userDAO på contact_person_uuid
-    contactPersonId: row.contact_person_uuid ?? null,
-    deadline: row.deadline ?? null,
-    hourEstimate: row.time_estimate ?? null,
-    maxParticipants: row.max_participants ?? null,
-    participants: (row.work_items.participants ?? []).map((p: any) => p.user_uuid),
-    completed: false,
-    isApproved: false,
-    createdBy: row.contact_person_uuid ?? null,
-    isActive: true,
-  }));
+  return (data ?? []).map(toAppTask);
 }
 
+export async function updateTask(taskId: string, data: Partial<TaskCreationData>): Promise<void> {
+  const patchItem: any = {
+    title: data.title,
+    description: data.description,
+  };
+  if (data.category) {
+    const { data: categoryRow, error: categoryError } = await supabase
+      .from('work_categories')
+      .select('id')
+      .eq('name', data.category)
+      .maybeSingle();
 
-export async function updateTask(taskId: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<void> {
-  // update work_items if title/description
-  const patchItem: any = { title: data.title, description: data.description };
+    if (categoryError) throw new Error(`Could not update task: ${categoryError.message}`);
+    if (!categoryRow) throw new Error(`Category '${data.category}' not found`);
+    patchItem.work_category_id = categoryRow.id;
+  }
   Object.keys(patchItem).forEach((k) => patchItem[k] === undefined && delete patchItem[k]);
   if (Object.keys(patchItem).length) {
     const { error } = await supabase.from('work_items').update(patchItem).eq('id', Number(taskId));
     if (error) throw new Error(`Could not update task: ${error.message}`);
   }
 
-  // update work_tasks if deadline or estimate
-  const patchTask: any = { deadline: data.deadline ?? undefined };
+  const patchTask: any = {
+    deadline: data.deadline,
+    time_estimate: data.hourEstimate,
+    contact_person_uuid: data.contactPersonId,
+    max_participants: data.maxParticipants,
+  };
   Object.keys(patchTask).forEach((k) => patchTask[k] === undefined && delete patchTask[k]);
   if (Object.keys(patchTask).length) {
     const { error } = await supabase.from('work_tasks').update(patchTask).eq('id', Number(taskId));
@@ -147,6 +190,7 @@ export async function joinTask(taskId: string, userId: string): Promise<boolean>
     work_id: Number(taskId),
     user_uuid: userId,
     approved_state: 0,
+    hours_used: null,
   });
   if (error) throw new Error(`Could not join task: ${error.message}`);
   return true;
@@ -161,38 +205,6 @@ export async function leaveTask(taskId: string, userId: string): Promise<boolean
 }
 
 export async function getTasksByUser(userId: string): Promise<Task[]> {
-  const { data, error } = await supabase
-    .from('work_assignments')
-    .select('work_items(*, work_categories(*), work_tasks(*))')
-    .eq('user_uuid', userId);
-  if (error) throw new Error(`Could not get user tasks: ${error.message}`);
-
-  const rows = (data ?? [])
-    .map((a: any) => a.work_items)
-    .filter(Boolean)
-    .map((wi: any) => ({
-      ...wi.work_tasks,
-      work_items: { ...wi, work_categories: wi.work_categories },
-      participants: [], // fetch separately if needed
-    }));
-
-  // enrich with participants
-  const ids = rows.map((r: any) => r.id);
-  if (ids.length === 0) return [];
-  const { data: parts } = await supabase
-    .from('work_assignments')
-    .select('work_id, user_uuid')
-    .in('work_id', ids);
-  const grouped = new Map<number, string[]>();
-  (parts ?? []).forEach((p: any) => {
-    const arr = grouped.get(p.work_id) ?? [];
-    arr.push(p.user_uuid);
-    grouped.set(p.work_id, arr);
-  });
-
-  return rows.map((row: any) => toAppTask({
-    ...row,
-    participants: (grouped.get(row.id) ?? []).map((u) => ({ user_uuid: u })),
-    work_items: row.work_items ?? { title: row.title, description: row.description, work_categories: row.work_categories }
-  }));
+  const tasks = await getTasks();
+  return tasks.filter((task) => task.participants.some((participant) => participant.userId === userId));
 }
