@@ -162,7 +162,20 @@ const RegiLogsPage: React.FC = () => {
                         <div className="text-xs text-gray-500">{log.userEmail}</div>
                       </td>
                       <td className="p-2">{log.title}</td>
-                      <td className="p-2">{log.category}</td>
+                      <td className="p-2">
+                        <div className="flex items-center gap-2">
+                          <span>{log.category}</span>
+                          <span
+                            className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
+                              log.sourceType === 'task'
+                                ? 'bg-purple-100 text-purple-800'
+                                : 'bg-gray-100 text-gray-700'
+                            }`}
+                          >
+                            {log.sourceType === 'task' ? 'Oppgave' : 'Manuell'}
+                          </span>
+                        </div>
+                      </td>
                       <td className="p-2">{log.hours.toFixed(2)} t</td>
                       <td className="p-2">{formatDate(log.createdAt)}</td>
                       <td className="p-2">
