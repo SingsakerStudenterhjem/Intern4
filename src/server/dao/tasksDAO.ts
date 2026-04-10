@@ -293,6 +293,57 @@ export async function submitTaskCompletion(taskId: string, userId: string): Prom
 }
 
 export async function getTasksByUser(userId: string): Promise<Task[]> {
-  const tasks = await getTasks();
-  return tasks.filter((task) => task.participants.some((participant) => participant.userId === userId));
+  const { data: assignmentRows, error: assignmentError } = await supabase
+    .from('work_assignments')
+    .select('work_id')
+    .eq('user_uuid', userId);
+
+  if (assignmentError) {
+    throw new Error(`Could not get tasks by user: ${assignmentError.message}`);
+  }
+
+  const taskIds = Array.from(
+    new Set(
+      (assignmentRows ?? [])
+        .map((row: any) => row.work_id)
+        .filter((workId: number | null | undefined) => workId != null)
+    )
+  );
+
+  if (taskIds.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('work_tasks')
+    .select(`
+      id,
+      created_at,
+      deadline,
+      time_estimate,
+      contact_person_uuid,
+      max_participants,
+      work_items (
+        title,
+        description,
+        work_categories ( name ),
+        participants:work_assignments (
+          id,
+          user_uuid,
+          hours_used,
+          approved_state,
+          approval_comment,
+          approved_by_uuid,
+          created_at
+        )
+      )
+    `)
+    .in('id', taskIds)
+    .order('deadline', { ascending: true });
+
+  if (error) {
+    throw new Error(`Could not get tasks by user: ${error.message}`);
+  }
+
+  return (data ?? []).map(toAppTask);
 }

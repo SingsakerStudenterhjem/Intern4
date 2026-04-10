@@ -148,7 +148,9 @@ const WorkTasksPage: React.FC = () => {
       showSuccessMessage('Oppgave opprettet!');
     } catch (err) {
       console.error('Error creating task:', err);
-      showErrorMessage(err instanceof Error ? err.message : 'Kunne ikke opprette oppgave');
+      const message = err instanceof Error ? err.message : 'Kunne ikke opprette oppgave';
+      showErrorMessage(message);
+      throw err instanceof Error ? err : new Error(message);
     }
   };
 
@@ -161,7 +163,9 @@ const WorkTasksPage: React.FC = () => {
       showSuccessMessage('Oppgave oppdatert!');
     } catch (err) {
       console.error('Error updating task:', err);
-      showErrorMessage(err instanceof Error ? err.message : 'Kunne ikke oppdatere oppgave');
+      const message = err instanceof Error ? err.message : 'Kunne ikke oppdatere oppgave';
+      showErrorMessage(message);
+      throw err instanceof Error ? err : new Error(message);
     }
   };
 
