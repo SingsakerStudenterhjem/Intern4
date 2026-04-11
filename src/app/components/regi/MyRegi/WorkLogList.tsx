@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Trash2 } from 'lucide-react';
 import { RegiLogWithId } from '../../../../shared/types/regi';
-import { getRegiLogsByUser } from '../../../../server/dao/regiDAO';
+import { deletePendingRegiLog, getRegiLogsByUser } from '../../../../server/dao/regiDAO';
 import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
 
 const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: number }> = ({
@@ -10,15 +11,28 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
 }) => {
   const [logs, setLogs] = useState<RegiLogWithId[]>([]);
   const [, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       setLoading(true);
-      const data = await getRegiLogsByUser(userId);
-      if (mounted) {
-        setLogs(data);
-        setLoading(false);
+      setError(null);
+      try {
+        const data = await getRegiLogsByUser(userId);
+        if (mounted) {
+          setLogs(data);
+        }
+      } catch (loadError) {
+        console.error(loadError);
+        if (mounted) {
+          setError('Kunne ikke laste registreringene.');
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
       }
     })();
     return () => {
@@ -74,6 +88,28 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
     return '—';
   };
 
+  const canDeleteLog = (log: RegiLogWithId) =>
+    log.status === 'pending' && log.sourceType === 'misc';
+
+  const handleDelete = async (log: RegiLogWithId) => {
+    if (!canDeleteLog(log)) return;
+    if (!window.confirm('Vil du slette denne ventende registreringen?')) return;
+
+    try {
+      setDeletingId(log.id);
+      setError(null);
+      await deletePendingRegiLog(log.id, userId);
+      setLogs((currentLogs) => currentLogs.filter((currentLog) => currentLog.id !== log.id));
+    } catch (deleteError) {
+      console.error(deleteError);
+      setError(
+        deleteError instanceof Error ? deleteError.message : 'Kunne ikke slette registreringen.'
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   //if (loading) return <div>Laster...</div>;
 
   return (
@@ -100,6 +136,11 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
           <h2 className="font-semibold text-gray-900">Regi logg</h2>
           <p className="mt-1 text-sm text-gray-600">Nyeste først. Godkjenning skjer av regisjef.</p>
         </div>
+        {error && (
+          <div className="border-b border-red-200 bg-red-50 px-4 py-3">
+            <p className="text-sm text-red-700">{error}</p>
+          </div>
+        )}
         <div className="max-h-[480px] overflow-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 sticky top-0">
@@ -118,6 +159,8 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
                 </th>
                 <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                   Status
+                </th>
+                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                 </th>
               </tr>
             </thead>
@@ -150,11 +193,26 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
                       </span>
                     )}
                   </td>
+                  <td className="px-4 py-3">
+                    {canDeleteLog(l) ? (
+                      <button
+                        type="button"
+                        onClick={() => void handleDelete(l)}
+                        disabled={deletingId === l.id}
+                        className="inline-flex items-center gap-1 rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {deletingId === l.id ? 'Sletter...' : 'Slett'}
+                      </button>
+                    ) : (
+                      <span className="text-xs text-gray-400">—</span>
+                    )}
+                  </td>
                 </tr>
               ))}
               {logs.length === 0 && (
                 <tr>
-                  <td className="p-3 text-gray-600" colSpan={6}>
+                  <td className="p-3 text-gray-600" colSpan={7}>
                     Ingen registreringer ennå.
                   </td>
                 </tr>

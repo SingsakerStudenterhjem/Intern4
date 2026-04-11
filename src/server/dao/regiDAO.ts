@@ -92,7 +92,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, hours_used, created_at, approved_state, work_items(title, type, work_categories(name))'
+      'id, work_id, hours_used, created_at, approved_state, work_items(title, type, work_categories(name))'
     )
     .eq('user_uuid', userId)
     .order('created_at', { ascending: false });
@@ -107,14 +107,65 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
 
   return (data ?? []).filter(isCountableRegiAssignment).map((d: any) => ({
     id: String(d.id),
+    workId: d.work_id ? String(d.work_id) : undefined,
     title: d.work_items?.title ?? '',
     hours: d.hours_used ?? 0,
     date: d.created_at,
     status: statusMap[d.approved_state] ?? 'pending',
     type: d.work_items?.work_categories?.name ?? d.work_items?.type ?? 'misc',
+    sourceType: d.work_items?.type === 'task' ? 'task' : 'misc',
     userId,
     createdAt: d.created_at,
   }));
+}
+
+export async function deletePendingRegiLog(assignmentId: string, userId: string): Promise<void> {
+  const { data: assignment, error: fetchError } = await supabase
+    .from('work_assignments')
+    .select('id, user_uuid, approved_state, work_id, work_items(type)')
+    .eq('id', Number(assignmentId))
+    .maybeSingle();
+
+  if (fetchError) throw new Error(fetchError.message);
+  if (!assignment) throw new Error('Registreringen ble ikke funnet');
+  if (String(assignment.user_uuid) !== userId) {
+    throw new Error('Du har ikke tilgang til å slette denne registreringen');
+  }
+  if (assignment.approved_state !== 0) {
+    throw new Error('Kun ventende registreringer kan slettes');
+  }
+  if (assignment.work_items?.type !== 'misc') {
+    throw new Error('Oppgavebaserte registreringer må håndteres fra oppgaver');
+  }
+
+  const workId = assignment.work_id ? Number(assignment.work_id) : null;
+
+  const { error: deleteAssignmentError } = await supabase
+    .from('work_assignments')
+    .delete()
+    .eq('id', Number(assignmentId));
+
+  if (deleteAssignmentError) throw new Error(deleteAssignmentError.message);
+
+  if (!workId) return;
+
+  const { data: remainingAssignments, error: remainingError } = await supabase
+    .from('work_assignments')
+    .select('id')
+    .eq('work_id', workId);
+
+  if (remainingError) throw new Error(remainingError.message);
+
+  if ((remainingAssignments ?? []).length > 0) {
+    return;
+  }
+
+  const { error: deleteWorkItemError } = await supabase
+    .from('work_items')
+    .delete()
+    .eq('id', workId);
+
+  if (deleteWorkItemError) throw new Error(deleteWorkItemError.message);
 }
 
 export type PendingRegiApproval = {

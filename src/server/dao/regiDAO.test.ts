@@ -1,5 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { approveRegiLog, getRegiLogsByUser, isCountableRegiAssignment } from './regiDAO';
+import {
+  approveRegiLog,
+  deletePendingRegiLog,
+  getRegiLogsByUser,
+  isCountableRegiAssignment,
+} from './regiDAO';
 import { supabase } from '../supabaseClient';
 
 vi.mock('../supabaseClient', () => ({
@@ -17,6 +22,34 @@ function createOrderedBuilder(data: any[]) {
     select: vi.fn(() => builder),
     eq: vi.fn(() => builder),
     order: vi.fn(async () => ({ data, error: null })),
+  };
+
+  return builder;
+}
+
+function createMaybeSingleBuilder(data: any) {
+  const builder: any = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(() => builder),
+    maybeSingle: vi.fn(async () => ({ data, error: null })),
+  };
+
+  return builder;
+}
+
+function createDeleteBuilder() {
+  const builder: any = {
+    delete: vi.fn(() => builder),
+    eq: vi.fn(async () => ({ error: null })),
+  };
+
+  return builder;
+}
+
+function createSelectEqBuilder(data: any[]) {
+  const builder: any = {
+    select: vi.fn(() => builder),
+    eq: vi.fn(async () => ({ data, error: null })),
   };
 
   return builder;
@@ -74,6 +107,7 @@ describe('regiDAO', () => {
       },
       {
         id: 2,
+        work_id: 22,
         hours_used: 2,
         created_at: '2026-04-10T10:00:00.000Z',
         approved_state: 0,
@@ -92,6 +126,8 @@ describe('regiDAO', () => {
     expect(result).toHaveLength(1);
     expect(result[0].title).toBe('Sendt inn');
     expect(result[0].hours).toBe(2);
+    expect(result[0].workId).toBe('22');
+    expect(result[0].sourceType).toBe('task');
   });
 
   it('stores approver metadata when approving regi work', async () => {
@@ -106,5 +142,63 @@ describe('regiDAO', () => {
       approval_comment: 'Ser bra ut',
     });
     expect(updateBuilder.eq).toHaveBeenCalledWith('id', '12');
+  });
+
+  it('deletes only the current users pending manual regi log and removes its work item when orphaned', async () => {
+    const assignmentBuilder = createMaybeSingleBuilder({
+      id: 12,
+      user_uuid: '11111111-1111-1111-1111-111111111111',
+      approved_state: 0,
+      work_id: 44,
+      work_items: { type: 'misc' },
+    });
+    const deleteAssignmentBuilder = createDeleteBuilder();
+    const remainingAssignmentsBuilder = createSelectEqBuilder([]);
+    const deleteWorkItemBuilder = createDeleteBuilder();
+
+    vi.mocked(supabase.from)
+      .mockImplementationOnce(() => assignmentBuilder)
+      .mockImplementationOnce(() => deleteAssignmentBuilder)
+      .mockImplementationOnce(() => remainingAssignmentsBuilder)
+      .mockImplementationOnce(() => deleteWorkItemBuilder);
+
+    await deletePendingRegiLog('12', '11111111-1111-1111-1111-111111111111');
+
+    expect(deleteAssignmentBuilder.delete).toHaveBeenCalled();
+    expect(deleteAssignmentBuilder.eq).toHaveBeenCalledWith('id', 12);
+    expect(remainingAssignmentsBuilder.eq).toHaveBeenCalledWith('work_id', 44);
+    expect(deleteWorkItemBuilder.eq).toHaveBeenCalledWith('id', 44);
+  });
+
+  it('rejects deleting approved or task-backed regi logs', async () => {
+    const approvedBuilder = createMaybeSingleBuilder({
+      id: 12,
+      user_uuid: '11111111-1111-1111-1111-111111111111',
+      approved_state: 1,
+      work_id: 44,
+      work_items: { type: 'misc' },
+    });
+
+    vi.mocked(supabase.from).mockImplementationOnce(() => approvedBuilder);
+
+    await expect(
+      deletePendingRegiLog('12', '11111111-1111-1111-1111-111111111111')
+    ).rejects.toThrow('Kun ventende registreringer kan slettes');
+
+    vi.clearAllMocks();
+
+    const taskBuilder = createMaybeSingleBuilder({
+      id: 12,
+      user_uuid: '11111111-1111-1111-1111-111111111111',
+      approved_state: 0,
+      work_id: 44,
+      work_items: { type: 'task' },
+    });
+
+    vi.mocked(supabase.from).mockImplementationOnce(() => taskBuilder);
+
+    await expect(
+      deletePendingRegiLog('12', '11111111-1111-1111-1111-111111111111')
+    ).rejects.toThrow('Oppgavebaserte registreringer må håndteres fra oppgaver');
   });
 });

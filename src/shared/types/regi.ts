@@ -24,4 +24,8 @@ export const RegiLogSchema = z.object({
 export type RegiLog = z.infer<typeof RegiLogSchema>;
 
 // Helper for database reads that add the document id
-export type RegiLogWithId = RegiLog & { id: string };
+export type RegiLogWithId = RegiLog & {
+  id: string;
+  workId?: string;
+  sourceType?: 'misc' | 'task';
+};
