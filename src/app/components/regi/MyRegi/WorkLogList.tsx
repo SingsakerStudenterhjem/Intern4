@@ -63,6 +63,17 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
     [totals]
   );
 
+  const formatLogDate = (value: RegiLogWithId['date'] | RegiLogWithId['createdAt']) => {
+    if (!value) return '—';
+    if (value instanceof Date) return value.toLocaleDateString('no-NO');
+    if (typeof value === 'string') return new Date(value).toLocaleDateString('no-NO');
+    if ('seconds' in value && typeof value.seconds === 'number') {
+      return new Date(value.seconds * 1000).toLocaleDateString('no-NO');
+    }
+
+    return '—';
+  };
+
   //if (loading) return <div>Laster...</div>;
 
   return (
@@ -94,10 +105,10 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
             <thead className="bg-gray-50 sticky top-0">
               <tr>
                 <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
-                  Tittel
+                  Utført / registrert
                 </th>
                 <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
-                  Dato
+                  Tittel
                 </th>
                 <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                   Timer
@@ -113,10 +124,13 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
             <tbody className="divide-y divide-gray-200">
               {logs.map((l) => (
                 <tr key={l.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3">{l.title}</td>
                   <td className="px-4 py-3">
-                    {new Date(l.date.seconds * 1000).toLocaleDateString('no-NO')}
+                    <div className="font-medium text-gray-900">{formatLogDate(l.date)}</div>
+                    <div className="text-xs text-gray-500">
+                      Registrert {formatLogDate(l.createdAt)}
+                    </div>
                   </td>
+                  <td className="px-4 py-3">{l.title}</td>
                   <td className="px-4 py-3">{l.hours.toFixed(2)}</td>
                   <td className="px-4 py-3 capitalize">{l.type}</td>
                   <td className="px-4 py-3 capitalize">
@@ -140,7 +154,7 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
               ))}
               {logs.length === 0 && (
                 <tr>
-                  <td className="p-3 text-gray-600" colSpan={5}>
+                  <td className="p-3 text-gray-600" colSpan={6}>
                     Ingen registreringer ennå.
                   </td>
                 </tr>
