@@ -174,7 +174,7 @@ const Navbar = () => {
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                   <Link
-                    to={ROUTES.ABOUTME}
+                    to={ROUTES.PROFILE}
                     onClick={() => setUserMenuOpen(false)}
                     className="block px-4 py-2 text-sm hover:bg-gray-100"
                   >
@@ -252,7 +252,7 @@ const Navbar = () => {
             </div>
             <div className="flex items-center gap-3">
               <Link
-                to={ROUTES.ABOUTME}
+                to={ROUTES.PROFILE}
                 onClick={() => setMobileOpen(false)}
                 className="text-blue-600"
               >

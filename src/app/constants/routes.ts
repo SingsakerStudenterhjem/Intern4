@@ -9,7 +9,7 @@ export const ROUTES = {
   LEGG_TIL_BEBOER: '/romsjef/legg_til_beboer',
   HOME: '/',
   ADMIN: '/admin',
-  ABOUTME: '/about_me',
+  PROFILE: '/profil',
   FORGOT_PASSWORD: '/glemt-passord',
   RESET_PASSWORD: '/reset-password',
 };

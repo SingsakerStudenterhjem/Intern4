@@ -9,7 +9,7 @@ import NotFoundPage from '../app/pages/notFoundPage';
 import ProtectedRoute from '../app/components/common/protectedRoute';
 import { ROUTES } from '../app/constants/routes';
 import { USER_ROLES } from '../app/constants/userRoles';
-import AboutMePage from '../app/pages/tmpAboutMe';
+import ProfilePage from '../app/pages/profilePage';
 import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
 import RegiLogsPage from '../app/pages/workManager/regiLogsPage';
 import ForgotPasswordPage from '../app/pages/forgotPasswordPage';
@@ -90,10 +90,10 @@ export const protectedRoutes: RouteObject[] = [
     ),
   },
   {
-    path: ROUTES.ABOUTME,
+    path: ROUTES.PROFILE,
     element: (
       <ProtectedRoute>
-        <AboutMePage />
+        <ProfilePage />
       </ProtectedRoute>
     ),
   },
