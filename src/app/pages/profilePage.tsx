@@ -1,7 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/authContext';
 import { supabase } from '../../server/supabaseClient';
 import { getUser, updateUser } from '../../server/dao/userDAO';
+import { resetPassword } from '../../server/dao/authentication';
 
 type GeneralInfoFormState = {
   firstName: string;
@@ -144,6 +146,13 @@ const ProfilePage: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [savingGeneralInfo, setSavingGeneralInfo] = useState(false);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+  const [savingPassword, setSavingPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -247,6 +256,42 @@ const ProfilePage: React.FC = () => {
       setFormError('Kunne ikke lagre profilinformasjon.');
     } finally {
       setSavingGeneralInfo(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    setPasswordError(null);
+    setPasswordSuccess(null);
+
+    if (newPassword.length < 6) {
+      setPasswordError('Passordet må være minst 6 tegn.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError('Passordene stemmer ikke overens.');
+      return;
+    }
+
+    try {
+      setSavingPassword(true);
+      const result = await resetPassword(newPassword);
+
+      if (!result.success) {
+        setPasswordError(result.error);
+        return;
+      }
+
+      setNewPassword('');
+      setConfirmPassword('');
+      setPasswordSuccess('Passordet ditt ble oppdatert.');
+    } catch (error) {
+      console.error(error);
+      setPasswordError('Kunne ikke oppdatere passordet.');
+    } finally {
+      setSavingPassword(false);
     }
   };
 
@@ -420,7 +465,101 @@ const ProfilePage: React.FC = () => {
               title="Endre passord"
               description="Bytt passordet du bruker for å logge inn."
             >
-              <ProfilePlaceholder text="Passordskjemaet legges inn i neste steg." />
+              <form className="space-y-5" onSubmit={handlePasswordSubmit}>
+                <div className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+                  Bruk et sterkt passord. Dagens innloggingsflyt krever minst 6 tegn.
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <FieldLabel htmlFor="newPassword" required>
+                      Nytt passord
+                    </FieldLabel>
+                    <div className="relative">
+                      <TextInput
+                        id="newPassword"
+                        type={showNewPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(event) => {
+                          setNewPassword(event.target.value);
+                          setPasswordError(null);
+                          setPasswordSuccess(null);
+                        }}
+                        placeholder="Nytt passord"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowNewPassword((value) => !value)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        aria-label={showNewPassword ? 'Skjul nytt passord' : 'Vis nytt passord'}
+                      >
+                        {showNewPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <FieldLabel htmlFor="confirmPassword" required>
+                      Gjenta passord
+                    </FieldLabel>
+                    <div className="relative">
+                      <TextInput
+                        id="confirmPassword"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(event) => {
+                          setConfirmPassword(event.target.value);
+                          setPasswordError(null);
+                          setPasswordSuccess(null);
+                        }}
+                        placeholder="Gjenta passord"
+                        className="pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((value) => !value)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                        aria-label={
+                          showConfirmPassword ? 'Skjul bekreftet passord' : 'Vis bekreftet passord'
+                        }
+                      >
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {passwordError && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                    {passwordError}
+                  </div>
+                )}
+
+                {passwordSuccess && (
+                  <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                    {passwordSuccess}
+                  </div>
+                )}
+
+                <div className="flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={savingPassword || !newPassword || !confirmPassword}
+                    className="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {savingPassword ? 'Oppdaterer...' : 'Oppdater passord'}
+                  </button>
+                </div>
+              </form>
             </ProfileSectionCard>
           </div>
 
