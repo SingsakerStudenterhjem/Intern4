@@ -31,7 +31,7 @@ const WorkManagerPage: React.FC = () => {
           </div>
         </section>
 
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)]">
           <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
             <GrantRegiForm />
           </section>

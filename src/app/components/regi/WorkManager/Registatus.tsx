@@ -181,17 +181,17 @@ const Registatus: React.FC = () => {
                   <td className="px-4 py-3">{row.approvedHours.toFixed(2)} t</td>
                   <td className="px-4 py-3">{row.requiredHours.toFixed(0)} t</td>
                   <td className="px-4 py-3">{row.remainingHours.toFixed(2)} t</td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-3 whitespace-nowrap">
                     {row.onLeave ? (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                      <span className="inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
                         Permisjon
                       </span>
                     ) : row.remainingHours > 0 ? (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                      <span className="inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                         Mangler timer
                       </span>
                     ) : (
-                      <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                      <span className="inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                         Oppfylt
                       </span>
                     )}
