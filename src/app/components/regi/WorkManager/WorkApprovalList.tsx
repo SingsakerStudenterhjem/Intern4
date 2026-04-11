@@ -104,6 +104,41 @@ const WorkApprovalList: React.FC = () => {
     );
   }
 
+  const renderActionButtons = (approval: PendingRegiApproval, stacked = false) => {
+    const busy = actionLoadingId === approval.id;
+
+    return (
+      <div
+        className={`flex gap-2 ${stacked ? 'flex-col' : 'flex-col lg:flex-row lg:items-center'} min-w-40`}
+      >
+        <button
+          disabled={busy}
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleApprove(approval.id);
+          }}
+          aria-label={`Godkjenn ${approval.title}`}
+          className="inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+        >
+          <Check className="w-4 h-4 mr-1.5" />
+          Godkjenn
+        </button>
+        <button
+          disabled={busy}
+          onClick={(e) => {
+            e.stopPropagation();
+            void handleReject(approval.id);
+          }}
+          aria-label={`Avvis ${approval.title}`}
+          className="inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+        >
+          <Ban className="w-4 h-4 mr-1.5" />
+          Avvis
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-3">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -137,8 +172,16 @@ const WorkApprovalList: React.FC = () => {
         Venter: <span className="font-semibold">{filtered.length}</span>
       </div>
 
-      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border border-gray-200 rounded-xl bg-white shadow-sm">
-        <table className="min-w-full text-sm">
+      <div className="hidden md:block max-h-[60vh] md:max-h-[65vh] overflow-auto border border-gray-200 rounded-xl bg-white shadow-sm">
+        <table className="min-w-full table-fixed text-sm">
+          <colgroup>
+            <col className="w-[13%]" />
+            <col className="w-[18%]" />
+            <col />
+            <col className="w-[12%]" />
+            <col className="w-[10%]" />
+            <col className="w-48" />
+          </colgroup>
           <thead className="bg-gray-50 sticky top-0">
             <tr>
               <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
@@ -171,64 +214,53 @@ const WorkApprovalList: React.FC = () => {
             )}
 
             {!loading &&
-              filtered.map((a) => {
-                const busy = actionLoadingId === a.id;
-
-                return (
-                  <tr
-                    key={a.id}
-                    className="hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => setSelected(a)}
-                  >
-                    <td className="px-4 py-3">{a.userName}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium">
-                          {a.category}
-                        </span>
-                        <span
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                            a.sourceType === 'task'
-                              ? 'bg-purple-50 text-purple-800'
-                              : 'bg-gray-100 text-gray-700'
-                          }`}
-                        >
-                          {a.sourceType === 'task' ? 'Oppgave' : 'Manuell'}
-                        </span>
+              filtered.map((a) => (
+                <tr
+                  key={a.id}
+                  className="hover:bg-gray-50 cursor-pointer transition-colors"
+                  onClick={() => setSelected(a)}
+                >
+                  <td className="px-4 py-3 align-top">
+                    <div className="font-medium text-gray-900">{a.userName}</div>
+                    {a.userEmail && (
+                      <div className="mt-1 text-xs text-gray-500 truncate">{a.userEmail}</div>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium">
+                        {a.category}
+                      </span>
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          a.sourceType === 'task'
+                            ? 'bg-purple-50 text-purple-800'
+                            : 'bg-gray-100 text-gray-700'
+                        }`}
+                      >
+                        {a.sourceType === 'task' ? 'Oppgave' : 'Manuell'}
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 align-top">
+                    <div className="min-w-0">
+                      <div className="font-medium text-gray-900 truncate" title={a.title}>
+                        {a.title}
                       </div>
-                    </td>
-                    <td className="px-4 py-3">{a.title}</td>
-                    <td className="px-4 py-3">{formatDate(a.createdAt)}</td>
-                    <td className="px-4 py-3">{a.hours.toFixed(2)}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <button
-                          disabled={busy}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void handleApprove(a.id);
-                          }}
-                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
-                        >
-                          <Check className="w-4 h-4 mr-1" />
-                          Godkjenn
-                        </button>
-                        <button
-                          disabled={busy}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            void handleReject(a.id);
-                          }}
-                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
-                        >
-                          <Ban className="w-4 h-4 mr-1" />
-                          Avvis
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      {a.description && (
+                        <div className="mt-1 text-xs text-gray-500 truncate" title={a.description}>
+                          {a.description}
+                        </div>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 align-top whitespace-nowrap">
+                    {formatDate(a.createdAt)}
+                  </td>
+                  <td className="px-4 py-3 align-top whitespace-nowrap">{a.hours.toFixed(2)}</td>
+                  <td className="px-4 py-3 align-top min-w-48">{renderActionButtons(a)}</td>
+                </tr>
+              ))}
 
             {!loading && filtered.length === 0 && (
               <tr>
@@ -239,6 +271,73 @@ const WorkApprovalList: React.FC = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      <div className="space-y-3 md:hidden">
+        {loading && (
+          <div className="border border-gray-200 rounded-xl bg-white shadow-sm p-4 text-sm text-gray-600">
+            Laster...
+          </div>
+        )}
+
+        {!loading &&
+          filtered.map((a) => (
+            <article
+              key={a.id}
+              className="border border-gray-200 rounded-xl bg-white shadow-sm p-4"
+              data-testid="approval-card"
+            >
+              <button
+                type="button"
+                onClick={() => setSelected(a)}
+                className="w-full text-left space-y-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="font-medium text-gray-900">{a.userName}</div>
+                    <div className="mt-1 text-xs text-gray-500">{formatDate(a.createdAt)}</div>
+                  </div>
+                  <div className="text-sm font-semibold text-gray-900 whitespace-nowrap">
+                    {a.hours.toFixed(2)} t
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium">
+                    {a.category}
+                  </span>
+                  <span
+                    className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      a.sourceType === 'task'
+                        ? 'bg-purple-50 text-purple-800'
+                        : 'bg-gray-100 text-gray-700'
+                    }`}
+                  >
+                    {a.sourceType === 'task' ? 'Oppgave' : 'Manuell'}
+                  </span>
+                </div>
+
+                <div>
+                  <div className="font-medium text-gray-900 wrap-break-word">{a.title}</div>
+                  {a.description && (
+                    <div className="mt-1 text-sm text-gray-600 wrap-break-word">
+                      {a.description}
+                    </div>
+                  )}
+                </div>
+              </button>
+
+              <div className="mt-4 border-t border-gray-100 pt-4">
+                {renderActionButtons(a, true)}
+              </div>
+            </article>
+          ))}
+
+        {!loading && filtered.length === 0 && (
+          <div className="border border-gray-200 rounded-xl bg-white shadow-sm p-4 text-sm text-gray-600">
+            Ingen ventende registreringer.
+          </div>
+        )}
       </div>
 
       {selected && (

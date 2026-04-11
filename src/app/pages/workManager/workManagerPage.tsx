@@ -19,54 +19,52 @@ const WorkManagerPage: React.FC = () => {
           </div>
         </header>
 
+        <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col min-h-[52vh]">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-gray-900">Godkjenningsliste</h2>
+            <p className="text-sm text-gray-600">
+              Se innsendte regitimer og godkjenn eller avvis direkte.
+            </p>
+          </div>
+          <div className="flex-1 min-h-0">
+            <WorkApprovalList />
+          </div>
+        </section>
+
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="lg:col-span-1 bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col min-h-[60vh]">
+          <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+            <GrantRegiForm />
+          </section>
+
+          <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
             <div className="mb-4">
-              <h2 className="text-xl font-semibold text-gray-900">Godkjenningsliste</h2>
+              <h2 className="text-xl font-semibold text-gray-900">Registatus</h2>
               <p className="text-sm text-gray-600">
-                Se innsendte regitimer og godkjenn eller avvis direkte.
+                Aktive brukere, godkjente timer og gjenstående krav for semesteret.
               </p>
             </div>
-            <div className="flex-1 min-h-0">
-              <WorkApprovalList />
+            <div className="min-h-0">
+              <Registatus />
             </div>
           </section>
 
-          <div className="space-y-6">
-            <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-              <GrantRegiForm />
-            </section>
-
-            <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-              <div className="mb-4">
-                <h2 className="text-xl font-semibold text-gray-900">Registatus</h2>
+          <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-4 lg:col-span-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
+                <h3 className="font-semibold text-gray-900">Full regilogger</h3>
                 <p className="text-sm text-gray-600">
-                  Aktive brukere, godkjente timer og gjenstående krav for semesteret.
+                  Se alle registrerte timer og status for hele huset.
                 </p>
               </div>
-              <div className="min-h-0">
-                <Registatus />
-              </div>
-            </section>
-
-            <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div>
-                  <h3 className="font-semibold text-gray-900">Full regilogger</h3>
-                  <p className="text-sm text-gray-600">
-                    Se alle registrerte timer og status for hele huset.
-                  </p>
-                </div>
-                <Link
-                  to={ROUTES.REGILOGS}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700"
-                >
-                  Åpne logg
-                  <ArrowRight className="w-4 h-4 ml-1" />
-                </Link>
-              </div>
-            </section>
-          </div>
+              <Link
+                to={ROUTES.REGILOGS}
+                className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+              >
+                Åpne logg
+                <ArrowRight className="w-4 h-4 ml-1" />
+              </Link>
+            </div>
+          </section>
         </div>
       </div>
     </div>
