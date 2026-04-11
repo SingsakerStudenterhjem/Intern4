@@ -157,7 +157,7 @@ const WorkApprovalList: React.FC = () => {
                 Timer
               </th>
               <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
-                Action
+                Handling
               </th>
             </tr>
           </thead>
