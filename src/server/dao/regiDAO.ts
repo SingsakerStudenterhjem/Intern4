@@ -92,7 +92,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, work_id, hours_used, created_at, approved_state, work_items(title, type, work_categories(name))'
+      'id, work_id, hours_used, created_at, approved_state, approval_comment, work_items(title, description, type, work_categories(name))'
     )
     .eq('user_uuid', userId)
     .order('created_at', { ascending: false });
@@ -109,6 +109,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
     id: String(d.id),
     workId: d.work_id ? String(d.work_id) : undefined,
     title: d.work_items?.title ?? '',
+    description: d.work_items?.description ?? undefined,
     hours: d.hours_used ?? 0,
     date: d.created_at,
     status: statusMap[d.approved_state] ?? 'pending',
@@ -116,6 +117,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
     sourceType: d.work_items?.type === 'task' ? 'task' : 'misc',
     userId,
     createdAt: d.created_at,
+    reviewerComment: d.approval_comment ?? undefined,
   }));
 }
 

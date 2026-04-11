@@ -3,6 +3,7 @@ import { Trash2 } from 'lucide-react';
 import { RegiLogWithId } from '../../../../shared/types/regi';
 import { deletePendingRegiLog, getRegiLogsByUser } from '../../../../server/dao/regiDAO';
 import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
+import WorkLogDetailsModal from './WorkLogDetailsModal';
 
 const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: number }> = ({
   userId,
@@ -13,6 +14,7 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
   const [, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedLog, setSelectedLog] = useState<RegiLogWithId | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -160,13 +162,16 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
                 <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                   Status
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
-                </th>
+                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {logs.map((l) => (
-                <tr key={l.id} className="hover:bg-gray-50 transition-colors">
+                <tr
+                  key={l.id}
+                  className="cursor-pointer transition-colors hover:bg-gray-50"
+                  onClick={() => setSelectedLog(l)}
+                >
                   <td className="px-4 py-3">
                     <div className="font-medium text-gray-900">{formatLogDate(l.date)}</div>
                     <div className="text-xs text-gray-500">
@@ -197,7 +202,10 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
                     {canDeleteLog(l) ? (
                       <button
                         type="button"
-                        onClick={() => void handleDelete(l)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void handleDelete(l);
+                        }}
                         disabled={deletingId === l.id}
                         className="inline-flex items-center gap-1 rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
                       >
@@ -221,6 +229,8 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
           </table>
         </div>
       </div>
+
+      <WorkLogDetailsModal log={selectedLog} onClose={() => setSelectedLog(null)} />
     </div>
   );
 };

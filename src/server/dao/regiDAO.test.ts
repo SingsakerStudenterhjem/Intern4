@@ -111,8 +111,10 @@ describe('regiDAO', () => {
         hours_used: 2,
         created_at: '2026-04-10T10:00:00.000Z',
         approved_state: 0,
+        approval_comment: 'Ser bra ut',
         work_items: {
           title: 'Sendt inn',
+          description: 'Detaljer',
           type: 'task',
           work_categories: { name: 'Generelt' },
         },
@@ -128,6 +130,8 @@ describe('regiDAO', () => {
     expect(result[0].hours).toBe(2);
     expect(result[0].workId).toBe('22');
     expect(result[0].sourceType).toBe('task');
+    expect(result[0].description).toBe('Detaljer');
+    expect(result[0].reviewerComment).toBe('Ser bra ut');
   });
 
   it('stores approver metadata when approving regi work', async () => {
