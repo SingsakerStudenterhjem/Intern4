@@ -39,23 +39,56 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
     };
   }, [logs, userRole]);
 
-  // TODO: uncomment after connecting to the db
+  const overviewItems = useMemo(
+    () => [
+      {
+        label: 'Godkjent',
+        value: `${totals.approved.toFixed(2)} t`,
+        valueClassName: 'text-green-700',
+      },
+      {
+        label: 'Venter',
+        value: `${totals.pending.toFixed(2)} t`,
+        valueClassName: 'text-amber-700',
+      },
+      {
+        label: 'Totalt registrert',
+        value: `${totals.total.toFixed(2)} t`,
+      },
+      {
+        label: 'Gjenstående timer',
+        value: `${totals.remaining.toFixed(2)} t`,
+      },
+    ],
+    [totals]
+  );
+
   //if (loading) return <div>Laster...</div>;
 
   return (
     <div className="space-y-4">
-      <div className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
-        <div className="font-semibold text-gray-900 mb-1">Oversikt over min regi</div>
-        <div className="text-sm text-gray-700">
-          Godkjent: <span className="font-semibold">{totals.approved.toFixed(2)}</span> t • Venter:{' '}
-          <span className="font-semibold">{totals.pending.toFixed(2)}</span> t • Totalt registrert:{' '}
-          <span className="font-semibold">{totals.total.toFixed(2)}</span> t • Gjenstående timer:{' '}
-          <span className="font-semibold">{totals.remaining.toFixed(2)}</span> t
+      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+        <div className="mb-3">
+          <h2 className="text-base font-semibold text-gray-900">Oversikt over min regi</h2>
         </div>
+        <dl className="divide-y divide-gray-100">
+          {overviewItems.map((item) => (
+            <div
+              key={item.label}
+              className="flex items-center justify-between gap-4 py-1 first:pt-0"
+            >
+              <dt className="text-sm text-gray-600">{item.label}</dt>
+              <dd className={`text-base font-semibold ${item.valueClassName}`}>{item.value}</dd>
+            </div>
+          ))}
+        </dl>
       </div>
 
       <div className="border border-gray-200 rounded-xl bg-white shadow-sm">
-        <div className="p-4 border-b border-gray-200 font-semibold text-gray-900">Regi logg</div>
+        <div className="border-b border-gray-200 p-4">
+          <h2 className="font-semibold text-gray-900">Regi logg</h2>
+          <p className="mt-1 text-sm text-gray-600">Nyeste først. Godkjenning skjer av regisjef.</p>
+        </div>
         <div className="max-h-[480px] overflow-auto">
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 sticky top-0">

@@ -42,11 +42,7 @@ const WorkPage = () => {
             <WorkLogForm onCreated={() => setRefreshKey((k) => k + 1)} />
           </section>
 
-          <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Mine registreringer</h2>
-            <p className="text-sm text-gray-600 mb-3">
-              Nyeste først. Godkjenning skjer av regisjef.
-            </p>
+          <section>
             <WorkLogList userId={user.id} userRole={user.role} refreshKey={refreshKey} />
           </section>
         </div>
