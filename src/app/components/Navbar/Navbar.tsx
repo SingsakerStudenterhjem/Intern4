@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/authContext';
 import { ROUTES } from '../../constants/routes';
@@ -7,14 +7,42 @@ import DropdownMenu from './DropdownMenu';
 import { ChevronDown, Menu, UserCircle, X } from 'lucide-react';
 import { logOut } from '../../../server/dao/authentication';
 
+type MenuChildItem = {
+  label: string;
+  to: string;
+  roles?: string[];
+};
+
+type MenuLinkItem = {
+  key: string;
+  label: string;
+  to: string;
+  roles?: string[];
+  children?: never;
+};
+
+type MenuGroupItem = {
+  key: string;
+  label: string;
+  roles?: string[];
+  children: MenuChildItem[];
+  to?: never;
+};
+
+type MenuItem = MenuLinkItem | MenuGroupItem;
+
 const Navbar = () => {
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openSections, setOpenSections] = useState({});
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userMenuRef = useRef(null);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
 
-  const toggleSection = (key) => setOpenSections((s) => ({ ...s, [key]: !s[key] }));
+  const toggleSection = (key: string) =>
+    setOpenSections((sections) => ({
+      ...sections,
+      [key]: !sections[key],
+    }));
 
   const handleLogout = async () => {
     await logOut();
@@ -23,8 +51,10 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    const handler = (e) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+    const handler = (event: MouseEvent) => {
+      const target = event.target;
+
+      if (userMenuRef.current && target instanceof Node && !userMenuRef.current.contains(target)) {
         setUserMenuOpen(false);
       }
     };
@@ -32,7 +62,7 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     { key: 'dash', label: 'Dashboard', to: ROUTES.DASHBOARD },
     {
       key: 'regi',
@@ -72,22 +102,29 @@ const Navbar = () => {
     },
   ];
 
-  const canAccess = (roles) => {
+  const canAccess = (roles?: string[]) => {
     if (!roles) return true;
     if (!user) return false;
     return roles.includes(user.role);
   };
 
-  const visibleItems = menuItems
-    .map((item) => {
-      if (item.children) {
-        const visibleChildren = item.children.filter((child) => canAccess(child.roles));
-        if (!canAccess(item.roles) || visibleChildren.length === 0) return null;
-        return { ...item, children: visibleChildren };
+  const visibleItems = menuItems.reduce<MenuItem[]>((items, item) => {
+    if (item.children) {
+      const visibleChildren = item.children.filter((child) => canAccess(child.roles));
+      if (!canAccess(item.roles) || visibleChildren.length === 0) {
+        return items;
       }
-      return canAccess(item.roles) ? item : null;
-    })
-    .filter(Boolean);
+
+      items.push({ ...item, children: visibleChildren });
+      return items;
+    }
+
+    if (canAccess(item.roles)) {
+      items.push(item);
+    }
+
+    return items;
+  }, []);
 
   return (
     <nav className="bg-white shadow px-8 py-2 flex justify-between items-center relative">

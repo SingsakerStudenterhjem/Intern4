@@ -1,4 +1,4 @@
-import React from 'react';
+import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import LoginPage from '../app/pages/loginPage';
 import AddUserPage from '../app/pages/roomManager/addUserPage';
@@ -16,7 +16,7 @@ import ForgotPasswordPage from '../app/pages/forgotPasswordPage';
 import ResetPasswordPage from '../app/pages/resetPasswordPage';
 
 // Public routes (no authentication required)
-export const publicRoutes = [
+export const publicRoutes: RouteObject[] = [
   {
     path: ROUTES.LOGIN,
     element: <LoginPage />,
@@ -32,7 +32,7 @@ export const publicRoutes = [
 ];
 
 // Protected routes (authentication required)
-export const protectedRoutes = [
+export const protectedRoutes: RouteObject[] = [
   {
     path: ROUTES.DASHBOARD,
     element: (
@@ -100,18 +100,18 @@ export const protectedRoutes = [
 ];
 
 // Admin-only routes
-export const adminRoutes = [
+export const adminRoutes: RouteObject[] = [
   {
     path: ROUTES.ADMIN,
-    element: <ProtectedRoute></ProtectedRoute>,
+    element: <ProtectedRoute />,
   },
 ];
 
 // Regisjef routes
-export const regisjefRoutes = [];
+export const regisjefRoutes: RouteObject[] = [];
 
 // Default redirects
-export const redirectRoutes = [
+export const redirectRoutes: RouteObject[] = [
   {
     path: ROUTES.HOME,
     element: <Navigate to={ROUTES.DASHBOARD} replace />,
@@ -123,7 +123,7 @@ export const redirectRoutes = [
 ];
 
 // All routes combined
-export const allRoutes = [
+export const allRoutes: RouteObject[] = [
   ...publicRoutes,
   ...protectedRoutes,
   ...adminRoutes,

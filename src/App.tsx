@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter, useLocation } from 'react-router-dom';
 import { AuthProvider } from './contexts/authContext';
 import AppRouter from './app/components/common/appRouter';
@@ -7,7 +6,7 @@ import { ROUTES } from './app/constants/routes';
 
 const HIDE_NAVBAR_ROUTES = [ROUTES.LOGIN, ROUTES.FORGOT_PASSWORD, ROUTES.RESET_PASSWORD];
 
-function AppContent() {
+const AppContent = () => {
   const { pathname } = useLocation();
   const hideNavbar = HIDE_NAVBAR_ROUTES.includes(pathname);
 
@@ -17,9 +16,9 @@ function AppContent() {
       <AppRouter />
     </>
   );
-}
+};
 
-function App() {
+const App = () => {
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -27,6 +26,6 @@ function App() {
       </BrowserRouter>
     </AuthProvider>
   );
-}
+};
 
 export default App;

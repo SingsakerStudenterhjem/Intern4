@@ -1,17 +1,30 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../../contexts/authContext';
 import { USER_ROLES } from '../../constants/userRoles';
 import { LucideChevronDown } from 'lucide-react';
 
-const DropdownMenu = ({ label, items }) => {
+type DropdownItem = {
+  label: string;
+  to: string;
+  roles?: string[];
+};
+
+type DropdownMenuProps = {
+  label: string;
+  items: DropdownItem[];
+};
+
+const DropdownMenu = ({ label, items }: DropdownMenuProps) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target;
+
+      if (ref.current && target instanceof Node && !ref.current.contains(target)) {
         setOpen(false);
       }
     };
