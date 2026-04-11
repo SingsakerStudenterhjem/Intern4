@@ -28,5 +28,7 @@ export const canUserLeaveTask = (task: Task, userId?: string): boolean => {
 
 export const canUserSubmitTaskCompletion = (task: Task, userId?: string): boolean => {
   const participant = getCurrentUserTaskParticipant(task, userId);
-  return !!task.hourEstimate && (participant?.status === 'joined' || participant?.status === 'rejected');
+  return (
+    !!task.hourEstimate && (participant?.status === 'joined' || participant?.status === 'rejected')
+  );
 };

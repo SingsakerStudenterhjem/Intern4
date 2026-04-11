@@ -62,8 +62,8 @@ describe('task.utils', () => {
 
     expect(canUserLeaveTask(task, '11111111-1111-1111-1111-111111111111')).toBe(true);
     expect(canUserSubmitTaskCompletion(task, '11111111-1111-1111-1111-111111111111')).toBe(true);
-    expect(getCurrentUserTaskParticipant(task, '11111111-1111-1111-1111-111111111111')?.status).toBe(
-      'rejected'
-    );
+    expect(
+      getCurrentUserTaskParticipant(task, '11111111-1111-1111-1111-111111111111')?.status
+    ).toBe('rejected');
   });
 });

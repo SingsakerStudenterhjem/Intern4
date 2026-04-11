@@ -40,7 +40,7 @@ const ResetPasswordForm = () => {
       setExchanging(false);
     };
 
-    handleTokenExchange();
+    void handleTokenExchange();
   }, []);
 
   const sessionReady = !authLoading && !!user;

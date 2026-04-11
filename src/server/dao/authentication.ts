@@ -24,9 +24,7 @@ export async function logIn(email: string, password: string): Promise<LoginResul
   }
 }
 
-export type LogoutResult =
-  | { success: true }
-  | { success: false; error: string };
+export type LogoutResult = { success: true } | { success: false; error: string };
 
 export async function logOut(): Promise<LogoutResult> {
   try {

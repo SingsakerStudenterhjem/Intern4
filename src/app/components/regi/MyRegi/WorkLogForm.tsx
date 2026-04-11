@@ -15,11 +15,6 @@ const FormSchema = z.object({
   images: z.array(z.instanceof(File)).optional(),
 });
 
-async function uploadRegiImages(uid: any, files: File[]) {
-  // TODO: move and implement with supabase
-  return [];
-}
-
 const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
@@ -77,8 +72,6 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
 
     try {
       setSubmitting(true);
-      // const imageUrls = files.length ? await uploadRegiImages(user.id, files) : [];
-
       const payload = RegiLogSchema.parse({
         userId: user.id,
         title: form.title,
@@ -107,7 +100,9 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         type: categories[0]?.name ?? '',
       });
       setFiles([]);
-      onCreated && onCreated();
+      if (onCreated) {
+        onCreated();
+      }
     } finally {
       setSubmitting(false);
     }

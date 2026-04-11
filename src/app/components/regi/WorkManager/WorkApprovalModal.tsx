@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Ban, Calendar, Check, Clock, User, X } from 'lucide-react';
 import { PendingRegiApproval } from '../../../../server/dao/regiDAO';
 
@@ -19,11 +19,6 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
 }) => {
   const [mode, setMode] = useState<'idle' | 'approve' | 'reject'>('idle');
   const [approvalComment, setApprovalComment] = useState<string>('');
-
-  useEffect(() => {
-    setMode('idle');
-    setApprovalComment('');
-  }, [approval?.id]);
 
   if (!approval) return null;
 

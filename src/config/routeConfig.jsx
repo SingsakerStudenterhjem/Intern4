@@ -52,9 +52,7 @@ export const protectedRoutes = [
   {
     path: ROUTES.REGISJEF,
     element: (
-      <ProtectedRoute
-        allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
-      >
+      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
         <WorkManagerPage />
       </ProtectedRoute>
     ),
@@ -62,9 +60,7 @@ export const protectedRoutes = [
   {
     path: ROUTES.REGIGODKJENNING,
     element: (
-      <ProtectedRoute
-        allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
-      >
+      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
         <WorkApprovalsPage />
       </ProtectedRoute>
     ),
@@ -72,9 +68,7 @@ export const protectedRoutes = [
   {
     path: ROUTES.REGILOGS,
     element: (
-      <ProtectedRoute
-        allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
-      >
+      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
         <RegiLogsPage />
       </ProtectedRoute>
     ),
@@ -109,9 +103,7 @@ export const protectedRoutes = [
 export const adminRoutes = [
   {
     path: ROUTES.ADMIN,
-    element: (
-      <ProtectedRoute></ProtectedRoute>
-    ),
+    element: <ProtectedRoute></ProtectedRoute>,
   },
 ];
 

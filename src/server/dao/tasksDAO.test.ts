@@ -18,21 +18,6 @@ function createMaybeSingleBuilder(data: any) {
   return builder;
 }
 
-function createInsertBuilder() {
-  return {
-    insert: vi.fn(async () => ({ error: null })),
-  };
-}
-
-function createDeleteBuilder() {
-  const builder: any = {
-    delete: vi.fn(() => builder),
-    eq: vi.fn(async () => ({ error: null })),
-  };
-
-  return builder;
-}
-
 function createUpdateBuilder() {
   const builder: any = {
     update: vi.fn(() => builder),
@@ -146,7 +131,11 @@ describe('tasksDAO', () => {
   });
 
   it('queries only the current user assignment task ids in getTasksByUser', async () => {
-    const assignmentsBuilder = createEqSelectBuilder([{ work_id: 1 }, { work_id: 2 }, { work_id: 1 }]);
+    const assignmentsBuilder = createEqSelectBuilder([
+      { work_id: 1 },
+      { work_id: 2 },
+      { work_id: 1 },
+    ]);
     const tasksBuilder = createInOrderBuilder([
       createTaskRow({
         id: 1,
@@ -195,7 +184,10 @@ describe('tasksDAO', () => {
 
     const result = await getTasksByUser('11111111-1111-1111-1111-111111111111');
 
-    expect(assignmentsBuilder.eq).toHaveBeenCalledWith('user_uuid', '11111111-1111-1111-1111-111111111111');
+    expect(assignmentsBuilder.eq).toHaveBeenCalledWith(
+      'user_uuid',
+      '11111111-1111-1111-1111-111111111111'
+    );
     expect(tasksBuilder.in).toHaveBeenCalledWith('id', [1, 2]);
     expect(result.map((task) => task.id)).toEqual(['1', '2']);
   });

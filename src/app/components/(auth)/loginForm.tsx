@@ -40,8 +40,8 @@ const LoginForm = () => {
   };
 
   return (
-  <form onSubmit={handleLogin}>
-    {error && <div className="text-red-500 mb-4">{error}</div>}
+    <form onSubmit={handleLogin}>
+      {error && <div className="text-red-500 mb-4">{error}</div>}
 
       <div>
         <div className="mb-4">

@@ -9,7 +9,7 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
   refreshKey,
 }) => {
   const [logs, setLogs] = useState<RegiLogWithId[]>([]);
-  const [_loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;

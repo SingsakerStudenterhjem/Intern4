@@ -78,17 +78,14 @@ Deno.serve(async (req) => {
     return new Response(authErr.message, { status: 400, headers: corsHeaders });
   }
 
-  const { error: profileErr } = await adminClient
-    .from('users')
-    .delete()
-    .eq('id', body.userId);
+  const { error: profileErr } = await adminClient.from('users').delete().eq('id', body.userId);
 
   if (profileErr) {
     return new Response(profileErr.message, { status: 400, headers: corsHeaders });
   }
 
-  return new Response(
-    JSON.stringify({ success: true }),
-    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-  );
+  return new Response(JSON.stringify({ success: true }), {
+    status: 200,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 });

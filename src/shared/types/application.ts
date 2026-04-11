@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const ApplicationSchema = z.object({
+export const ApplicationSchema = z.object({
   applicationId: z.string(),
   status: z.string().refine((value) => ['Under behandling', 'Godkjent', 'Avvist'].includes(value)),
   name: z.string(),

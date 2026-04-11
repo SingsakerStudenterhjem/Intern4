@@ -126,7 +126,9 @@ const TasksTable: React.FC<TasksTableProps> = ({
                   </span>
                 </td>
                 <td className="px-4 py-4 text-sm text-gray-900">
-                  {task.contactPersonId ? participantNames[task.contactPersonId] ?? 'Ukjent bruker' : '-'}
+                  {task.contactPersonId
+                    ? (participantNames[task.contactPersonId] ?? 'Ukjent bruker')
+                    : '-'}
                 </td>
                 <td className="px-4 py-4 text-sm text-gray-900">{formatDeadline(task.deadline)}</td>
                 <td className="px-4 py-4 text-sm text-gray-900">

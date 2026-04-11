@@ -88,7 +88,7 @@ export const useProvideAuth = (): UseAuthReturn => {
       setLoading(false);
     };
 
-    loadInitialSession();
+    void loadInitialSession();
 
     const {
       data: { subscription },

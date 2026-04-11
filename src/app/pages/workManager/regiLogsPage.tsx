@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RefreshCw, Search } from 'lucide-react';
 import { getAllRegiLogs, RegiLogWithUser } from '../../../server/dao/regiDAO';
@@ -16,7 +16,7 @@ const RegiLogsPage: React.FC = () => {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
 
-  const load = async (): Promise<void> => {
+  const load = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
@@ -28,12 +28,12 @@ const RegiLogsPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!user || !canApproveWork(user.role)) return;
-    load();
-  }, [user?.id, user?.role]);
+    void load();
+  }, [load, user]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

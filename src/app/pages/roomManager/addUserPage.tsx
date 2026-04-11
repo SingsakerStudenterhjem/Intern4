@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Search, Trash2 } from 'lucide-react';
 import { NewUserInput } from '../../../shared/types/user';
 import {
@@ -63,15 +63,7 @@ const AddUserPage: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    getRoles()
-      .then((data) => setRoles(data))
-      .catch((err) => console.error('Failed to load roles:', err))
-      .finally(() => setRolesLoading(false));
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     try {
       setUsersLoading(true);
       const data = await getAllUsersWithRole();
@@ -81,7 +73,15 @@ const AddUserPage: React.FC = () => {
     } finally {
       setUsersLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    getRoles()
+      .then((data) => setRoles(data))
+      .catch((err) => console.error('Failed to load roles:', err))
+      .finally(() => setRolesLoading(false));
+    void loadUsers();
+  }, [loadUsers]);
 
   const availableRoles = Array.from(new Set(users.map((u) => u.role).filter(Boolean))).sort();
 
@@ -381,10 +381,7 @@ const AddUserPage: React.FC = () => {
               <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
                       Telefon
                     </label>
                     <input
@@ -478,10 +475,7 @@ const AddUserPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label
-                      htmlFor="study"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
+                    <label htmlFor="study" className="block text-sm font-medium text-gray-700 mb-1">
                       Studieprogram
                     </label>
                     <input
@@ -621,8 +615,7 @@ const AddUserPage: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -692,7 +685,8 @@ const AddUserPage: React.FC = () => {
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-2">Slett bruker</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Er du sikker pa at du vil slette <strong>{deleteConfirm.name}</strong>? Denne handlingen kan ikke angres.
+              Er du sikker pa at du vil slette <strong>{deleteConfirm.name}</strong>? Denne
+              handlingen kan ikke angres.
             </p>
             <div className="flex justify-end space-x-3">
               <button

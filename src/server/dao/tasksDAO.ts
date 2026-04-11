@@ -1,5 +1,10 @@
 import { supabase } from '../supabaseClient';
-import { Task, TaskAssignmentStatus, TaskCreationData, TaskParticipant } from '../../shared/types/regi/tasks';
+import {
+  Task,
+  TaskAssignmentStatus,
+  TaskCreationData,
+  TaskParticipant,
+} from '../../shared/types/regi/tasks';
 
 export const getTaskAssignmentStatus = (row: {
   approved_state?: number | null;
@@ -98,7 +103,8 @@ export async function addTask(data: TaskCreationData): Promise<string> {
 export async function getTask(taskId: string): Promise<Task | undefined> {
   const { data, error } = await supabase
     .from('work_tasks')
-    .select(`
+    .select(
+      `
       id,
       created_at,
       deadline,
@@ -120,7 +126,8 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
           created_at
         )
       )
-    `)
+    `
+    )
     .eq('id', Number(taskId))
     .maybeSingle();
 
@@ -131,7 +138,8 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
 export async function getTasks(): Promise<Task[]> {
   const { data, error } = await supabase
     .from('work_tasks')
-    .select(`
+    .select(
+      `
       id,
       created_at,
       deadline,
@@ -152,7 +160,8 @@ export async function getTasks(): Promise<Task[]> {
           created_at
         )
       )
-    `)
+    `
+    )
     .order('deadline', { ascending: true });
 
   if (error) {
@@ -251,10 +260,7 @@ export async function leaveTask(taskId: string, userId: string): Promise<boolean
     throw new Error('Du kan ikke melde deg av etter at oppgaven er sendt inn eller godkjent');
   }
 
-  const { error } = await supabase
-    .from('work_assignments')
-    .delete()
-    .eq('id', assignment.id);
+  const { error } = await supabase.from('work_assignments').delete().eq('id', assignment.id);
 
   if (error) throw new Error(`Could not leave task: ${error.message}`);
   return true;
@@ -316,7 +322,8 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
 
   const { data, error } = await supabase
     .from('work_tasks')
-    .select(`
+    .select(
+      `
       id,
       created_at,
       deadline,
@@ -337,7 +344,8 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
           created_at
         )
       )
-    `)
+    `
+    )
     .in('id', taskIds)
     .order('deadline', { ascending: true });
 

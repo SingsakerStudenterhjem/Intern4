@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../../contexts/authContext';
 import { canApproveWork } from '../../../constants/userRoles';
@@ -33,7 +33,7 @@ const Registatus: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
 
-  const load = async (): Promise<void> => {
+  const load = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
@@ -73,14 +73,14 @@ const Registatus: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
     if (!canApproveWork(user.role)) return;
-    load();
-  }, [authLoading, user?.id, user?.role]);
+    void load();
+  }, [authLoading, load, user]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

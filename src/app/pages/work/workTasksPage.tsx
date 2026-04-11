@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Plus, Search, Settings } from 'lucide-react';
 import TasksTable from '../../components/regi/Tasks/TasksTable';
 import TaskModal from '../../components/regi/Tasks/TaskModal';
@@ -77,11 +77,34 @@ const WorkTasksPage: React.FC = () => {
     return () => window.clearTimeout(timeout);
   }, [message]);
 
-  useEffect(() => {
-    loadData();
+  const loadParticipantNames = useCallback(async (tasksData: Task[]): Promise<void> => {
+    const allParticipantIds = new Set<string>();
+    tasksData.forEach((task) => {
+      task.participants.forEach((participant) => allParticipantIds.add(participant.userId));
+      if (task.contactPersonId) {
+        allParticipantIds.add(task.contactPersonId);
+      }
+    });
+
+    const namePromises = Array.from(allParticipantIds).map(async (userId) => {
+      try {
+        const userData = await getUser(userId);
+        return { userId, name: userData?.name || 'Ukjent bruker' };
+      } catch {
+        return { userId, name: 'Ukjent bruker' };
+      }
+    });
+
+    const names = await Promise.all(namePromises);
+    const nameMap = names.reduce((acc, { userId, name }) => {
+      acc[userId] = name;
+      return acc;
+    }, {} as ParticipantNames);
+
+    setParticipantNames(nameMap);
   }, []);
 
-  const loadData = async (): Promise<void> => {
+  const loadData = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
@@ -111,34 +134,11 @@ const WorkTasksPage: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loadParticipantNames]);
 
-  const loadParticipantNames = async (tasksData: Task[]): Promise<void> => {
-    const allParticipantIds = new Set<string>();
-    tasksData.forEach((task) => {
-      task.participants.forEach((participant) => allParticipantIds.add(participant.userId));
-      if (task.contactPersonId) {
-        allParticipantIds.add(task.contactPersonId);
-      }
-    });
-
-    const namePromises = Array.from(allParticipantIds).map(async (userId) => {
-      try {
-        const userData = await getUser(userId);
-        return { userId, name: userData?.name || 'Ukjent bruker' };
-      } catch {
-        return { userId, name: 'Ukjent bruker' };
-      }
-    });
-
-    const names = await Promise.all(namePromises);
-    const nameMap = names.reduce((acc, { userId, name }) => {
-      acc[userId] = name;
-      return acc;
-    }, {} as ParticipantNames);
-
-    setParticipantNames(nameMap);
-  };
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   const handleCreateTask = async (taskData: TaskCreationData): Promise<void> => {
     try {

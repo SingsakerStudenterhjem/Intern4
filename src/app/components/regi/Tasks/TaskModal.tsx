@@ -196,8 +196,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 ) : (
                   <div className="p-3 bg-gray-50 rounded-md">
                     <p className="text-sm text-gray-600">
-                      {participantCount} person{participantCount !== 1 ? 'er' : ''}{' '}
-                      påmeldt av {task.maxParticipants} plasser
+                      {participantCount} person{participantCount !== 1 ? 'er' : ''} påmeldt av{' '}
+                      {task.maxParticipants} plasser
                     </p>
                   </div>
                 )}
@@ -212,7 +212,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   <span className="font-medium text-gray-700">Kontaktperson:</span>
                 </div>
                 <p className="text-sm text-gray-900 ml-6">
-                  {task.contactPersonId ? participantNames[task.contactPersonId] ?? 'Ukjent bruker' : '-'}
+                  {task.contactPersonId
+                    ? (participantNames[task.contactPersonId] ?? 'Ukjent bruker')
+                    : '-'}
                 </p>
 
                 <div className="flex items-center space-x-2 text-sm">
@@ -262,14 +264,18 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 {currentParticipant?.status === 'submitted' && (
                   <div className="flex items-center space-x-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
                     <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-yellow-800">Sendt inn til godkjenning</span>
+                    <span className="text-sm font-medium text-yellow-800">
+                      Sendt inn til godkjenning
+                    </span>
                   </div>
                 )}
 
                 {currentParticipant?.status === 'rejected' && (
                   <div className="flex items-center space-x-2 p-2 bg-red-50 border border-red-200 rounded-md">
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-red-800">Avvist, send inn på nytt</span>
+                    <span className="text-sm font-medium text-red-800">
+                      Avvist, send inn på nytt
+                    </span>
                   </div>
                 )}
               </div>

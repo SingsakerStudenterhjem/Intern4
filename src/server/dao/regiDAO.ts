@@ -105,18 +105,16 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
     2: 'rejected',
   };
 
-  return (data ?? [])
-    .filter(isCountableRegiAssignment)
-    .map((d: any) => ({
-      id: String(d.id),
-      title: d.work_items?.title ?? '',
-      hours: d.hours_used ?? 0,
-      date: d.created_at,
-      status: statusMap[d.approved_state] ?? 'pending',
-      type: d.work_items?.work_categories?.name ?? d.work_items?.type ?? 'misc',
-      userId,
-      createdAt: d.created_at,
-    }));
+  return (data ?? []).filter(isCountableRegiAssignment).map((d: any) => ({
+    id: String(d.id),
+    title: d.work_items?.title ?? '',
+    hours: d.hours_used ?? 0,
+    date: d.created_at,
+    status: statusMap[d.approved_state] ?? 'pending',
+    type: d.work_items?.work_categories?.name ?? d.work_items?.type ?? 'misc',
+    userId,
+    createdAt: d.created_at,
+  }));
 }
 
 export type PendingRegiApproval = {
@@ -145,7 +143,9 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
 
   const pendingAssignments = (data ?? []).filter(isCountableRegiAssignment);
 
-  const uniqueUserIds = Array.from(new Set(pendingAssignments.map((r: any) => String(r.user_uuid))));
+  const uniqueUserIds = Array.from(
+    new Set(pendingAssignments.map((r: any) => String(r.user_uuid)))
+  );
   const userRows = await Promise.all(
     uniqueUserIds.map(async (uid) => {
       try {

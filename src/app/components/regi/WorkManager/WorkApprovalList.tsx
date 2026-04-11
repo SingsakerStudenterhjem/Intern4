@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Ban, Check, RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../../contexts/authContext';
 import {
@@ -19,7 +19,7 @@ const WorkApprovalList: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState<string>('');
 
-  const load = async (): Promise<void> => {
+  const load = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
@@ -31,14 +31,14 @@ const WorkApprovalList: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) return;
     if (!canApproveWork(user.role)) return;
-    load();
-  }, [authLoading, user?.id, user?.role]);
+    void load();
+  }, [authLoading, load, user]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -206,7 +206,7 @@ const WorkApprovalList: React.FC = () => {
                           disabled={busy}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleApprove(a.id);
+                            void handleApprove(a.id);
                           }}
                           className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
                         >
@@ -217,7 +217,7 @@ const WorkApprovalList: React.FC = () => {
                           disabled={busy}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleReject(a.id);
+                            void handleReject(a.id);
                           }}
                           className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
                         >
@@ -243,6 +243,7 @@ const WorkApprovalList: React.FC = () => {
 
       {selected && (
         <WorkApprovalModal
+          key={selected.id}
           approval={selected}
           onClose={() => setSelected(null)}
           onApprove={handleApprove}

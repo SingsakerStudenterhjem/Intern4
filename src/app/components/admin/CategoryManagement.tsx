@@ -47,8 +47,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
         await Promise.all(
           categories.map(async (category) => {
             try {
-              const count = await getCategoryUsage(category.name);
-              counts[category.name] = count;
+              counts[category.name] = await getCategoryUsage(category.name);
             } catch (error) {
               console.error(`Error loading usage for category ${category.name}:`, error);
               counts[category.name] = 0;
@@ -64,7 +63,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
     };
 
     if (categories.length > 0) {
-      loadAllUsageCounts();
+      void loadAllUsageCounts();
     } else {
       setLoadingUsage(false);
     }

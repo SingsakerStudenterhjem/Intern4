@@ -51,18 +51,13 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
         description: editingTask?.description ?? '',
         contactPersonId: editingTask?.contactPersonId ?? currentUser?.id ?? '',
         deadline: toDateTimeLocalValue(editingTask?.deadline),
-        hourEstimate:
-          editingTask?.hourEstimate != null
-            ? String(editingTask.hourEstimate)
-            : '',
+        hourEstimate: editingTask?.hourEstimate != null ? String(editingTask.hourEstimate) : '',
         maxParticipants: String(editingTask?.maxParticipants ?? 1),
       });
       setErrors({});
       setContactPersonQuery('');
     }
   }, [isOpen, categories, currentUser?.id, editingTask]);
-
-  if (!isOpen) return null;
 
   const validateForm = (): boolean => {
     // First validate with Zod schema
@@ -186,6 +181,8 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     return matches.sort((a, b) => a.name.localeCompare(b.name, 'no'));
   }, [contactPeople, contactPersonQuery]);
 
+  if (!isOpen) return null;
+
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -284,7 +281,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
           </div>
 
           <div>
-            <label htmlFor="contactPersonSearch" className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="contactPersonSearch"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               <User className="w-4 h-4 inline mr-1" />
               Kontaktperson
             </label>
@@ -304,9 +304,13 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               {selectedContactPerson && (
                 <div className="flex items-center justify-between rounded-md border border-blue-200 bg-blue-50 px-3 py-2">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium text-blue-900">{selectedContactPerson.name}</p>
+                    <p className="text-sm font-medium text-blue-900">
+                      {selectedContactPerson.name}
+                    </p>
                     {selectedContactPerson.email && (
-                      <p className="truncate text-xs text-blue-700">{selectedContactPerson.email}</p>
+                      <p className="truncate text-xs text-blue-700">
+                        {selectedContactPerson.email}
+                      </p>
                     )}
                   </div>
                   <button

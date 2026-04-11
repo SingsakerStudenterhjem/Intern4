@@ -35,9 +35,10 @@ export const useTasks = (
           t.title.toLowerCase().includes(lowerCaseQuery) ||
           t.category.toLowerCase().includes(lowerCaseQuery) ||
           t.description?.toLowerCase().includes(lowerCaseQuery) ||
-          (t.contactPersonId ? (participantNames[t.contactPersonId] ?? '').toLowerCase() : '').includes(
-            lowerCaseQuery
-          )
+          (t.contactPersonId
+            ? (participantNames[t.contactPersonId] ?? '').toLowerCase()
+            : ''
+          ).includes(lowerCaseQuery)
       );
     }
 
