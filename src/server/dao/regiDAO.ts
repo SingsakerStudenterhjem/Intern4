@@ -4,6 +4,21 @@ import { getUser } from './userDAO';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
 
+function toDate(value: Date | string | { seconds: number } | null | undefined): Date {
+  if (value instanceof Date) return value;
+  if (typeof value === 'string') return new Date(value);
+  if (
+    value &&
+    typeof value === 'object' &&
+    'seconds' in value &&
+    typeof value.seconds === 'number'
+  ) {
+    return new Date(value.seconds * 1000);
+  }
+
+  return new Date(0);
+}
+
 export function isCountableRegiAssignment(row: any): boolean {
   const workType = row.work_items?.type;
 
@@ -111,12 +126,12 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
     title: d.work_items?.title ?? '',
     description: d.work_items?.description ?? undefined,
     hours: d.hours_used ?? 0,
-    date: d.created_at,
+    date: toDate(d.created_at),
     status: statusMap[d.approved_state] ?? 'pending',
     type: d.work_items?.work_categories?.name ?? d.work_items?.type ?? 'misc',
     sourceType: d.work_items?.type === 'task' ? 'task' : 'misc',
     userId,
-    createdAt: d.created_at,
+    createdAt: toDate(d.created_at),
     reviewerComment: d.approval_comment ?? undefined,
   }));
 }

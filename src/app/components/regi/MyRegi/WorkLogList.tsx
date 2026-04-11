@@ -79,16 +79,8 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
     [totals]
   );
 
-  const formatLogDate = (value: RegiLogWithId['date'] | RegiLogWithId['createdAt']) => {
-    if (!value) return '—';
-    if (value instanceof Date) return value.toLocaleDateString('no-NO');
-    if (typeof value === 'string') return new Date(value).toLocaleDateString('no-NO');
-    if ('seconds' in value && typeof value.seconds === 'number') {
-      return new Date(value.seconds * 1000).toLocaleDateString('no-NO');
-    }
-
-    return '—';
-  };
+  const formatLogDate = (value: RegiLogWithId['date'] | RegiLogWithId['createdAt']) =>
+    value.toLocaleDateString('no-NO');
 
   const canDeleteLog = (log: RegiLogWithId) =>
     log.status === 'pending' && log.sourceType === 'misc';

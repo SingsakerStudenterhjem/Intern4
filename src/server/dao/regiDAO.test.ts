@@ -132,6 +132,8 @@ describe('regiDAO', () => {
     expect(result[0].sourceType).toBe('task');
     expect(result[0].description).toBe('Detaljer');
     expect(result[0].reviewerComment).toBe('Ser bra ut');
+    expect(result[0].date).toBeInstanceOf(Date);
+    expect(result[0].createdAt).toBeInstanceOf(Date);
   });
 
   it('stores approver metadata when approving regi work', async () => {

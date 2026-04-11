@@ -7,16 +7,8 @@ type WorkLogDetailsModalProps = {
   onClose: () => void;
 };
 
-const formatLogDateTime = (value: RegiLogWithId['date'] | RegiLogWithId['createdAt']) => {
-  if (!value) return '—';
-  if (value instanceof Date) return value.toLocaleString('no-NO');
-  if (typeof value === 'string') return new Date(value).toLocaleString('no-NO');
-  if ('seconds' in value && typeof value.seconds === 'number') {
-    return new Date(value.seconds * 1000).toLocaleString('no-NO');
-  }
-
-  return '—';
-};
+const formatLogDateTime = (value: RegiLogWithId['date'] | RegiLogWithId['createdAt']) =>
+  value.toLocaleString('no-NO');
 
 const WorkLogDetailsModal: React.FC<WorkLogDetailsModalProps> = ({ log, onClose }) => {
   if (!log) return null;
@@ -46,9 +38,16 @@ const WorkLogDetailsModal: React.FC<WorkLogDetailsModalProps> = ({ log, onClose 
               {log.sourceType === 'task' ? 'Oppgavebasert registrering' : 'Manuell registrering'}
             </p>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-            <X className="h-6 w-6" />
-          </button>
+          <div className="flex items-center gap-3">
+            <span
+              className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${statusClassName}`}
+            >
+              {statusLabel}
+            </span>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
+              <X className="h-6 w-6" />
+            </button>
+          </div>
         </div>
 
         <div className="space-y-5 p-6">
@@ -76,14 +75,6 @@ const WorkLogDetailsModal: React.FC<WorkLogDetailsModalProps> = ({ log, onClose 
                 <Tag className="h-4 w-4" />
                 <span className="font-medium">Type</span>
                 <span className="text-gray-900">{log.type}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-700">
-                <span className="font-medium">Status</span>
-                <span
-                  className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-semibold ${statusClassName}`}
-                >
-                  {statusLabel}
-                </span>
               </div>
             </div>
           </div>
