@@ -23,17 +23,19 @@ type ProfileSectionCardProps = {
   title: string;
   description?: string;
   children?: React.ReactNode;
+  className?: string;
 };
 
 const ProfileSectionCard: React.FC<ProfileSectionCardProps> = ({
   title,
   description,
   children,
+  className = '',
 }) => {
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-      <div className="mb-4">
-        <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
+    <section className={`rounded-xl border border-gray-200 bg-white p-4 shadow-sm ${className}`}>
+      <div className="mb-3">
+        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
         {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
       </div>
       {children}
@@ -41,11 +43,11 @@ const ProfileSectionCard: React.FC<ProfileSectionCardProps> = ({
   );
 };
 
-const ProfilePlaceholder: React.FC<{ text: string }> = ({ text }) => {
+const StubBadge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">
-      {text}
-    </div>
+    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
+      {children}
+    </span>
   );
 };
 
@@ -132,7 +134,7 @@ const TextInput: React.FC<
   return (
     <input
       {...props}
-      className={`w-full rounded-xl border px-3 py-2.5 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+      className={`w-full rounded-xl border px-3.5 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
         error ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-blue-500'
       } ${className}`}
     />
@@ -301,7 +303,7 @@ const ProfilePage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="mx-auto max-w-7xl space-y-6 px-4">
+      <div className="mx-auto max-w-7xl space-y-4 px-4">
         <header className="space-y-2">
           <h1 className="text-3xl font-bold text-gray-900">Profil</h1>
           <p className="max-w-3xl text-gray-600">
@@ -310,17 +312,19 @@ const ProfilePage: React.FC = () => {
           </p>
         </header>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
-          <div className="space-y-6">
+        <div className="grid items-start gap-4 lg:grid-cols-2">
+          <div className="space-y-4">
             <ProfileSectionCard
               title="Generell info"
               description="Navn, kontaktinformasjon og studieopplysninger."
             >
               {profileLoading ? (
-                <ProfilePlaceholder text="Laster profilinformasjon..." />
+                <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">
+                  Laster profilinformasjon...
+                </div>
               ) : (
-                <form className="space-y-5" onSubmit={handleGeneralInfoSubmit}>
-                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <form className="space-y-3" onSubmit={handleGeneralInfoSubmit}>
+                  <div className="grid gap-3 xl:grid-cols-3">
                     <div>
                       <FieldLabel htmlFor="firstName">Fornavn</FieldLabel>
                       <TextInput
@@ -350,7 +354,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3 md:grid-cols-2">
                     <div>
                       <FieldLabel htmlFor="email">E-post</FieldLabel>
                       <TextInput
@@ -373,7 +377,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3 md:grid-cols-2">
                     <div>
                       <FieldLabel htmlFor="birthDate">Fødselsdato</FieldLabel>
                       <TextInput
@@ -394,7 +398,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3 md:grid-cols-2">
                     <div>
                       <FieldLabel htmlFor="postalCode">Postnummer</FieldLabel>
                       <TextInput
@@ -415,7 +419,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-3 md:grid-cols-2">
                     <div>
                       <FieldLabel htmlFor="studyPlace">Skole / studiested</FieldLabel>
                       <TextInput
@@ -452,7 +456,7 @@ const ProfilePage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={savingGeneralInfo || profileLoading}
-                      className="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex items-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {savingGeneralInfo ? 'Lagrer...' : 'Lagre endringer'}
                     </button>
@@ -465,12 +469,12 @@ const ProfilePage: React.FC = () => {
               title="Endre passord"
               description="Bytt passordet du bruker for å logge inn."
             >
-              <form className="space-y-5" onSubmit={handlePasswordSubmit}>
+              <form className="space-y-3" onSubmit={handlePasswordSubmit}>
                 <div className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
                   Bruk et sterkt passord. Dagens innloggingsflyt krever minst 6 tegn.
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 md:grid-cols-2">
                   <div>
                     <FieldLabel htmlFor="newPassword" required>
                       Nytt passord
@@ -554,7 +558,7 @@ const ProfilePage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={savingPassword || !newPassword || !confirmPassword}
-                    className="inline-flex items-center rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex items-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {savingPassword ? 'Oppdaterer...' : 'Oppdater passord'}
                   </button>
@@ -563,30 +567,140 @@ const ProfilePage: React.FC = () => {
             </ProfileSectionCard>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4">
             <ProfileSectionCard
               title="Profilbilde"
               description="Visningsbilde og opplasting kommer som egen funksjon."
             >
-              <ProfilePlaceholder text="Profilbilde håndteres senere." />
+              <div className="space-y-3">
+                <div className="h-56 overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100">
+                  <div className="flex h-full items-center justify-center">
+                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-2xl font-semibold text-gray-400 shadow-sm">
+                      {fullName
+                        .split(' ')
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((part) => part[0]?.toUpperCase())
+                        .join('') || 'PI'}
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <StubBadge>Kommer senere</StubBadge>
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-500">
+                    Opplasting av profilbilde blir lagt til i en senere iterasjon.
+                  </div>
+                  <button
+                    type="button"
+                    disabled
+                    className="inline-flex items-center rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm font-medium text-gray-500 opacity-80"
+                  >
+                    Last opp bilde
+                  </button>
+                </div>
+              </div>
             </ProfileSectionCard>
 
             <ProfileSectionCard
               title="Preferanser"
               description="Pinkoder og personlige valg fra gamle Internsida."
             >
-              <ProfilePlaceholder text="Preferanser kommer senere." />
+              <div className="space-y-3">
+                <StubBadge>Kommer senere</StubBadge>
+                <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  <label className="flex items-center justify-between gap-3 text-sm text-gray-600">
+                    <span>Stå på krysselista i resepsjonen</span>
+                    <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-300" />
+                  </label>
+                  <label className="flex items-center justify-between gap-3 text-sm text-gray-600">
+                    <span>Stå på krysselista i vinkjelleren</span>
+                    <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-300" />
+                  </label>
+                  <div className="grid gap-3 pt-1">
+                    <div>
+                      <FieldLabel htmlFor="pinStub">Pinkode</FieldLabel>
+                      <TextInput
+                        id="pinStub"
+                        value="1234"
+                        readOnly
+                        disabled
+                        className="bg-white text-gray-400"
+                      />
+                    </div>
+                    <div>
+                      <FieldLabel htmlFor="winePinStub">Pinkode til vinkjeller</FieldLabel>
+                      <TextInput
+                        id="winePinStub"
+                        value="1234"
+                        readOnly
+                        disabled
+                        className="bg-white text-gray-400"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
             </ProfileSectionCard>
 
             <ProfileSectionCard title="Varsler" description="Velg hvilke varsler du vil motta.">
-              <ProfilePlaceholder text="Varslingsinnstillinger kommer senere." />
+              <div className="space-y-3">
+                <StubBadge>Kommer senere</StubBadge>
+                <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                  {[
+                    'Når du har blitt tildelt en vakt',
+                    'Når det er 24 timer igjen til å sitte vakt',
+                    'Når noen vil bytte eller gi bort en vakt',
+                    'Når kosesjef har planlagt et utleie',
+                  ].map((label) => (
+                    <label
+                      key={label}
+                      className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-3 text-sm text-gray-600"
+                    >
+                      <span>{label}</span>
+                      <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-300" />
+                    </label>
+                  ))}
+                </div>
+              </div>
             </ProfileSectionCard>
 
             <ProfileSectionCard
               title="E-postlister"
               description="Administrer medlemskap i interne e-postlister."
             >
-              <ProfilePlaceholder text="E-postlister kommer senere." />
+              <div className="space-y-3">
+                <StubBadge>Kommer senere</StubBadge>
+                <div className="overflow-hidden rounded-xl border border-gray-200">
+                  <div className="grid grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))] bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <div className="px-3 py-3">E-post</div>
+                    <div className="px-3 py-3">Alle</div>
+                    <div className="px-3 py-3">Gutter</div>
+                    <div className="px-3 py-3">Slå av</div>
+                  </div>
+                  <div className="grid grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))] items-center bg-white text-sm text-gray-600">
+                    <div className="px-3 py-3">{form.email || user?.email || 'Din e-post'}</div>
+                    <div className="px-3 py-3">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700">
+                        ✓
+                      </span>
+                    </div>
+                    <div className="px-3 py-3">
+                      <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700">
+                        ✓
+                      </span>
+                    </div>
+                    <div className="px-3 py-3">
+                      <button
+                        type="button"
+                        disabled
+                        className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-500"
+                      >
+                        Fjern
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </ProfileSectionCard>
           </div>
         </div>

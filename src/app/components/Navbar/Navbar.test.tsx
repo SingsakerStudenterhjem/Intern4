@@ -56,6 +56,7 @@ describe('Navbar', () => {
     expect(screen.getByRole('link', { name: 'Admin' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /data bruker/i }));
+    expect(screen.getByRole('link', { name: 'Profil' })).toHaveAttribute('href', '/profil');
     await user.click(screen.getByRole('button', { name: 'Logg ut' }));
 
     await waitFor(() => {
