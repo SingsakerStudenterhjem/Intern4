@@ -9,6 +9,7 @@ import {
   Role,
   BasicUserWithRole,
 } from '../../../server/dao/userDAO';
+import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
 
 const AddUserPage: React.FC = () => {
   const [userData, setUserData] = useState<NewUserInput>({
@@ -98,10 +99,8 @@ const AddUserPage: React.FC = () => {
     const errors: { [key: string]: string } = {};
 
     if (name === 'phone' && value) {
-      const phoneRegex = /^(\+47)?[0-9\s]{8,}$/;
-      if (!phoneRegex.test(value.replace(/\s/g, ''))) {
-        errors.phone = 'Ugyldig telefonnummer format';
-      }
+      const phoneError = validatePhoneNumber(value);
+      if (phoneError) errors.phone = phoneError;
     }
 
     if (name === 'seniority' && value !== undefined) {
@@ -184,6 +183,8 @@ const AddUserPage: React.FC = () => {
     setIsSubmitting(true);
     setMessage(null);
 
+    const normalizedPhone = normalizePhoneNumber(userData.phone ?? '');
+
     const allErrors: { [key: string]: string } = {};
     Object.entries(userData).forEach(([key, value]) => {
       const fieldErrors = validateField(key, value);
@@ -204,7 +205,10 @@ const AddUserPage: React.FC = () => {
     }
 
     try {
-      const { initialPassword } = await createUser(userData);
+      const { initialPassword } = await createUser({
+        ...userData,
+        phone: normalizedPhone,
+      });
 
       setMessage({
         type: 'success',

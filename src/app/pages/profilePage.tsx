@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/authContext';
 import { supabase } from '../../server/supabaseClient';
 import { getUser, updateUser } from '../../server/dao/userDAO';
 import { resetPassword } from '../../server/dao/authentication';
+import { normalizePhoneNumber, validatePhoneNumber } from '../../shared/utils/phone';
 
 type GeneralInfoFormState = {
   firstName: string;
@@ -104,13 +105,6 @@ const formatDateForInput = (value: unknown): string => {
   if (value instanceof Date) return value.toISOString().slice(0, 10);
   if (typeof value === 'string') return value.slice(0, 10);
   return '';
-};
-
-const validatePhoneNumber = (value: string): string | null => {
-  if (!value.trim()) return null;
-
-  const phoneRegex = /^(\+47)?[0-9\s]{8,}$/;
-  return phoneRegex.test(value.replace(/\s/g, '')) ? null : 'Ugyldig telefonnummer format';
 };
 
 const FieldLabel: React.FC<{ htmlFor: string; children: React.ReactNode; required?: boolean }> = ({
@@ -227,7 +221,8 @@ const ProfilePage: React.FC = () => {
       return;
     }
 
-    const phoneError = validatePhoneNumber(form.phone);
+    const normalizedPhone = normalizePhoneNumber(form.phone);
+    const phoneError = validatePhoneNumber(normalizedPhone);
     if (phoneError) {
       setFormError(phoneError);
       return;
@@ -240,7 +235,7 @@ const ProfilePage: React.FC = () => {
 
       await updateUser(user.id, {
         name: fullName,
-        phone: form.phone.trim(),
+        phone: normalizedPhone,
         birthDate: form.birthDate ? new Date(form.birthDate) : undefined,
         address: {
           street: form.street.trim(),
@@ -439,7 +434,7 @@ const ProfilePage: React.FC = () => {
                       <button
                         type="submit"
                         disabled={savingGeneralInfo || profileLoading}
-                        className="inline-flex min-w-[10.5rem] items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex min-w-42 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         {savingGeneralInfo ? 'Lagrer...' : 'Lagre endringer'}
                       </button>
@@ -541,7 +536,7 @@ const ProfilePage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={savingPassword || !newPassword || !confirmPassword}
-                      className="inline-flex min-w-[10.5rem] items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex min-w-42 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {savingPassword ? 'Oppdaterer...' : 'Oppdater passord'}
                     </button>
@@ -569,7 +564,7 @@ const ProfilePage: React.FC = () => {
               description="Visningsbilde og opplasting kommer som egen funksjon."
             >
               <div className="space-y-2.5">
-                <div className="h-32 overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100">
+                <div className="h-32 overflow-hidden rounded-xl border border-gray-200 bg-linear-to-br from-gray-50 to-gray-100">
                   <div className="flex h-full items-center justify-center">
                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-gray-400 shadow-sm">
                       {fullName
