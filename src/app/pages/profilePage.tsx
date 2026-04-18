@@ -34,7 +34,7 @@ const ProfileSectionCard: React.FC<ProfileSectionCardProps> = ({
 }) => {
   return (
     <section className={`rounded-xl border border-gray-200 bg-white p-4 shadow-sm ${className}`}>
-      <div className="mb-3">
+      <div className="mb-2.5">
         <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
         {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
       </div>
@@ -304,7 +304,7 @@ const ProfilePage: React.FC = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="mx-auto max-w-7xl space-y-4 px-4">
-        <header className="space-y-2">
+        <header className="space-y-1.5">
           <h1 className="text-3xl font-bold text-gray-900">Profil</h1>
           <p className="max-w-3xl text-gray-600">
             Oppdater kontaktinformasjon, kontoopplysninger og personlige innstillinger for
@@ -312,7 +312,7 @@ const ProfilePage: React.FC = () => {
           </p>
         </header>
 
-        <div className="grid items-start gap-4 lg:grid-cols-2">
+        <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(21rem,0.95fr)]">
           <div className="space-y-4">
             <ProfileSectionCard
               title="Generell info"
@@ -323,8 +323,8 @@ const ProfilePage: React.FC = () => {
                   Laster profilinformasjon...
                 </div>
               ) : (
-                <form className="space-y-3" onSubmit={handleGeneralInfoSubmit}>
-                  <div className="grid gap-3 xl:grid-cols-3">
+                <form className="space-y-2.5" onSubmit={handleGeneralInfoSubmit}>
+                  <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-3">
                     <div>
                       <FieldLabel htmlFor="firstName">Fornavn</FieldLabel>
                       <TextInput
@@ -354,8 +354,8 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div>
+                  <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-6">
+                    <div className="md:col-span-2">
                       <FieldLabel htmlFor="email">E-post</FieldLabel>
                       <TextInput
                         id="email"
@@ -366,7 +366,7 @@ const ProfilePage: React.FC = () => {
                       />
                       <p className="mt-1 text-xs text-gray-500">E-post kan ikke endres her ennå.</p>
                     </div>
-                    <div>
+                    <div className="md:col-span-2">
                       <FieldLabel htmlFor="phone">Telefon</FieldLabel>
                       <TextInput
                         id="phone"
@@ -375,10 +375,7 @@ const ProfilePage: React.FC = () => {
                         placeholder="Telefonnummer"
                       />
                     </div>
-                  </div>
-
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div>
+                    <div className="md:col-span-2">
                       <FieldLabel htmlFor="birthDate">Fødselsdato</FieldLabel>
                       <TextInput
                         id="birthDate"
@@ -387,7 +384,10 @@ const ProfilePage: React.FC = () => {
                         onChange={(event) => setField('birthDate', event.target.value)}
                       />
                     </div>
-                    <div>
+                  </div>
+
+                  <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-6">
+                    <div className="md:col-span-3">
                       <FieldLabel htmlFor="street">Adresse</FieldLabel>
                       <TextInput
                         id="street"
@@ -396,19 +396,16 @@ const ProfilePage: React.FC = () => {
                         placeholder="Gateadresse"
                       />
                     </div>
-                  </div>
-
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div>
+                    <div className="md:col-span-1">
                       <FieldLabel htmlFor="postalCode">Postnummer</FieldLabel>
                       <TextInput
                         id="postalCode"
                         value={form.postalCode}
                         onChange={(event) => setField('postalCode', event.target.value)}
-                        placeholder="Postnummer"
+                        placeholder="Postnr"
                       />
                     </div>
-                    <div>
+                    <div className="md:col-span-2">
                       <FieldLabel htmlFor="city">By</FieldLabel>
                       <TextInput
                         id="city"
@@ -419,8 +416,8 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <div>
+                  <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-6">
+                    <div className="md:col-span-3">
                       <FieldLabel htmlFor="studyPlace">Skole / studiested</FieldLabel>
                       <TextInput
                         id="studyPlace"
@@ -429,7 +426,7 @@ const ProfilePage: React.FC = () => {
                         placeholder="F.eks. NTNU"
                       />
                     </div>
-                    <div>
+                    <div className="md:col-span-2">
                       <FieldLabel htmlFor="study">Studie</FieldLabel>
                       <TextInput
                         id="study"
@@ -437,6 +434,15 @@ const ProfilePage: React.FC = () => {
                         onChange={(event) => setField('study', event.target.value)}
                         placeholder="F.eks. Data"
                       />
+                    </div>
+                    <div className="flex items-end md:col-span-1 md:justify-end">
+                      <button
+                        type="submit"
+                        disabled={savingGeneralInfo || profileLoading}
+                        className="inline-flex min-w-[10.5rem] items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {savingGeneralInfo ? 'Lagrer...' : 'Lagre endringer'}
+                      </button>
                     </div>
                   </div>
 
@@ -451,16 +457,6 @@ const ProfilePage: React.FC = () => {
                       {formSuccess}
                     </div>
                   )}
-
-                  <div className="flex justify-end">
-                    <button
-                      type="submit"
-                      disabled={savingGeneralInfo || profileLoading}
-                      className="inline-flex items-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {savingGeneralInfo ? 'Lagrer...' : 'Lagre endringer'}
-                    </button>
-                  </div>
                 </form>
               )}
             </ProfileSectionCard>
@@ -469,13 +465,13 @@ const ProfilePage: React.FC = () => {
               title="Endre passord"
               description="Bytt passordet du bruker for å logge inn."
             >
-              <form className="space-y-3" onSubmit={handlePasswordSubmit}>
+              <form className="space-y-2.5" onSubmit={handlePasswordSubmit}>
                 <div className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
                   Bruk et sterkt passord. Dagens innloggingsflyt krever minst 6 tegn.
                 </div>
 
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div>
+                <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-5">
+                  <div className="md:col-span-2">
                     <FieldLabel htmlFor="newPassword" required>
                       Nytt passord
                     </FieldLabel>
@@ -507,7 +503,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="md:col-span-2">
                     <FieldLabel htmlFor="confirmPassword" required>
                       Gjenta passord
                     </FieldLabel>
@@ -540,6 +536,16 @@ const ProfilePage: React.FC = () => {
                       </button>
                     </div>
                   </div>
+
+                  <div className="flex items-end md:col-span-1 md:justify-end">
+                    <button
+                      type="submit"
+                      disabled={savingPassword || !newPassword || !confirmPassword}
+                      className="inline-flex min-w-[10.5rem] items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      {savingPassword ? 'Oppdaterer...' : 'Oppdater passord'}
+                    </button>
+                  </div>
                 </div>
 
                 {passwordError && (
@@ -553,16 +559,6 @@ const ProfilePage: React.FC = () => {
                     {passwordSuccess}
                   </div>
                 )}
-
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={savingPassword || !newPassword || !confirmPassword}
-                    className="inline-flex items-center rounded-xl bg-blue-600 px-5 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {savingPassword ? 'Oppdaterer...' : 'Oppdater passord'}
-                  </button>
-                </div>
               </form>
             </ProfileSectionCard>
           </div>
@@ -572,10 +568,10 @@ const ProfilePage: React.FC = () => {
               title="Profilbilde"
               description="Visningsbilde og opplasting kommer som egen funksjon."
             >
-              <div className="space-y-3">
-                <div className="h-56 overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100">
+              <div className="space-y-2.5">
+                <div className="h-32 overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-gray-100">
                   <div className="flex h-full items-center justify-center">
-                    <div className="flex h-24 w-24 items-center justify-center rounded-full bg-white text-2xl font-semibold text-gray-400 shadow-sm">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-gray-400 shadow-sm">
                       {fullName
                         .split(' ')
                         .filter(Boolean)
@@ -585,19 +581,17 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
                 </div>
-                <div className="space-y-3">
-                  <StubBadge>Kommer senere</StubBadge>
-                  <div className="rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-500">
-                    Opplasting av profilbilde blir lagt til i en senere iterasjon.
-                  </div>
-                  <button
-                    type="button"
-                    disabled
-                    className="inline-flex items-center rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm font-medium text-gray-500 opacity-80"
-                  >
-                    Last opp bilde
-                  </button>
+                <StubBadge>Kommer senere</StubBadge>
+                <div className="rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-500">
+                  Opplasting av profilbilde blir lagt til i en senere iterasjon.
                 </div>
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm font-medium text-gray-500 opacity-80"
+                >
+                  Last opp bilde
+                </button>
               </div>
             </ProfileSectionCard>
 
@@ -605,9 +599,9 @@ const ProfilePage: React.FC = () => {
               title="Preferanser"
               description="Pinkoder og personlige valg fra gamle Internsida."
             >
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <StubBadge>Kommer senere</StubBadge>
-                <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-3.5">
                   <label className="flex items-center justify-between gap-3 text-sm text-gray-600">
                     <span>Stå på krysselista i resepsjonen</span>
                     <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-300" />
@@ -616,8 +610,8 @@ const ProfilePage: React.FC = () => {
                     <span>Stå på krysselista i vinkjelleren</span>
                     <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-300" />
                   </label>
-                  <div className="grid gap-3 pt-1">
-                    <div>
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    <div className="min-w-0">
                       <FieldLabel htmlFor="pinStub">Pinkode</FieldLabel>
                       <TextInput
                         id="pinStub"
@@ -627,7 +621,7 @@ const ProfilePage: React.FC = () => {
                         className="bg-white text-gray-400"
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <FieldLabel htmlFor="winePinStub">Pinkode til vinkjeller</FieldLabel>
                       <TextInput
                         id="winePinStub"
@@ -643,9 +637,9 @@ const ProfilePage: React.FC = () => {
             </ProfileSectionCard>
 
             <ProfileSectionCard title="Varsler" description="Velg hvilke varsler du vil motta.">
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <StubBadge>Kommer senere</StubBadge>
-                <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-3.5">
                   {[
                     'Når du har blitt tildelt en vakt',
                     'Når det er 24 timer igjen til å sitte vakt',
@@ -668,7 +662,7 @@ const ProfilePage: React.FC = () => {
               title="E-postlister"
               description="Administrer medlemskap i interne e-postlister."
             >
-              <div className="space-y-3">
+              <div className="space-y-2.5">
                 <StubBadge>Kommer senere</StubBadge>
                 <div className="overflow-hidden rounded-xl border border-gray-200">
                   <div className="grid grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))] bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
