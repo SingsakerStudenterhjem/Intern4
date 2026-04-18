@@ -417,7 +417,7 @@ const ProfilePage: React.FC = () => {
                   </div>
 
                   <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-6">
-                    <div className="md:col-span-3">
+                    <div className="md:col-span-2">
                       <FieldLabel htmlFor="studyPlace">Skole / studiested</FieldLabel>
                       <TextInput
                         id="studyPlace"
@@ -435,7 +435,7 @@ const ProfilePage: React.FC = () => {
                         placeholder="F.eks. Data"
                       />
                     </div>
-                    <div className="flex items-end md:col-span-1 md:justify-end">
+                    <div className="flex items-end md:col-span-2 md:justify-end">
                       <button
                         type="submit"
                         disabled={savingGeneralInfo || profileLoading}
@@ -470,8 +470,8 @@ const ProfilePage: React.FC = () => {
                   Bruk et sterkt passord. Dagens innloggingsflyt krever minst 6 tegn.
                 </div>
 
-                <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-5">
-                  <div className="md:col-span-2">
+                <div className="grid gap-y-2.5">
+                  <div>
                     <FieldLabel htmlFor="newPassword" required>
                       Nytt passord
                     </FieldLabel>
@@ -503,7 +503,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="md:col-span-2">
+                  <div>
                     <FieldLabel htmlFor="confirmPassword" required>
                       Gjenta passord
                     </FieldLabel>
@@ -537,7 +537,7 @@ const ProfilePage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-end md:col-span-1 md:justify-end">
+                  <div className="flex justify-end">
                     <button
                       type="submit"
                       disabled={savingPassword || !newPassword || !confirmPassword}
