@@ -3,9 +3,9 @@ import { Category, CategoryCreationData } from './category.types';
 
 export interface AuthUser {
   id: string;
-  email: string;
-  name: string;
-  role: string;
+  email?: string;
+  name?: string;
+  role?: string;
 }
 
 export interface FormErrors {
@@ -93,7 +93,8 @@ export const isAuthUser = (user: unknown): user is AuthUser => {
     typeof user === 'object' &&
     user !== null &&
     typeof (user as any).id === 'string' &&
-    typeof (user as any).name === 'string' &&
-    typeof (user as any).role === 'string'
+    (typeof (user as any).name === 'string' || typeof (user as any).name === 'undefined') &&
+    (typeof (user as any).role === 'string' || typeof (user as any).role === 'undefined') &&
+    (typeof (user as any).email === 'string' || typeof (user as any).email === 'undefined')
   );
 };

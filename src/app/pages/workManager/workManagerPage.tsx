@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import WorkApprovalList from '../../components/regi/WorkManager/WorkApprovalList.tsx';
+import WorkApprovalList from '../../components/regi/WorkManager/WorkApprovalList';
 import Registatus from '../../components/regi/WorkManager/Registatus';
 import GrantRegiForm from '../../components/regi/WorkManager/GrantRegiForm';
 import { ROUTES } from '../../constants/routes';

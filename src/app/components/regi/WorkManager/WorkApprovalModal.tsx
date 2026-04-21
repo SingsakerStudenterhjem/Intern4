@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Ban, Calendar, Check, Clock, User, X } from 'lucide-react';
-import { PendingRegiApproval } from '../../../../server/dao/regiDAO';
+import { PendingRegiApproval } from '../../../../shared/types/regi';
 
 interface WorkApprovalModalProps {
   approval: PendingRegiApproval | null;

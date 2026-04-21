@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RefreshCw, Search } from 'lucide-react';
-import { getAllRegiLogs, RegiLogWithUser } from '../../../server/dao/regiDAO';
+import { RegiLogWithUser } from '../../../shared/types/regi';
+import { getAllRegiLogs } from '../../../server/dao/regiDAO';
 import { ROUTES } from '../../constants/routes';
 import { useAuth } from '../../../contexts/authContext';
 import { canApproveWork } from '../../constants/userRoles';

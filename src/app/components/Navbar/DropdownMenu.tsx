@@ -35,8 +35,9 @@ const DropdownMenu = ({ label, items }: DropdownMenuProps) => {
   // only include items with no roles restriction or where user.role is allowed
   const visible = items.filter((item) => {
     if (!item.roles) return true;
-    if (!user) return false;
-    return item.roles.includes(user.role) || item.roles.includes(USER_ROLES.DATA);
+    const role = user?.role;
+    if (!role) return false;
+    return item.roles.includes(role) || item.roles.includes(USER_ROLES.DATA);
   });
 
   if (visible.length === 0) return null;

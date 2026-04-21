@@ -104,8 +104,9 @@ const Navbar = () => {
 
   const canAccess = (roles?: string[]) => {
     if (!roles) return true;
-    if (!user) return false;
-    return roles.includes(user.role);
+    const role = user?.role;
+    if (!role) return false;
+    return roles.includes(role);
   };
 
   const visibleItems = menuItems.reduce<MenuItem[]>((items, item) => {

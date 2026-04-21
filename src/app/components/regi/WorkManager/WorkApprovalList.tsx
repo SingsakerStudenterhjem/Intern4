@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Ban, Check, RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../../contexts/authContext';
+import { PendingRegiApproval } from '../../../../shared/types/regi';
 import {
   approveRegiLog,
   getPendingRegiApprovals,
-  PendingRegiApproval,
   rejectRegiLog,
 } from '../../../../server/dao/regiDAO';
 import WorkApprovalModal from './WorkApprovalModal';
-import { canApproveWork } from '../../../constants/userRoles.ts';
+import { canApproveWork } from '../../../constants/userRoles';
 
 const WorkApprovalList: React.FC = () => {
   const { user, loading: authLoading } = useAuth();

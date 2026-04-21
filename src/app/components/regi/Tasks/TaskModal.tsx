@@ -9,7 +9,7 @@ import {
   getTaskParticipantCount,
   isTaskFull,
 } from '../../../../shared/types/regi/tasks';
-import { canManageTasks, canViewAllParticipants } from '../../../constants/userRoles.ts';
+import { canManageTasks, canViewAllParticipants } from '../../../constants/userRoles';
 
 const TaskModal: React.FC<TaskModalProps> = ({
   task,
