@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { useAuth } from '../../../../contexts/authContext';
+import { Category } from '../../../../shared/types/regi/tasks';
 import { WorkTypeSchema } from '../../../../shared/types/regi';
 import { addRegiLog } from '../../../../server/dao/regiDAO';
 import { BasicUserWithRole, getActiveUsersWithRole } from '../../../../server/dao/userDAO';
@@ -35,7 +36,7 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     type: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [users, setUsers] = useState<BasicUserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

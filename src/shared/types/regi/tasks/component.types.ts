@@ -3,9 +3,9 @@ import { Category, CategoryCreationData } from './category.types';
 
 export interface AuthUser {
   id: string;
-  email: string;
-  name: string;
-  role: string;
+  email?: string;
+  name?: string;
+  role?: string;
 }
 
 export interface FormErrors {
@@ -89,11 +89,14 @@ export interface ModalState {
 }
 
 export const isAuthUser = (user: unknown): user is AuthUser => {
+  const userObj = user as any;
+
   return (
     typeof user === 'object' &&
     user !== null &&
-    typeof (user as any).id === 'string' &&
-    typeof (user as any).name === 'string' &&
-    typeof (user as any).role === 'string'
+    typeof userObj.id === 'string' &&
+    (typeof userObj.name === 'string' || typeof userObj.name === 'undefined') &&
+    (typeof userObj.role === 'string' || typeof userObj.role === 'undefined') &&
+    (typeof userObj.email === 'string' || typeof userObj.email === 'undefined')
   );
 };

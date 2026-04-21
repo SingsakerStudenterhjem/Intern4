@@ -3,10 +3,26 @@ import { z } from 'zod';
 export const WorkTypeSchema = z.string().min(1, 'Arbeidets art er påkrevd');
 export type WorkType = z.infer<typeof WorkTypeSchema>;
 
-export const WorkStatusSchema = z
-  .string()
-  .refine((value) => ['pending', 'approved', 'rejected'].includes(value));
+export const RegiSourceTypeSchema = z.enum(['misc', 'task']);
+export type RegiSourceType = z.infer<typeof RegiSourceTypeSchema>;
+
+export const WorkStatusSchema = z.enum(['pending', 'approved', 'rejected']);
 export type WorkStatus = z.infer<typeof WorkStatusSchema>;
+
+export type RegiRecordBase = {
+  id: string;
+  userId: string;
+  title: string;
+  description?: string;
+  hours: number;
+  createdAt: Date;
+  sourceType: RegiSourceType;
+};
+
+export type RegiUserSummary = {
+  userName: string;
+  userEmail: string;
+};
 
 export const RegiLogSchema = z.object({
   userId: z.string(),
@@ -23,9 +39,24 @@ export const RegiLogSchema = z.object({
 });
 export type RegiLog = z.infer<typeof RegiLogSchema>;
 
-// Helper for database reads that add the document id
-export type RegiLogWithId = RegiLog & {
-  id: string;
+export type RegiLogWithId = RegiRecordBase & {
   workId?: string;
-  sourceType?: 'misc' | 'task';
+  // `date` is when the work happened; `createdAt` is when the row was registered.
+  date: Date;
+  status: WorkStatus;
+  type: WorkType;
+  reviewerComment?: string;
 };
+
+export type PendingRegiApproval = RegiRecordBase &
+  RegiUserSummary & {
+    category: string;
+  };
+
+export type RegiLogWithUser = RegiRecordBase &
+  RegiUserSummary & {
+    category: string;
+    status: WorkStatus;
+    approvedByName?: string;
+    approvalComment?: string | null;
+  };

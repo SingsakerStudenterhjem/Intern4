@@ -1,5 +1,10 @@
 import { supabase } from '../supabaseClient';
-import { RegiLog, RegiLogWithId } from '../../shared/types/regi';
+import {
+  PendingRegiApproval,
+  RegiLog,
+  RegiLogWithId,
+  RegiLogWithUser,
+} from '../../shared/types/regi';
 import { getUser } from './userDAO';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
@@ -17,6 +22,16 @@ function toDate(value: Date | string | { seconds: number } | null | undefined): 
   }
 
   return new Date(0);
+}
+
+type WorkItemTypeRelation = { type: string | null } | Array<{ type: string | null }> | null;
+
+function getWorkItemType(workItems: WorkItemTypeRelation): string | undefined {
+  if (Array.isArray(workItems)) {
+    return workItems[0]?.type ?? undefined;
+  }
+
+  return workItems?.type ?? undefined;
 }
 
 export function isCountableRegiAssignment(row: any): boolean {
@@ -151,7 +166,7 @@ export async function deletePendingRegiLog(assignmentId: string, userId: string)
   if (assignment.approved_state !== 0) {
     throw new Error('Kun ventende registreringer kan slettes');
   }
-  if (assignment.work_items?.type !== 'misc') {
+  if (getWorkItemType(assignment.work_items as WorkItemTypeRelation) !== 'misc') {
     throw new Error('Oppgavebaserte registreringer må håndteres fra oppgaver');
   }
 
@@ -184,19 +199,6 @@ export async function deletePendingRegiLog(assignmentId: string, userId: string)
 
   if (deleteWorkItemError) throw new Error(deleteWorkItemError.message);
 }
-
-export type PendingRegiApproval = {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  sourceType: 'misc' | 'task';
-  title: string;
-  description: string;
-  category: string;
-  hours: number;
-  createdAt: any;
-};
 
 export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> {
   const { data, error } = await supabase
@@ -244,29 +246,13 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
       userEmail: u?.email ?? '',
       sourceType: row.work_items?.type === 'task' ? 'task' : 'misc',
       title: row.work_items?.title ?? '',
-      description: row.work_items?.description ?? '',
+      description: row.work_items?.description ?? undefined,
       category: row.work_items?.work_categories?.name ?? 'Regi',
       hours: row.hours_used ?? 0,
-      createdAt: row.created_at,
+      createdAt: toDate(row.created_at),
     };
   });
 }
-
-export type RegiLogWithUser = {
-  id: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  sourceType: 'misc' | 'task';
-  title: string;
-  description: string;
-  category: string;
-  hours: number;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: any;
-  approvedByName?: string;
-  approvalComment?: string | null;
-};
 
 export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
   const { data, error } = await supabase
@@ -320,11 +306,11 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
       userEmail: owner?.email ?? '',
       sourceType: row.work_items?.type === 'task' ? 'task' : 'misc',
       title: row.work_items?.title ?? '',
-      description: row.work_items?.description ?? '',
+      description: row.work_items?.description ?? undefined,
       category: row.work_items?.work_categories?.name ?? 'Regi',
       hours: Number(row.hours_used ?? 0),
       status: statusMap[row.approved_state] ?? 'pending',
-      createdAt: row.created_at,
+      createdAt: toDate(row.created_at),
       approvedByName: approver?.name,
       approvalComment: row.approval_comment ?? null,
     };

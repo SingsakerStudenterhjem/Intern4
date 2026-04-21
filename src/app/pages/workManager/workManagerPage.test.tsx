@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import WorkManagerPage from './workManagerPage';
 
-vi.mock('../../components/regi/WorkManager/WorkApprovalList.tsx', () => ({
+vi.mock('../../components/regi/WorkManager/WorkApprovalList', () => ({
   default: () => <div data-testid="approval-list">Approval list</div>,
 }));
 

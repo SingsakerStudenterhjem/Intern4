@@ -11,23 +11,30 @@ export const USER_ROLES = {
   USER: 'user', // Fallback for basic users
 };
 
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+
 // Helper functions for role checking
-export const canManageTasks = (role) => {
+export const canManageTasks = (role?: UserRole) => {
+  if (!role) return false;
   return [USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER].includes(role);
 };
 
-export const canManageCategories = (role) => {
+export const canManageCategories = (role?: UserRole) => {
+  if (!role) return false;
   return [USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER].includes(role);
 };
 
-export const canViewAllParticipants = (role) => {
+export const canViewAllParticipants = (role?: UserRole) => {
+  if (!role) return false;
   return [USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER].includes(role);
 };
 
-export const canAccessAdmin = (role) => {
+export const canAccessAdmin = (role?: UserRole) => {
+  if (!role) return false;
   return [USER_ROLES.ADMIN, USER_ROLES.DATA].includes(role);
 };
 
-export const canApproveWork = (role) => {
+export const canApproveWork = (role?: UserRole) => {
+  if (!role) return false;
   return [USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER].includes(role);
 };
