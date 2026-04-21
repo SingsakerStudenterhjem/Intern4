@@ -26,7 +26,7 @@ function toDate(value: Date | string | { seconds: number } | null | undefined): 
 
 type WorkItemTypeRelation = { type: string | null } | Array<{ type: string | null }> | null;
 
-function getWorkItemType(workItems: WorkItemTypeRelation): string | null | undefined {
+function getWorkItemType(workItems: WorkItemTypeRelation): string | undefined {
   if (Array.isArray(workItems)) {
     return workItems[0]?.type ?? undefined;
   }

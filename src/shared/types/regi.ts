@@ -41,6 +41,7 @@ export type RegiLog = z.infer<typeof RegiLogSchema>;
 
 export type RegiLogWithId = RegiRecordBase & {
   workId?: string;
+  // `date` is when the work happened; `createdAt` is when the row was registered.
   date: Date;
   status: WorkStatus;
   type: WorkType;

@@ -89,12 +89,14 @@ export interface ModalState {
 }
 
 export const isAuthUser = (user: unknown): user is AuthUser => {
+  const userObj = user as any;
+
   return (
     typeof user === 'object' &&
     user !== null &&
-    typeof (user as any).id === 'string' &&
-    (typeof (user as any).name === 'string' || typeof (user as any).name === 'undefined') &&
-    (typeof (user as any).role === 'string' || typeof (user as any).role === 'undefined') &&
-    (typeof (user as any).email === 'string' || typeof (user as any).email === 'undefined')
+    typeof userObj.id === 'string' &&
+    (typeof userObj.name === 'string' || typeof userObj.name === 'undefined') &&
+    (typeof userObj.role === 'string' || typeof userObj.role === 'undefined') &&
+    (typeof userObj.email === 'string' || typeof userObj.email === 'undefined')
   );
 };
