@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  addRegiLog,
   approveRegiLog,
   deletePendingRegiLog,
   getRegiLogsByUser,
@@ -59,6 +60,16 @@ function createUpdateBuilder() {
   const builder: any = {
     update: vi.fn(() => builder),
     eq: vi.fn(async () => ({ error: null })),
+  };
+
+  return builder;
+}
+
+function createInsertSingleBuilder(data: any) {
+  const builder: any = {
+    insert: vi.fn(() => builder),
+    select: vi.fn(() => builder),
+    single: vi.fn(async () => ({ data, error: null })),
   };
 
   return builder;
@@ -148,6 +159,33 @@ describe('regiDAO', () => {
       approval_comment: 'Ser bra ut',
     });
     expect(updateBuilder.eq).toHaveBeenCalledWith('id', '12');
+  });
+
+  it('creates granted regi logs as pending by default', async () => {
+    const categoryBuilder = createMaybeSingleBuilder({ id: 7 });
+    const workItemBuilder = createInsertSingleBuilder({ id: 44 });
+    const assignmentBuilder = createInsertSingleBuilder({ id: 12 });
+
+    vi.mocked(supabase.from)
+      .mockImplementationOnce(() => categoryBuilder)
+      .mockImplementationOnce(() => workItemBuilder)
+      .mockImplementationOnce(() => assignmentBuilder);
+
+    await addRegiLog({
+      userId: '11111111-1111-1111-1111-111111111111',
+      title: 'Innført av regisjef',
+      description: 'Test',
+      date: new Date('2026-04-21T00:00:00.000Z'),
+      hours: 2,
+      type: 'Regi',
+    });
+
+    expect(assignmentBuilder.insert).toHaveBeenCalledWith({
+      user_uuid: '11111111-1111-1111-1111-111111111111',
+      work_id: 44,
+      hours_used: 2,
+      approved_state: 0,
+    });
   });
 
   it('deletes only the current users pending manual regi log and removes its work item when orphaned', async () => {

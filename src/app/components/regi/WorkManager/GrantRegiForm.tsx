@@ -103,19 +103,16 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
 
     try {
       setSubmitting(true);
-      await addRegiLog(
-        {
-          userId: parsed.data.userId,
-          title: parsed.data.title,
-          description: parsed.data.description,
-          date: new Date(parsed.data.date),
-          hours: parsed.data.hours,
-          type: parsed.data.type,
-        },
-        { autoApprove: true }
-      );
+      await addRegiLog({
+        userId: parsed.data.userId,
+        title: parsed.data.title,
+        description: parsed.data.description,
+        date: new Date(parsed.data.date),
+        hours: parsed.data.hours,
+        type: parsed.data.type,
+      });
 
-      setMessage('Regitimer registrert.');
+      setMessage('Regitimer registrert og sendt til godkjenning.');
       setForm({
         userId: '',
         title: '',
