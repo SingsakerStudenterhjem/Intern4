@@ -14,6 +14,7 @@ import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
 import RegiLogsPage from '../app/pages/workManager/regiLogsPage';
 import ForgotPasswordPage from '../app/pages/forgotPasswordPage';
 import ResetPasswordPage from '../app/pages/resetPasswordPage';
+import ResidentDirectoryPage from '../app/pages/residents/residentDirectoryPage';
 
 // Public routes (no authentication required)
 export const publicRoutes: RouteObject[] = [
@@ -38,6 +39,22 @@ export const protectedRoutes: RouteObject[] = [
     element: (
       <ProtectedRoute>
         <WorkTasksPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: ROUTES.BEBOERE,
+    element: (
+      <ProtectedRoute>
+        <ResidentDirectoryPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: ROUTES.GAMLE_BEBOERE,
+    element: (
+      <ProtectedRoute>
+        <ResidentDirectoryPage />
       </ProtectedRoute>
     ),
   },

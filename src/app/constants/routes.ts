@@ -1,6 +1,8 @@
 export const ROUTES = {
   LOGIN: '/login',
   DASHBOARD: '/dashboard',
+  BEBOERE: '/beboere',
+  GAMLE_BEBOERE: '/beboere/gamle',
   REGI: '/regi',
   TASKS: '/regi/oppgaver',
   REGISJEF: '/regisjef',
