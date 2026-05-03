@@ -36,10 +36,6 @@ describe('userDAO resident directory', () => {
         seniority: 4,
         room_number: 101,
         created_at: '2024-08-15T00:00:00.000Z',
-        street: 'Testgata 1',
-        postal_code: '7000',
-        city: 'Testby',
-        country: 'Testland',
         is_active: true,
         on_leave: false,
         roles: { name: 'Halv/Halv' },
@@ -51,6 +47,23 @@ describe('userDAO resident directory', () => {
     const result = await getResidentDirectoryUsers(true);
 
     expect(supabase.from).toHaveBeenCalledWith('users');
+    expect(builder.select).toHaveBeenCalledWith(
+      [
+        'id',
+        'name',
+        'email',
+        'phone',
+        'birth_date',
+        'study_program',
+        'place_of_education',
+        'seniority',
+        'room_number',
+        'created_at',
+        'is_active',
+        'on_leave',
+        'roles(name)',
+      ].join(', ')
+    );
     expect(builder.eq).toHaveBeenCalledWith('is_active', true);
     expect(builder.order).toHaveBeenCalledWith('name', { ascending: true });
     expect(result).toEqual([
@@ -69,10 +82,10 @@ describe('userDAO resident directory', () => {
         onLeave: false,
         isActive: true,
         address: {
-          street: 'Testgata 1',
-          postalCode: '7000',
-          city: 'Testby',
-          country: 'Testland',
+          street: '',
+          postalCode: '',
+          city: '',
+          country: undefined,
         },
       },
     ]);
@@ -83,21 +96,11 @@ describe('userDAO resident directory', () => {
       {
         id: '22222222-2222-2222-2222-222222222222',
         name: null,
-        email: null,
-        phone: null,
-        birth_date: null,
-        study_program: null,
-        place_of_education: null,
-        seniority: null,
-        room_number: null,
-        created_at: null,
         street: null,
         postal_code: '7016',
         city: null,
         country: null,
         is_active: false,
-        on_leave: null,
-        roles: null,
       },
     ]);
 
@@ -105,6 +108,9 @@ describe('userDAO resident directory', () => {
 
     const result = await getResidentDirectoryUsers(false);
 
+    expect(builder.select).toHaveBeenCalledWith(
+      ['id', 'name', 'street', 'postal_code', 'city', 'country', 'is_active'].join(', ')
+    );
     expect(builder.eq).toHaveBeenCalledWith('is_active', false);
     expect(result[0]).toMatchObject({
       name: 'Ukjent',
