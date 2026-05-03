@@ -152,29 +152,34 @@ function toResidentDirectoryUser(row: any): ResidentDirectoryUser {
 export async function getResidentDirectoryUsers(
   isActive: boolean
 ): Promise<ResidentDirectoryUser[]> {
+  const activeResidentColumns = [
+    'id',
+    'name',
+    'email',
+    'phone',
+    'birth_date',
+    'study_program',
+    'place_of_education',
+    'seniority',
+    'room_number',
+    'created_at',
+    'is_active',
+    'on_leave',
+    'roles(name)',
+  ];
+  const oldResidentColumns = [
+    'id',
+    'name',
+    'street',
+    'postal_code',
+    'city',
+    'country',
+    'is_active',
+  ];
+
   const { data, error } = await supabase
     .from('users')
-    .select(
-      [
-        'id',
-        'name',
-        'email',
-        'phone',
-        'birth_date',
-        'study_program',
-        'place_of_education',
-        'seniority',
-        'room_number',
-        'created_at',
-        'street',
-        'postal_code',
-        'city',
-        'country',
-        'is_active',
-        'on_leave',
-        'roles(name)',
-      ].join(', ')
-    )
+    .select((isActive ? activeResidentColumns : oldResidentColumns).join(', '))
     .eq('is_active', isActive)
     .order('name', { ascending: true });
 
