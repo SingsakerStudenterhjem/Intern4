@@ -2,6 +2,7 @@ export const ROUTES = {
   LOGIN: '/login',
   DASHBOARD: '/dashboard',
   BEBOERE: '/beboere',
+  BEBOER_STATISTIKK: '/beboere/statistikk',
   GAMLE_BEBOERE: '/beboere/gamle',
   REGI: '/regi',
   TASKS: '/regi/oppgaver',

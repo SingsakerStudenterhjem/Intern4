@@ -113,6 +113,7 @@ export type ResidentDirectoryUser = {
   studyPlace: string;
   seniority: number;
   roomNumber: number | null;
+  createdAt: string | null;
   role?: string;
   onLeave: boolean;
   isActive: boolean;
@@ -135,6 +136,7 @@ function toResidentDirectoryUser(row: any): ResidentDirectoryUser {
     studyPlace: row.place_of_education ?? '',
     seniority: row.seniority ?? 0,
     roomNumber: row.room_number ?? null,
+    createdAt: row.created_at ?? null,
     role: row.roles?.name ?? undefined,
     onLeave: row.on_leave ?? false,
     isActive: row.is_active ?? false,
@@ -163,6 +165,7 @@ export async function getResidentDirectoryUsers(
         'place_of_education',
         'seniority',
         'room_number',
+        'created_at',
         'street',
         'postal_code',
         'city',

@@ -51,6 +51,14 @@ export const protectedRoutes: RouteObject[] = [
     ),
   },
   {
+    path: ROUTES.BEBOER_STATISTIKK,
+    element: (
+      <ProtectedRoute>
+        <ResidentDirectoryPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: ROUTES.GAMLE_BEBOERE,
     element: (
       <ProtectedRoute>
