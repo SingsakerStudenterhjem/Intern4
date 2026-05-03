@@ -71,7 +71,6 @@ const RegiLogsPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">Regisjef</p>
             <h1 className="text-3xl font-bold text-gray-900">Regilogger</h1>
             <p className="text-gray-600">Alle registrerte timer, inkludert godkjente og avviste.</p>
           </div>

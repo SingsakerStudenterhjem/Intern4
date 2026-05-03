@@ -64,6 +64,7 @@ const Navbar = () => {
 
   const menuItems: MenuItem[] = [
     { key: 'dash', label: 'Dashboard', to: ROUTES.DASHBOARD },
+    { key: 'beboere', label: 'Beboere', to: ROUTES.BEBOERE },
     {
       key: 'regi',
       label: 'Regi',

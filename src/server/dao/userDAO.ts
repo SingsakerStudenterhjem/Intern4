@@ -103,6 +103,83 @@ export type BasicUserWithRole = {
   isActive: boolean;
 };
 
+export type ResidentDirectoryUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  birthDate: string | null;
+  study: string;
+  studyPlace: string;
+  seniority: number;
+  roomNumber: number | null;
+  role?: string;
+  onLeave: boolean;
+  isActive: boolean;
+  address: {
+    street: string;
+    postalCode: string;
+    city: string;
+    country?: string;
+  };
+};
+
+function toResidentDirectoryUser(row: any): ResidentDirectoryUser {
+  return {
+    id: row.id,
+    name: row.name ?? 'Ukjent',
+    email: row.email ?? '',
+    phone: row.phone ?? '',
+    birthDate: row.birth_date ?? null,
+    study: row.study_program ?? '',
+    studyPlace: row.place_of_education ?? '',
+    seniority: row.seniority ?? 0,
+    roomNumber: row.room_number ?? null,
+    role: row.roles?.name ?? undefined,
+    onLeave: row.on_leave ?? false,
+    isActive: row.is_active ?? false,
+    address: {
+      street: row.street ?? '',
+      postalCode: row.postal_code ?? '',
+      city: row.city ?? '',
+      country: row.country ?? undefined,
+    },
+  };
+}
+
+export async function getResidentDirectoryUsers(
+  isActive: boolean
+): Promise<ResidentDirectoryUser[]> {
+  const { data, error } = await supabase
+    .from('users')
+    .select(
+      [
+        'id',
+        'name',
+        'email',
+        'phone',
+        'birth_date',
+        'study_program',
+        'place_of_education',
+        'seniority',
+        'room_number',
+        'street',
+        'postal_code',
+        'city',
+        'country',
+        'is_active',
+        'on_leave',
+        'roles(name)',
+      ].join(', ')
+    )
+    .eq('is_active', isActive)
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map(toResidentDirectoryUser);
+}
+
 export async function getActiveUsersWithRole(): Promise<BasicUserWithRole[]> {
   const { data, error } = await supabase
     .from('users')
