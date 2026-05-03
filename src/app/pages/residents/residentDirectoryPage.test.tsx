@@ -20,6 +20,7 @@ const activeResidents = [
     studyPlace: 'NTNU',
     seniority: 4,
     roomNumber: 101,
+    createdAt: '2024-08-15T00:00:00.000Z',
     role: 'Halv/Halv',
     onLeave: false,
     isActive: true,
@@ -35,6 +36,7 @@ const activeResidents = [
     studyPlace: 'NTNU',
     seniority: 1,
     roomNumber: 202,
+    createdAt: '2026-01-20T00:00:00.000Z',
     role: 'Full Vakt',
     onLeave: false,
     isActive: true,
@@ -53,6 +55,7 @@ const oldResidents = [
     studyPlace: '',
     seniority: 0,
     roomNumber: null,
+    createdAt: '2020-01-01T00:00:00.000Z',
     role: undefined,
     onLeave: false,
     isActive: false,
@@ -72,7 +75,7 @@ describe('ResidentDirectoryPage', () => {
     vi.clearAllMocks();
   });
 
-  it('renders the active resident list with screenshot columns', async () => {
+  it('renders the active resident list with example columns', async () => {
     vi.mocked(getResidentDirectoryUsers).mockResolvedValue(activeResidents);
 
     renderPage('/beboere');
@@ -117,6 +120,25 @@ describe('ResidentDirectoryPage', () => {
     expect(screen.getByText('Tidligere Testperson')).toBeInTheDocument();
     expect(screen.getByText('Arkivveien 12')).toBeInTheDocument();
     expect(screen.getByText('7999')).toBeInTheDocument();
+  });
+
+  it('renders statistics for active residents', async () => {
+    vi.mocked(getResidentDirectoryUsers).mockResolvedValue(activeResidents);
+
+    renderPage('/beboere/statistikk');
+
+    expect(await screen.findByRole('heading', { name: 'Statistikk' })).toBeInTheDocument();
+    expect(getResidentDirectoryUsers).toHaveBeenCalledWith(true);
+    expect(screen.getByRole('heading', { name: 'Fødselsår' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Studieår' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Antall semestre på huset' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Studieprogram' })).toBeInTheDocument();
+    expect(screen.getByLabelText('2000: 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('1: 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('4: 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('BioTek: 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('FysMat: 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('Maskin: 0')).toBeInTheDocument();
   });
 
   it('shows loading, error, and empty states', async () => {
