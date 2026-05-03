@@ -53,7 +53,7 @@ const AddUserPage: React.FC = () => {
     setIsDeleting(true);
     try {
       await deleteUser(user.id);
-      setMessage({ type: 'success', text: `${user.name} ble slettet` });
+      setMessage({ type: 'success', text: `${user.name} ble deaktivert` });
       setDeleteConfirm(null);
       await loadUsers();
       setTimeout(() => setMessage(null), 4000);
@@ -659,11 +659,12 @@ const AddUserPage: React.FC = () => {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                          {user.role !== 'Admin' ? (
+                          {user.role !== 'Admin' && user.isActive ? (
                             <button
                               onClick={() => setDeleteConfirm(user)}
                               className="text-gray-400 hover:text-red-600 transition-colors"
-                              title="Slett bruker"
+                              title="Deaktiver bruker"
+                              aria-label={`Deaktiver ${user.name}`}
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -687,10 +688,10 @@ const AddUserPage: React.FC = () => {
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Slett bruker</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Deaktiver bruker</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Er du sikker pa at du vil slette <strong>{deleteConfirm.name}</strong>? Denne
-              handlingen kan ikke angres.
+              Er du sikker på at du vil deaktivere <strong>{deleteConfirm.name}</strong>? Brukeren
+              mister innlogging, men historikk beholdes.
             </p>
             <div className="flex justify-end space-x-3">
               <button
@@ -705,7 +706,7 @@ const AddUserPage: React.FC = () => {
                 disabled={isDeleting}
                 className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
               >
-                {isDeleting ? 'Sletter...' : 'Slett'}
+                {isDeleting ? 'Deaktiverer...' : 'Deaktiver'}
               </button>
             </div>
           </div>
