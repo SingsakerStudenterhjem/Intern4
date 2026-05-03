@@ -115,8 +115,8 @@ describe('ResidentDirectoryPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Gamle beboere' })).toBeInTheDocument();
     expect(getResidentDirectoryUsers).toHaveBeenCalledWith(false);
-    expect(screen.getByRole('columnheader', { name: 'Adresse' })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Postnummer' })).toBeInTheDocument();
+    expect(await screen.findByRole('columnheader', { name: 'Adresse' })).toBeInTheDocument();
+    expect(await screen.findByRole('columnheader', { name: 'Postnummer' })).toBeInTheDocument();
     expect(screen.getByText('Tidligere Testperson')).toBeInTheDocument();
     expect(screen.getByText('Arkivveien 12')).toBeInTheDocument();
     expect(screen.getByText('7999')).toBeInTheDocument();
