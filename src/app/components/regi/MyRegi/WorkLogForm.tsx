@@ -16,6 +16,8 @@ const FormSchema = z.object({
   images: z.array(z.instanceof(File)).optional(),
 });
 
+const getFileKey = (file: File) => `${file.name}-${file.size}-${file.lastModified}`;
+
 const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -67,6 +69,21 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     const transfer = new DataTransfer();
     nextFiles.forEach((file) => transfer.items.add(file));
     fileInputRef.current.files = transfer.files;
+  };
+
+  const addFiles = (selectedFiles: File[]) => {
+    if (selectedFiles.length === 0) return;
+
+    const existingFileKeys = new Set(files.map(getFileKey));
+    const nextFiles = [...files];
+
+    selectedFiles.forEach((file) => {
+      if (!existingFileKeys.has(getFileKey(file))) {
+        nextFiles.push(file);
+      }
+    });
+
+    syncFiles(nextFiles);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -197,7 +214,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
           type="file"
           multiple
           accept="image/*"
-          onChange={(e) => syncFiles(Array.from(e.target.files || []))}
+          onChange={(e) => addFiles(Array.from(e.target.files || []))}
           className="sr-only"
         />
         <label
