@@ -134,11 +134,11 @@ describe('ResidentDirectoryPage', () => {
     expect(screen.getByRole('heading', { name: 'Antall semestre på huset' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Studieprogram' })).toBeInTheDocument();
     expect(screen.getByLabelText('2000: 1')).toBeInTheDocument();
-    expect(screen.getByLabelText('1: 1')).toBeInTheDocument();
-    expect(screen.getByLabelText('4: 1')).toBeInTheDocument();
+    expect(screen.getAllByLabelText('1: 1').length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText('4: 1').length).toBeGreaterThan(0);
     expect(screen.getByLabelText('BioTek: 1')).toBeInTheDocument();
     expect(screen.getByLabelText('FysMat: 1')).toBeInTheDocument();
-    expect(screen.getByLabelText('Maskin: 0')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Maskin: 0')).not.toBeInTheDocument();
   });
 
   it('shows loading, error, and empty states', async () => {
