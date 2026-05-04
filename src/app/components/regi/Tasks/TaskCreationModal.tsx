@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { Calendar, Clock, Search, User, Users, X } from 'lucide-react';
 import {
-  FormErrors,
   safeParseTaskFormData,
   TaskCreationData,
-  TaskCreationModalProps,
   TaskFormData,
   validateTaskCreationData,
 } from '../../../../shared/types/regi/tasks';
+import { FormErrors, TaskCreationModalProps } from './types';
 
 const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   isOpen,

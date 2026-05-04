@@ -2,12 +2,12 @@ import React from 'react';
 import { Users, Clock, Calendar, User } from 'lucide-react';
 import {
   Task,
-  TasksTableProps,
   canUserJoinTask,
   getCurrentUserTaskParticipant,
   getTaskParticipantCount,
   isTaskFull,
 } from '../../../../shared/types/regi/tasks';
+import { TasksTableProps } from './types';
 
 const TasksTable: React.FC<TasksTableProps> = ({
   tasks,

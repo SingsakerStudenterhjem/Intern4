@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle2, Clock, Pencil, Trash2, User, Users, X } from 'lucide-react';
 import {
-  TaskModalProps,
   canUserJoinTask,
   canUserLeaveTask,
   canUserSubmitTaskCompletion,
@@ -10,6 +9,7 @@ import {
   isTaskFull,
 } from '../../../../shared/types/regi/tasks';
 import { canManageTasks, canViewAllParticipants } from '../../../constants/userRoles';
+import { TaskModalProps } from './types';
 
 const TaskModal: React.FC<TaskModalProps> = ({
   task,

@@ -26,11 +26,10 @@ import { getActiveUsersWithRole, getUser } from '../../../server/dao/userDAO';
 import {
   Category,
   CategoryCreationData,
-  ParticipantNames,
   Task,
-  TaskContactPersonOption,
   TaskCreationData,
 } from '../../../shared/types/regi/tasks';
+import { ParticipantNames, TaskContactPersonOption } from '../../components/regi/Tasks/types';
 import { canManageCategories, canManageTasks } from '../../constants/userRoles';
 
 const WorkTasksPage: React.FC = () => {
