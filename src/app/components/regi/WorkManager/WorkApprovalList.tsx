@@ -10,6 +10,14 @@ import {
 import WorkApprovalModal from './WorkApprovalModal';
 import { canApproveWork } from '../../../constants/userRoles';
 
+type DateValue = Date | string | { seconds: number } | null | undefined;
+
+const hasSeconds = (value: DateValue): value is { seconds: number } =>
+  typeof value === 'object' &&
+  value !== null &&
+  'seconds' in value &&
+  typeof value.seconds === 'number';
+
 const WorkApprovalList: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const [approvals, setApprovals] = useState<PendingRegiApproval[]>([]);
@@ -85,9 +93,9 @@ const WorkApprovalList: React.FC = () => {
     }
   };
 
-  const formatDate = (value: any) => {
+  const formatDate = (value: DateValue) => {
     if (!value) return '-';
-    if (value?.seconds) return new Date(value.seconds * 1000).toLocaleDateString('no-NO');
+    if (hasSeconds(value)) return new Date(value.seconds * 1000).toLocaleDateString('no-NO');
     if (typeof value === 'string') return new Date(value).toLocaleDateString('no-NO');
     if (value instanceof Date) return value.toLocaleDateString('no-NO');
     return '-';

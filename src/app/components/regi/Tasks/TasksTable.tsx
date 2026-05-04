@@ -9,6 +9,14 @@ import {
 } from '../../../../shared/types/regi/tasks';
 import { TasksTableProps } from './types';
 
+type DateValue = Date | string | { seconds: number } | null | undefined;
+
+const hasSeconds = (value: DateValue): value is { seconds: number } =>
+  typeof value === 'object' &&
+  value !== null &&
+  'seconds' in value &&
+  typeof value.seconds === 'number';
+
 const TasksTable: React.FC<TasksTableProps> = ({
   tasks,
   onRowClick,
@@ -16,11 +24,11 @@ const TasksTable: React.FC<TasksTableProps> = ({
   currentUserId,
   participantNames = {},
 }) => {
-  const formatDeadline = (deadline: any) => {
+  const formatDeadline = (deadline: DateValue) => {
     if (!deadline) return 'Ingen frist';
 
     // Handle Firestore Timestamp
-    if (deadline?.seconds) {
+    if (hasSeconds(deadline)) {
       return new Date(deadline.seconds * 1000).toLocaleDateString('no-NO');
     }
 

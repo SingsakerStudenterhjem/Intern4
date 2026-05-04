@@ -2,6 +2,14 @@ import React, { useState } from 'react';
 import { Ban, Calendar, Check, Clock, User, X } from 'lucide-react';
 import { PendingRegiApproval } from '../../../../shared/types/regi';
 
+type DateValue = Date | string | { seconds: number } | null | undefined;
+
+const hasSeconds = (value: DateValue): value is { seconds: number } =>
+  typeof value === 'object' &&
+  value !== null &&
+  'seconds' in value &&
+  typeof value.seconds === 'number';
+
 interface WorkApprovalModalProps {
   approval: PendingRegiApproval | null;
   onClose: () => void;
@@ -22,9 +30,9 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
 
   if (!approval) return null;
 
-  const formatDateTime = (value: any) => {
+  const formatDateTime = (value: DateValue) => {
     if (!value) return '-';
-    if (value?.seconds) return new Date(value.seconds * 1000).toLocaleString('no-NO');
+    if (hasSeconds(value)) return new Date(value.seconds * 1000).toLocaleString('no-NO');
     if (typeof value === 'string') return new Date(value).toLocaleString('no-NO');
     if (value instanceof Date) return value.toLocaleString('no-NO');
     return '-';

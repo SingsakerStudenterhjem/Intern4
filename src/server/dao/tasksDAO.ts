@@ -6,6 +6,54 @@ import {
   TaskParticipant,
 } from '../../shared/types/regi/tasks';
 
+type SupabaseJoin<T> = T | T[] | null | undefined;
+
+type TaskParticipantRow = {
+  id: number | string;
+  user_uuid: string;
+  approved_state?: number | null;
+  hours_used?: number | null;
+  created_at?: string | null;
+  approval_comment?: string | null;
+  approved_by_uuid?: string | null;
+};
+
+type TaskRow = {
+  id: number | string;
+  created_at?: string | null;
+  deadline?: string | null;
+  time_estimate?: number | string | null;
+  contact_person_uuid?: string | null;
+  max_participants?: number | string | null;
+  work_items?: SupabaseJoin<{
+    title?: string | null;
+    description?: string | null;
+    work_categories?: SupabaseJoin<{ name?: string | null }>;
+    participants?: TaskParticipantRow[] | null;
+  }>;
+};
+
+type TaskItemPatch = {
+  title?: string;
+  description?: string;
+  work_category_id?: number | string;
+};
+
+type TaskPatch = {
+  deadline?: Date | string | null;
+  time_estimate?: number | null;
+  contact_person_uuid?: string | null;
+  max_participants?: number;
+};
+
+type AssignmentWorkIdRow = {
+  work_id?: number | null;
+};
+
+function getJoinedValue<T>(value: SupabaseJoin<T>): T | undefined {
+  return Array.isArray(value) ? value[0] : (value ?? undefined);
+}
+
 export const getTaskAssignmentStatus = (row: {
   approved_state?: number | null;
   hours_used?: number | null;
@@ -16,30 +64,33 @@ export const getTaskAssignmentStatus = (row: {
   return 'joined';
 };
 
-function toTaskParticipant(row: any): TaskParticipant {
+function toTaskParticipant(row: TaskParticipantRow): TaskParticipant {
   return {
     assignmentId: String(row.id),
     userId: String(row.user_uuid),
     status: getTaskAssignmentStatus(row),
-    joinedAt: row.created_at,
+    joinedAt: row.created_at ?? '',
     hoursUsed: row.hours_used != null ? Number(row.hours_used) : null,
     approvalComment: row.approval_comment ?? null,
     approvedByUuid: row.approved_by_uuid ? String(row.approved_by_uuid) : null,
   };
 }
 
-function toAppTask(row: any): Task {
+function toAppTask(row: TaskRow): Task {
+  const workItem = getJoinedValue(row.work_items);
+  const workCategory = getJoinedValue(workItem?.work_categories);
+
   return {
     id: String(row.id),
-    title: row.work_items?.title ?? '',
-    description: row.work_items?.description ?? '',
-    category: row.work_items?.work_categories?.name ?? '',
+    title: workItem?.title ?? '',
+    description: workItem?.description ?? '',
+    category: workCategory?.name ?? '',
     contactPersonId: row.contact_person_uuid ? String(row.contact_person_uuid) : undefined,
     deadline: row.deadline ?? null,
     hourEstimate: row.time_estimate != null ? Number(row.time_estimate) : null,
     maxParticipants: Math.max(Number(row.max_participants ?? 1), 1),
-    participants: (row.work_items?.participants ?? []).map(toTaskParticipant),
-    createdAt: row.created_at,
+    participants: (workItem?.participants ?? []).map(toTaskParticipant),
+    createdAt: row.created_at ?? '',
     isArchived: false,
   };
 }
@@ -132,7 +183,7 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
     .maybeSingle();
 
   if (error) throw new Error(`Could not get task: ${error.message}`);
-  return data ? toAppTask(data) : undefined;
+  return data ? toAppTask(data as TaskRow) : undefined;
 }
 
 export async function getTasks(): Promise<Task[]> {
@@ -168,11 +219,11 @@ export async function getTasks(): Promise<Task[]> {
     throw new Error(`Could not get tasks: ${error.message}`);
   }
 
-  return (data ?? []).map(toAppTask);
+  return ((data ?? []) as TaskRow[]).map(toAppTask);
 }
 
 export async function updateTask(taskId: string, data: Partial<TaskCreationData>): Promise<void> {
-  const patchItem: any = {
+  const patchItem: TaskItemPatch = {
     title: data.title,
     description: data.description,
   };
@@ -187,19 +238,23 @@ export async function updateTask(taskId: string, data: Partial<TaskCreationData>
     if (!categoryRow) throw new Error(`Category '${data.category}' not found`);
     patchItem.work_category_id = categoryRow.id;
   }
-  Object.keys(patchItem).forEach((k) => patchItem[k] === undefined && delete patchItem[k]);
+  (Object.keys(patchItem) as (keyof TaskItemPatch)[]).forEach((key) => {
+    if (patchItem[key] === undefined) delete patchItem[key];
+  });
   if (Object.keys(patchItem).length) {
     const { error } = await supabase.from('work_items').update(patchItem).eq('id', Number(taskId));
     if (error) throw new Error(`Could not update task: ${error.message}`);
   }
 
-  const patchTask: any = {
+  const patchTask: TaskPatch = {
     deadline: data.deadline,
     time_estimate: data.hourEstimate,
     contact_person_uuid: data.contactPersonId,
     max_participants: data.maxParticipants,
   };
-  Object.keys(patchTask).forEach((k) => patchTask[k] === undefined && delete patchTask[k]);
+  (Object.keys(patchTask) as (keyof TaskPatch)[]).forEach((key) => {
+    if (patchTask[key] === undefined) delete patchTask[key];
+  });
   if (Object.keys(patchTask).length) {
     const { error } = await supabase.from('work_tasks').update(patchTask).eq('id', Number(taskId));
     if (error) throw new Error(`Could not update task: ${error.message}`);
@@ -311,7 +366,7 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
   const taskIds = Array.from(
     new Set(
       (assignmentRows ?? [])
-        .map((row: any) => row.work_id)
+        .map((row: AssignmentWorkIdRow) => row.work_id)
         .filter((workId: number | null | undefined) => workId != null)
     )
   );
@@ -353,5 +408,5 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
     throw new Error(`Could not get tasks by user: ${error.message}`);
   }
 
-  return (data ?? []).map(toAppTask);
+  return ((data ?? []) as TaskRow[]).map(toAppTask);
 }
