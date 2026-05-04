@@ -2,7 +2,13 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/authContext';
 import { supabase } from '../../server/supabaseClient';
-import { getUser, updateUser } from '../../server/dao/userDAO';
+import {
+  getSchools,
+  getStudies,
+  getUser,
+  LookupOption,
+  updateUser,
+} from '../../server/dao/userDAO';
 import { resetPassword } from '../../server/dao/authentication';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../shared/utils/phone';
 
@@ -16,8 +22,8 @@ type GeneralInfoFormState = {
   street: string;
   postalCode: string;
   city: string;
-  studyPlace: string;
-  study: string;
+  schoolId: string;
+  studyId: string;
 };
 
 type ProfileSectionCardProps = {
@@ -62,8 +68,8 @@ const emptyGeneralInfoForm = (): GeneralInfoFormState => ({
   street: '',
   postalCode: '',
   city: '',
-  studyPlace: '',
-  study: '',
+  schoolId: '',
+  studyId: '',
 });
 
 const splitFullName = (
@@ -135,6 +141,24 @@ const TextInput: React.FC<
   );
 };
 
+const SelectInput: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({
+  className = '',
+  children,
+  ...props
+}) => {
+  return (
+    <select
+      {...props}
+      className={`w-full rounded-xl border border-gray-200 px-3.5 py-3 text-sm shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+    >
+      {children}
+    </select>
+  );
+};
+
+const getAnnetId = (options: LookupOption[]): string =>
+  options.find((option) => option.name === 'Annet')?.id ?? options[0]?.id ?? '';
+
 const ProfilePage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const [profileLoading, setProfileLoading] = useState(true);
@@ -142,6 +166,8 @@ const ProfilePage: React.FC = () => {
   const [formError, setFormError] = useState<string | null>(null);
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
   const [savingGeneralInfo, setSavingGeneralInfo] = useState(false);
+  const [schools, setSchools] = useState<LookupOption[]>([]);
+  const [studies, setStudies] = useState<LookupOption[]>([]);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordError, setPasswordError] = useState<string | null>(null);
@@ -160,13 +186,20 @@ const ProfilePage: React.FC = () => {
       try {
         setProfileLoading(true);
         setFormError(null);
-        const profile = await getUser(user.id);
+        const [profile, schoolOptions, studyOptions] = await Promise.all([
+          getUser(user.id),
+          getSchools(),
+          getStudies(),
+        ]);
 
         if (!profile) {
           setFormError('Kunne ikke finne profilen din.');
           setProfileLoading(false);
           return;
         }
+
+        setSchools(schoolOptions);
+        setStudies(studyOptions);
 
         const nameParts = splitFullName(profile.name);
 
@@ -180,8 +213,8 @@ const ProfilePage: React.FC = () => {
           street: profile.address?.street ?? '',
           postalCode: profile.address?.postalCode ?? '',
           city: profile.address?.city ?? '',
-          studyPlace: profile.studyPlace ?? '',
-          study: profile.study ?? '',
+          schoolId: profile.schoolId ?? getAnnetId(schoolOptions),
+          studyId: profile.studyId ?? getAnnetId(studyOptions),
         });
       } catch (error) {
         console.error(error);
@@ -242,8 +275,8 @@ const ProfilePage: React.FC = () => {
           postalCode: form.postalCode.trim(),
           city: form.city.trim(),
         },
-        studyPlace: form.studyPlace.trim(),
-        study: form.study.trim(),
+        schoolId: form.schoolId || undefined,
+        studyId: form.studyId || undefined,
       });
 
       await supabase.auth.refreshSession();
@@ -414,21 +447,33 @@ const ProfilePage: React.FC = () => {
                   <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-6">
                     <div className="md:col-span-2">
                       <FieldLabel htmlFor="studyPlace">Skole / studiested</FieldLabel>
-                      <TextInput
+                      <SelectInput
                         id="studyPlace"
-                        value={form.studyPlace}
-                        onChange={(event) => setField('studyPlace', event.target.value)}
-                        placeholder="F.eks. NTNU"
-                      />
+                        value={form.schoolId}
+                        onChange={(event) => setField('schoolId', event.target.value)}
+                        disabled={savingGeneralInfo || profileLoading}
+                      >
+                        {schools.map((school) => (
+                          <option key={school.id} value={school.id}>
+                            {school.name}
+                          </option>
+                        ))}
+                      </SelectInput>
                     </div>
                     <div className="md:col-span-2">
                       <FieldLabel htmlFor="study">Studie</FieldLabel>
-                      <TextInput
+                      <SelectInput
                         id="study"
-                        value={form.study}
-                        onChange={(event) => setField('study', event.target.value)}
-                        placeholder="F.eks. Data"
-                      />
+                        value={form.studyId}
+                        onChange={(event) => setField('studyId', event.target.value)}
+                        disabled={savingGeneralInfo || profileLoading}
+                      >
+                        {studies.map((study) => (
+                          <option key={study.id} value={study.id}>
+                            {study.name}
+                          </option>
+                        ))}
+                      </SelectInput>
                     </div>
                     <div className="flex items-end md:col-span-2 md:justify-end">
                       <button

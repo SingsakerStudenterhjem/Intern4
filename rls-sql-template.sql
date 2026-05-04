@@ -21,6 +21,8 @@ BEGIN
     WHERE schemaname = 'public'
       AND tablename IN (
         'roles',
+        'schools',
+        'studies',
         'users',
         'work_categories',
         'work_items',
@@ -51,7 +53,28 @@ CREATE POLICY "Authenticated users can read roles"
   USING (true);
 
 -- ============================================================
--- 2. USERS TABLE
+-- 2. SCHOOLS AND STUDIES TABLES
+-- ============================================================
+-- Schools and studies are reference data.
+-- Everyone authenticated can read them, but writes are handled
+-- through migrations/service-role maintenance.
+-- ============================================================
+
+ALTER TABLE schools ENABLE ROW LEVEL SECURITY;
+ALTER TABLE studies ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Authenticated users can read schools"
+  ON schools FOR SELECT
+  TO authenticated
+  USING (true);
+
+CREATE POLICY "Authenticated users can read studies"
+  ON studies FOR SELECT
+  TO authenticated
+  USING (true);
+
+-- ============================================================
+-- 3. USERS TABLE
 -- ============================================================
 -- All authenticated users can read all user profiles (needed
 -- for user lists, participant names, etc.)
@@ -120,7 +143,7 @@ CREATE POLICY "Managers can delete non-admin users"
   );
 
 -- ============================================================
--- 3. WORK_CATEGORIES TABLE
+-- 4. WORK_CATEGORIES TABLE
 -- ============================================================
 -- Everyone authenticated can read categories.
 -- Only managers can insert/update (soft-delete via is_active).
@@ -166,7 +189,7 @@ CREATE POLICY "Managers can update categories"
   );
 
 -- ============================================================
--- 4. WORK_ITEMS TABLE
+-- 5. WORK_ITEMS TABLE
 -- ============================================================
 -- Everyone authenticated can read work items.
 -- Managers can create/update/delete work items (tasks + misc).
@@ -218,7 +241,7 @@ CREATE POLICY "Managers can delete work items"
   );
 
 -- ============================================================
--- 5. WORK_TASKS TABLE
+-- 6. WORK_TASKS TABLE
 -- ============================================================
 -- Everyone authenticated can read tasks.
 -- Managers can create/update/delete tasks.
@@ -276,7 +299,7 @@ CREATE POLICY "Managers can delete tasks"
   );
 
 -- ============================================================
--- 6. WORK_ASSIGNMENTS TABLE
+-- 7. WORK_ASSIGNMENTS TABLE
 -- ============================================================
 -- Everyone authenticated can read assignments (needed to show
 -- participants, hours, approvals, etc.)
@@ -352,7 +375,7 @@ CREATE POLICY "Managers can delete any assignment"
   );
 
 -- ============================================================
--- 7. WORK_MISC TABLE
+-- 8. WORK_MISC TABLE
 -- ============================================================
 -- Simple table with just id, created_at, image.
 -- Everyone authenticated can read. Only managers can modify.

@@ -4,12 +4,18 @@ import { NewUserInput } from '../../../shared/types/user';
 import {
   createUser,
   deleteUser,
+  getSchools,
+  getStudies,
   getRoles,
   getAllUsersWithRole,
   Role,
   BasicUserWithRole,
+  LookupOption,
 } from '../../../server/dao/userDAO';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
+
+const getAnnetId = (options: LookupOption[]): string =>
+  options.find((option) => option.name === 'Annet')?.id ?? options[0]?.id ?? '';
 
 const AddUserPage: React.FC = () => {
   const [userData, setUserData] = useState<NewUserInput>({
@@ -22,8 +28,8 @@ const AddUserPage: React.FC = () => {
       postalCode: '',
       city: '',
     },
-    study: '',
-    studyPlace: '',
+    schoolId: '',
+    studyId: '',
     profilePicture: '',
     seniority: 0,
     roomNumber: 0,
@@ -39,6 +45,9 @@ const AddUserPage: React.FC = () => {
   const [birthDateString, setBirthDateString] = useState('');
   const [roles, setRoles] = useState<Role[]>([]);
   const [rolesLoading, setRolesLoading] = useState(true);
+  const [schools, setSchools] = useState<LookupOption[]>([]);
+  const [studies, setStudies] = useState<LookupOption[]>([]);
+  const [lookupsLoading, setLookupsLoading] = useState(true);
 
   // User list state
   const [users, setUsers] = useState<BasicUserWithRole[]>([]);
@@ -81,6 +90,20 @@ const AddUserPage: React.FC = () => {
       .then((data) => setRoles(data))
       .catch((err) => console.error('Failed to load roles:', err))
       .finally(() => setRolesLoading(false));
+
+    Promise.all([getSchools(), getStudies()])
+      .then(([schoolOptions, studyOptions]) => {
+        setSchools(schoolOptions);
+        setStudies(studyOptions);
+        setUserData((prev) => ({
+          ...prev,
+          schoolId: prev.schoolId || getAnnetId(schoolOptions),
+          studyId: prev.studyId || getAnnetId(studyOptions),
+        }));
+      })
+      .catch((err) => console.error('Failed to load study lookups:', err))
+      .finally(() => setLookupsLoading(false));
+
     void loadUsers();
   }, [loadUsers]);
 
@@ -208,6 +231,8 @@ const AddUserPage: React.FC = () => {
       const { initialPassword } = await createUser({
         ...userData,
         phone: normalizedPhone,
+        schoolId: userData.schoolId || getAnnetId(schools),
+        studyId: userData.studyId || getAnnetId(studies),
       });
 
       setMessage({
@@ -223,8 +248,8 @@ const AddUserPage: React.FC = () => {
         phone: '',
         birthDate: new Date(),
         address: { street: '', postalCode: '', city: '' },
-        study: '',
-        studyPlace: '',
+        schoolId: getAnnetId(schools),
+        studyId: getAnnetId(studies),
         profilePicture: '',
         seniority: 0,
         roomNumber: 0,
@@ -482,15 +507,24 @@ const AddUserPage: React.FC = () => {
                     <label htmlFor="study" className="block text-sm font-medium text-gray-700 mb-1">
                       Studieprogram
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="study"
-                      name="study"
-                      value={userData.study}
+                      name="studyId"
+                      value={userData.studyId}
                       onChange={handleInputChange}
+                      disabled={lookupsLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Dataingeniør"
-                    />
+                    >
+                      {lookupsLoading ? (
+                        <option>Laster studier...</option>
+                      ) : (
+                        studies.map((study) => (
+                          <option key={study.id} value={study.id}>
+                            {study.name}
+                          </option>
+                        ))
+                      )}
+                    </select>
                   </div>
 
                   <div>
@@ -500,15 +534,24 @@ const AddUserPage: React.FC = () => {
                     >
                       Studiested
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="studyPlace"
-                      name="studyPlace"
-                      value={userData.studyPlace}
+                      name="schoolId"
+                      value={userData.schoolId}
                       onChange={handleInputChange}
+                      disabled={lookupsLoading}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="NTNU"
-                    />
+                    >
+                      {lookupsLoading ? (
+                        <option>Laster skoler...</option>
+                      ) : (
+                        schools.map((school) => (
+                          <option key={school.id} value={school.id}>
+                            {school.name}
+                          </option>
+                        ))
+                      )}
+                    </select>
                   </div>
                 </div>
 
