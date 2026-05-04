@@ -8,8 +8,12 @@ vi.mock('../supabaseClient', () => ({
   },
 }));
 
-function createMaybeSingleBuilder(data: any) {
-  const builder: any = {
+function createMaybeSingleBuilder(data: unknown) {
+  const builder: {
+    select: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+    maybeSingle: ReturnType<typeof vi.fn>;
+  } = {
     select: vi.fn(() => builder),
     eq: vi.fn(() => builder),
     maybeSingle: vi.fn(async () => ({ data, error: null })),
@@ -19,7 +23,10 @@ function createMaybeSingleBuilder(data: any) {
 }
 
 function createUpdateBuilder() {
-  const builder: any = {
+  const builder: {
+    update: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+  } = {
     update: vi.fn(() => builder),
     eq: vi.fn(async () => ({ error: null })),
   };
@@ -27,8 +34,11 @@ function createUpdateBuilder() {
   return builder;
 }
 
-function createEqSelectBuilder(data: any[]) {
-  const builder: any = {
+function createEqSelectBuilder(data: unknown[]) {
+  const builder: {
+    select: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+  } = {
     select: vi.fn(() => builder),
     eq: vi.fn(async () => ({ data, error: null })),
   };
@@ -36,8 +46,12 @@ function createEqSelectBuilder(data: any[]) {
   return builder;
 }
 
-function createInOrderBuilder(data: any[]) {
-  const builder: any = {
+function createInOrderBuilder(data: unknown[]) {
+  const builder: {
+    select: ReturnType<typeof vi.fn>;
+    in: ReturnType<typeof vi.fn>;
+    order: ReturnType<typeof vi.fn>;
+  } = {
     select: vi.fn(() => builder),
     in: vi.fn(() => builder),
     order: vi.fn(async () => ({ data, error: null })),
@@ -46,7 +60,7 @@ function createInOrderBuilder(data: any[]) {
   return builder;
 }
 
-function createTaskRow(overrides: Partial<any> = {}) {
+function createTaskRow(overrides: Record<string, unknown> = {}) {
   return {
     id: 1,
     created_at: '2026-04-10T10:00:00.000Z',

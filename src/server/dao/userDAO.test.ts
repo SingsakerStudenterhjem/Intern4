@@ -19,8 +19,12 @@ vi.mock('../supabaseClient', () => ({
   },
 }));
 
-function createResidentDirectoryBuilder(data: any[]) {
-  const builder: any = {
+function createResidentDirectoryBuilder(data: unknown[]) {
+  const builder: {
+    select: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+    order: ReturnType<typeof vi.fn>;
+  } = {
     select: vi.fn(() => builder),
     eq: vi.fn(() => builder),
     order: vi.fn(async () => ({ data, error: null })),
@@ -156,7 +160,11 @@ describe('userDAO profile and lookup writes', () => {
   });
 
   it('loads a user with joined school and study names', async () => {
-    const builder: any = {
+    const builder: {
+      select: ReturnType<typeof vi.fn>;
+      eq: ReturnType<typeof vi.fn>;
+      maybeSingle: ReturnType<typeof vi.fn>;
+    } = {
       select: vi.fn(() => builder),
       eq: vi.fn(() => builder),
       maybeSingle: vi.fn(async () => ({
@@ -194,7 +202,10 @@ describe('userDAO profile and lookup writes', () => {
   });
 
   it('updates school_id and study_id when saving a user', async () => {
-    const builder: any = {
+    const builder: {
+      update: ReturnType<typeof vi.fn>;
+      eq: ReturnType<typeof vi.fn>;
+    } = {
       update: vi.fn(() => builder),
       eq: vi.fn(async () => ({ error: null })),
     };
@@ -277,11 +288,17 @@ describe('userDAO profile and lookup writes', () => {
   });
 
   it('loads school and study lookup options', async () => {
-    const schoolsBuilder: any = {
+    const schoolsBuilder: {
+      select: ReturnType<typeof vi.fn>;
+      order: ReturnType<typeof vi.fn>;
+    } = {
       select: vi.fn(() => schoolsBuilder),
       order: vi.fn(async () => ({ data: [{ id: 'school-ntnu', name: 'NTNU' }], error: null })),
     };
-    const studiesBuilder: any = {
+    const studiesBuilder: {
+      select: ReturnType<typeof vi.fn>;
+      order: ReturnType<typeof vi.fn>;
+    } = {
       select: vi.fn(() => studiesBuilder),
       order: vi.fn(async () => ({
         data: [{ id: 'study-data', name: 'Datateknologi' }],
