@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Edit2, Trash2, X, Palette } from 'lucide-react';
 import {
-  CategoryManagementProps,
-  FormErrors,
-} from '../../../shared/types/regi/tasks/component.types';
-import { Category, CategoryFormData } from '../../../shared/types/regi/tasks/category.types';
+  Category,
+  CategoryCreationData,
+  CategoryFormData,
+} from '../../../shared/types/regi/tasks/category.types';
+
+type FormErrors = Record<string, string>;
+
+type CategoryManagementProps = {
+  categories: Category[];
+  onAddCategory: (categoryData: CategoryCreationData) => Promise<void>;
+  onUpdateCategory: (categoryId: string, categoryData: Partial<Category>) => Promise<void>;
+  onDeleteCategory: (categoryId: string) => Promise<void>;
+  getCategoryUsage: (categoryName: string) => Promise<number>;
+};
 
 const CategoryManagement: React.FC<CategoryManagementProps> = ({
   categories,

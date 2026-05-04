@@ -2,7 +2,8 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import TaskCreationModal from './TaskCreationModal';
-import type { Category, Task, TaskContactPersonOption } from '../../../../shared/types/regi/tasks';
+import type { Category, Task } from '../../../../shared/types/regi/tasks';
+import type { TaskContactPersonOption } from './types';
 
 const categories: Category[] = [
   {

@@ -1,6 +1,5 @@
 export * from './task.types';
 export * from './category.types';
-export * from './component.types';
 
 export {
   TaskSchema,
@@ -25,22 +24,6 @@ export {
   validateCategoryName,
 } from './category.types';
 
-export type {
-  AuthUser,
-  FormErrors,
-  ParticipantNames,
-  TaskContactPersonOption,
-  TasksTableProps,
-  TaskModalProps,
-  TaskCreationModalProps,
-  CategoryManagementProps,
-  TaskFilterState,
-  PaginationState,
-  LoadingState,
-  ModalState,
-} from './component.types';
-
-export { isAuthUser } from './component.types';
 export {
   canUserJoinTask,
   canUserLeaveTask,
