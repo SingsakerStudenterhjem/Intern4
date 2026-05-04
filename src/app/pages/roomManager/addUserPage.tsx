@@ -10,12 +10,9 @@ import {
   getAllUsersWithRole,
   Role,
   BasicUserWithRole,
-  LookupOption,
 } from '../../../server/dao/userDAO';
+import { getDefaultLookupId, LookupOption } from '../../../shared/types/lookup';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
-
-const getAnnetId = (options: LookupOption[]): string =>
-  options.find((option) => option.name === 'Annet')?.id ?? options[0]?.id ?? '';
 
 const AddUserPage: React.FC = () => {
   const [userData, setUserData] = useState<NewUserInput>({
@@ -97,8 +94,8 @@ const AddUserPage: React.FC = () => {
         setStudies(studyOptions);
         setUserData((prev) => ({
           ...prev,
-          schoolId: prev.schoolId || getAnnetId(schoolOptions),
-          studyId: prev.studyId || getAnnetId(studyOptions),
+          schoolId: prev.schoolId || getDefaultLookupId(schoolOptions),
+          studyId: prev.studyId || getDefaultLookupId(studyOptions),
         }));
       })
       .catch((err) => console.error('Failed to load study lookups:', err))
@@ -231,8 +228,8 @@ const AddUserPage: React.FC = () => {
       const { initialPassword } = await createUser({
         ...userData,
         phone: normalizedPhone,
-        schoolId: userData.schoolId || getAnnetId(schools),
-        studyId: userData.studyId || getAnnetId(studies),
+        schoolId: userData.schoolId || getDefaultLookupId(schools),
+        studyId: userData.studyId || getDefaultLookupId(studies),
       });
 
       setMessage({
@@ -248,8 +245,8 @@ const AddUserPage: React.FC = () => {
         phone: '',
         birthDate: new Date(),
         address: { street: '', postalCode: '', city: '' },
-        schoolId: getAnnetId(schools),
-        studyId: getAnnetId(studies),
+        schoolId: getDefaultLookupId(schools),
+        studyId: getDefaultLookupId(studies),
         profilePicture: '',
         seniority: 0,
         roomNumber: 0,

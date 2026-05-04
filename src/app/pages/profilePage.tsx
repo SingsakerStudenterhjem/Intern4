@@ -2,14 +2,9 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../contexts/authContext';
 import { supabase } from '../../server/supabaseClient';
-import {
-  getSchools,
-  getStudies,
-  getUser,
-  LookupOption,
-  updateUser,
-} from '../../server/dao/userDAO';
+import { getSchools, getStudies, getUser, updateUser } from '../../server/dao/userDAO';
 import { resetPassword } from '../../server/dao/authentication';
+import { getDefaultLookupId, LookupOption } from '../../shared/types/lookup';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../shared/utils/phone';
 
 type GeneralInfoFormState = {
@@ -156,9 +151,6 @@ const SelectInput: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({
   );
 };
 
-const getAnnetId = (options: LookupOption[]): string =>
-  options.find((option) => option.name === 'Annet')?.id ?? options[0]?.id ?? '';
-
 const ProfilePage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const [profileLoading, setProfileLoading] = useState(true);
@@ -213,8 +205,8 @@ const ProfilePage: React.FC = () => {
           street: profile.address?.street ?? '',
           postalCode: profile.address?.postalCode ?? '',
           city: profile.address?.city ?? '',
-          schoolId: profile.schoolId ?? getAnnetId(schoolOptions),
-          studyId: profile.studyId ?? getAnnetId(studyOptions),
+          schoolId: profile.schoolId ?? getDefaultLookupId(schoolOptions),
+          studyId: profile.studyId ?? getDefaultLookupId(studyOptions),
         });
       } catch (error) {
         console.error(error);

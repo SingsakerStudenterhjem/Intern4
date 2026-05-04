@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 import {
   createUser,
   getResidentDirectoryUsers,
@@ -8,6 +8,7 @@ import {
   updateUser,
 } from './userDAO';
 import { supabase } from '../supabaseClient';
+import { NewUserInput, UpdateUserInput } from '../../shared/types/user';
 
 vi.mock('../supabaseClient', () => ({
   supabase: {
@@ -247,6 +248,15 @@ describe('userDAO profile and lookup writes', () => {
       id: '11111111-1111-1111-1111-111111111111',
       initialPassword: 'abc123',
     });
+  });
+
+  it('keeps school and study writes id-only at the type boundary', () => {
+    expectTypeOf<NewUserInput>().toHaveProperty('schoolId');
+    expectTypeOf<NewUserInput>().toHaveProperty('studyId');
+    expectTypeOf<NewUserInput>().not.toHaveProperty('study');
+    expectTypeOf<NewUserInput>().not.toHaveProperty('studyPlace');
+    expectTypeOf<UpdateUserInput>().not.toHaveProperty('study');
+    expectTypeOf<UpdateUserInput>().not.toHaveProperty('studyPlace');
   });
 
   it('loads school and study lookup options', async () => {
