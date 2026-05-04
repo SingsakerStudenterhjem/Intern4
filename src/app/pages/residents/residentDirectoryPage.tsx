@@ -1,7 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { getResidentDirectoryUsers, ResidentDirectoryUser } from '../../../server/dao/userDAO';
+import { getResidentDirectoryUsers } from '../../../server/dao/userDAO';
+import { ResidentDirectoryUser } from '../../../shared/types/user';
 import { ROUTES } from '../../constants/routes';
 
 const formatDate = (value: string | null): string => {

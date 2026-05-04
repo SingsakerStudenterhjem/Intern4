@@ -62,3 +62,39 @@ export const UpdateUserInputSchema = z.object({
 });
 
 export type UpdateUserInput = z.infer<typeof UpdateUserInputSchema>;
+
+export type BasicUserWithRole = {
+  id: string;
+  name: string;
+  email: string;
+  role?: string;
+  onLeave: boolean;
+  isActive: boolean;
+};
+
+export type ResidentDirectoryUser = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  birthDate: string | null;
+  study: string;
+  studyPlace: string;
+  seniority: number;
+  roomNumber: number | null;
+  createdAt: string | null;
+  role?: string;
+  onLeave: boolean;
+  isActive: boolean;
+  address: {
+    street: string;
+    postalCode: string;
+    city: string;
+    country?: string;
+  };
+};
+
+export type Role = {
+  id: string;
+  name: string;
+};

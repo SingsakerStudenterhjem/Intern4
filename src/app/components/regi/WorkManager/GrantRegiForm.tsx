@@ -4,7 +4,8 @@ import { useAuth } from '../../../../contexts/authContext';
 import { Category } from '../../../../shared/types/regi/tasks';
 import { WorkTypeSchema } from '../../../../shared/types/regi';
 import { addRegiLog } from '../../../../server/dao/regiDAO';
-import { BasicUserWithRole, getActiveUsersWithRole } from '../../../../server/dao/userDAO';
+import { getActiveUsersWithRole } from '../../../../server/dao/userDAO';
+import { BasicUserWithRole } from '../../../../shared/types/user';
 import { getCategories } from '../../../../server/dao/categoriesDAO';
 
 const FormSchema = z.object({

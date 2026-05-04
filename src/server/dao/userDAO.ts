@@ -1,6 +1,13 @@
 import { supabase } from '../supabaseClient';
 import { LookupOption } from '../../shared/types/lookup';
-import { User, NewUserInput, UpdateUserInput } from '../../shared/types/user';
+import {
+  BasicUserWithRole,
+  NewUserInput,
+  ResidentDirectoryUser,
+  Role,
+  UpdateUserInput,
+  User,
+} from '../../shared/types/user';
 
 type SupabaseJoin<T> = T | T[] | null | undefined;
 
@@ -183,37 +190,6 @@ export async function createUser(
   };
 }
 
-export type BasicUserWithRole = {
-  id: string;
-  name: string;
-  email: string;
-  role?: string;
-  onLeave: boolean;
-  isActive: boolean;
-};
-
-export type ResidentDirectoryUser = {
-  id: string;
-  name: string;
-  email: string;
-  phone: string;
-  birthDate: string | null;
-  study: string;
-  studyPlace: string;
-  seniority: number;
-  roomNumber: number | null;
-  createdAt: string | null;
-  role?: string;
-  onLeave: boolean;
-  isActive: boolean;
-  address: {
-    street: string;
-    postalCode: string;
-    city: string;
-    country?: string;
-  };
-};
-
 function toResidentDirectoryUser(row: ResidentDirectoryUserRow): ResidentDirectoryUser {
   return {
     id: row.id,
@@ -313,11 +289,6 @@ export async function getAllUsersWithRole(): Promise<BasicUserWithRole[]> {
 
   return mapBasicUsersWithRole(result as unknown as SupabaseResult<BasicUserWithRoleRow>);
 }
-
-export type Role = {
-  id: string;
-  name: string;
-};
 
 export async function deleteUser(userId: string): Promise<void> {
   const { error } = await supabase.functions.invoke('delete-user', {
