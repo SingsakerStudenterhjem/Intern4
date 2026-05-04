@@ -129,7 +129,7 @@ describe('ResidentDirectoryPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Statistikk' })).toBeInTheDocument();
     expect(getResidentDirectoryUsers).toHaveBeenCalledWith(true);
-    expect(screen.getByRole('heading', { name: 'Fødselsår' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Fødselsår' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Studieår' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Antall semestre på huset' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Studieprogram' })).toBeInTheDocument();
