@@ -7,6 +7,8 @@ import ProfilePage from './profilePage';
 const mockUseAuth = vi.fn();
 const mockGetUser = vi.fn();
 const mockUpdateUser = vi.fn();
+const mockGetSchools = vi.fn();
+const mockGetStudies = vi.fn();
 const mockResetPassword = vi.fn();
 const mockRefreshSession = vi.fn();
 
@@ -15,9 +17,21 @@ vi.mock('../../contexts/authContext', () => ({
 }));
 
 vi.mock('../../server/dao/userDAO', () => ({
+  getSchools: (...args: unknown[]) => mockGetSchools(...args),
+  getStudies: (...args: unknown[]) => mockGetStudies(...args),
   getUser: (...args: unknown[]) => mockGetUser(...args),
   updateUser: (...args: unknown[]) => mockUpdateUser(...args),
 }));
+
+const schools = [
+  { id: 'school-annet', name: 'Annet' },
+  { id: 'school-ntnu', name: 'NTNU' },
+];
+
+const studies = [
+  { id: 'study-annet', name: 'Annet' },
+  { id: 'study-data', name: 'Datateknologi' },
+];
 
 vi.mock('../../server/dao/authentication', () => ({
   resetPassword: (...args: unknown[]) => mockResetPassword(...args),
@@ -42,7 +56,9 @@ const profile = {
     city: 'Trondheim',
     country: 'Norge',
   },
-  study: 'Data',
+  schoolId: 'school-ntnu',
+  studyId: 'study-data',
+  study: 'Datateknologi',
   studyPlace: 'NTNU',
   profilePicture: '',
   seniority: 2,
@@ -68,6 +84,8 @@ describe('ProfilePage', () => {
       loading: false,
     });
     mockGetUser.mockResolvedValue(profile);
+    mockGetSchools.mockResolvedValue(schools);
+    mockGetStudies.mockResolvedValue(studies);
     mockUpdateUser.mockResolvedValue(undefined);
     mockResetPassword.mockResolvedValue({ success: true });
     mockRefreshSession.mockResolvedValue(undefined);
@@ -88,7 +106,8 @@ describe('ProfilePage', () => {
     expect(screen.getByDisplayValue('Aamot-Skeidsvoll')).toBeInTheDocument();
     expect(screen.getByDisplayValue('johannes@singsaker.no')).toBeDisabled();
     expect(screen.getByDisplayValue('41177262')).toBeInTheDocument();
-    expect(screen.getByDisplayValue('NTNU')).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Skole / studiested' })).toHaveValue('school-ntnu');
+    expect(screen.getByRole('combobox', { name: 'Studie' })).toHaveValue('study-data');
   });
 
   it('saves editable profile information with the merged name and current field values', async () => {
@@ -131,8 +150,8 @@ describe('ProfilePage', () => {
           postalCode: '7052',
           city: 'Oslo',
         },
-        studyPlace: 'NTNU',
-        study: 'Data',
+        schoolId: 'school-ntnu',
+        studyId: 'study-data',
       });
     });
 

@@ -1,10 +1,20 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getResidentDirectoryUsers } from './userDAO';
+import {
+  createUser,
+  getResidentDirectoryUsers,
+  getSchools,
+  getStudies,
+  getUser,
+  updateUser,
+} from './userDAO';
 import { supabase } from '../supabaseClient';
 
 vi.mock('../supabaseClient', () => ({
   supabase: {
     from: vi.fn(),
+    functions: {
+      invoke: vi.fn(),
+    },
   },
 }));
 
@@ -31,8 +41,10 @@ describe('userDAO resident directory', () => {
         email: 'test.beboer.en@example.test',
         phone: '40000001',
         birth_date: '2000-01-01',
-        study_program: 'BioTek',
-        place_of_education: 'NTNU',
+        study_id: 'study-biotek',
+        school_id: 'school-ntnu',
+        studies: { name: 'Bioteknologi' },
+        schools: { name: 'NTNU' },
         seniority: 4,
         room_number: 101,
         created_at: '2024-08-15T00:00:00.000Z',
@@ -54,8 +66,10 @@ describe('userDAO resident directory', () => {
         'email',
         'phone',
         'birth_date',
-        'study_program',
-        'place_of_education',
+        'study_id',
+        'school_id',
+        'studies(name)',
+        'schools(name)',
         'seniority',
         'room_number',
         'created_at',
@@ -73,7 +87,7 @@ describe('userDAO resident directory', () => {
         email: 'test.beboer.en@example.test',
         phone: '40000001',
         birthDate: '2000-01-01',
-        study: 'BioTek',
+        study: 'Bioteknologi',
         studyPlace: 'NTNU',
         seniority: 4,
         roomNumber: 101,
@@ -132,5 +146,129 @@ describe('userDAO resident directory', () => {
         country: undefined,
       },
     });
+  });
+});
+
+describe('userDAO profile and lookup writes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it('loads a user with joined school and study names', async () => {
+    const builder: any = {
+      select: vi.fn(() => builder),
+      eq: vi.fn(() => builder),
+      maybeSingle: vi.fn(async () => ({
+        data: {
+          id: '11111111-1111-1111-1111-111111111111',
+          name: 'Test Beboer',
+          email: 'test@example.test',
+          phone: '40000001',
+          birth_date: '2000-01-01',
+          school_id: 'school-ntnu',
+          study_id: 'study-data',
+          schools: { name: 'NTNU' },
+          studies: { name: 'Datateknologi' },
+          seniority: 1,
+          room_number: 101,
+          on_leave: false,
+          is_active: true,
+          created_at: '2024-01-01T00:00:00.000Z',
+        },
+        error: null,
+      })),
+    };
+
+    vi.mocked(supabase.from).mockImplementationOnce(() => builder);
+
+    const result = await getUser('11111111-1111-1111-1111-111111111111');
+
+    expect(builder.select).toHaveBeenCalledWith('*, schools(name), studies(name)');
+    expect(result).toMatchObject({
+      schoolId: 'school-ntnu',
+      studyId: 'study-data',
+      studyPlace: 'NTNU',
+      study: 'Datateknologi',
+    });
+  });
+
+  it('updates school_id and study_id when saving a user', async () => {
+    const builder: any = {
+      update: vi.fn(() => builder),
+      eq: vi.fn(async () => ({ error: null })),
+    };
+
+    vi.mocked(supabase.from).mockImplementationOnce(() => builder);
+
+    await updateUser('11111111-1111-1111-1111-111111111111', {
+      name: 'Test Beboer',
+      schoolId: 'school-bi',
+      studyId: 'study-okad',
+    });
+
+    expect(supabase.from).toHaveBeenCalledWith('users');
+    expect(builder.update).toHaveBeenCalledWith({
+      name: 'Test Beboer',
+      school_id: 'school-bi',
+      study_id: 'study-okad',
+    });
+    expect(builder.eq).toHaveBeenCalledWith('id', '11111111-1111-1111-1111-111111111111');
+  });
+
+  it('passes lookup ids to the create-user function', async () => {
+    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
+      data: {
+        user: { id: '11111111-1111-1111-1111-111111111111' },
+        initialPassword: 'abc123',
+      },
+      error: null,
+    });
+
+    const result = await createUser({
+      name: 'Test Beboer',
+      email: 'test@example.test',
+      address: {},
+      role: 'Halv/Halv',
+      schoolId: 'school-ntnu',
+      studyId: 'study-data',
+      seniority: 0,
+      roomNumber: 0,
+      onLeave: false,
+      isActive: true,
+    });
+
+    expect(supabase.functions.invoke).toHaveBeenCalledWith('create-user', {
+      body: expect.objectContaining({
+        schoolId: 'school-ntnu',
+        studyId: 'study-data',
+      }),
+    });
+    expect(result).toEqual({
+      id: '11111111-1111-1111-1111-111111111111',
+      initialPassword: 'abc123',
+    });
+  });
+
+  it('loads school and study lookup options', async () => {
+    const schoolsBuilder: any = {
+      select: vi.fn(() => schoolsBuilder),
+      order: vi.fn(async () => ({ data: [{ id: 'school-ntnu', name: 'NTNU' }], error: null })),
+    };
+    const studiesBuilder: any = {
+      select: vi.fn(() => studiesBuilder),
+      order: vi.fn(async () => ({
+        data: [{ id: 'study-data', name: 'Datateknologi' }],
+        error: null,
+      })),
+    };
+
+    vi.mocked(supabase.from)
+      .mockImplementationOnce(() => schoolsBuilder)
+      .mockImplementationOnce(() => studiesBuilder);
+
+    await expect(getSchools()).resolves.toEqual([{ id: 'school-ntnu', name: 'NTNU' }]);
+    await expect(getStudies()).resolves.toEqual([{ id: 'study-data', name: 'Datateknologi' }]);
+    expect(supabase.from).toHaveBeenNthCalledWith(1, 'schools');
+    expect(supabase.from).toHaveBeenNthCalledWith(2, 'studies');
   });
 });
