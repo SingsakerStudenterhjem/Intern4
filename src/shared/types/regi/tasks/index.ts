@@ -18,6 +18,7 @@ export {
   CategoryCreationDataSchema,
   validateCategory,
   validateCategoryFormData,
+  safeParseCategory,
   safeParsCategory,
   safeParseCategoryFormData,
   isValidHexColor,
