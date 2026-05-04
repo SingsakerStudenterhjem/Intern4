@@ -67,6 +67,11 @@ type UserUpdatePayload = {
   country?: string;
 };
 
+type SupabaseResult<Row> = {
+  data: Row[] | null;
+  error: { message: string } | null;
+};
+
 function getJoinedName(value: SupabaseJoin<LookupJoin | RoleJoin>): string {
   const joined = Array.isArray(value) ? value[0] : value;
   return joined?.name ?? '';
@@ -228,6 +233,22 @@ function toResidentDirectoryUser(row: ResidentDirectoryUserRow): ResidentDirecto
   };
 }
 
+function toBasicUserWithRole(row: BasicUserWithRoleRow): BasicUserWithRole {
+  return {
+    id: row.id,
+    name: row.name ?? 'Ukjent',
+    email: row.email ?? '',
+    role: getJoinedName(row.roles) || undefined,
+    onLeave: row.on_leave ?? false,
+    isActive: row.is_active ?? false,
+  };
+}
+
+function mapBasicUsersWithRole(result: SupabaseResult<BasicUserWithRoleRow>): BasicUserWithRole[] {
+  if (result.error) throw new Error(result.error.message);
+  return (result.data ?? []).map(toBasicUserWithRole);
+}
+
 export async function getResidentDirectoryUsers(
   isActive: boolean
 ): Promise<ResidentDirectoryUser[]> {
@@ -270,40 +291,22 @@ export async function getResidentDirectoryUsers(
 }
 
 export async function getActiveUsersWithRole(): Promise<BasicUserWithRole[]> {
-  const { data, error } = await supabase
+  const result = await supabase
     .from('users')
     .select('id, name, email, is_active, on_leave, roles(name)')
     .eq('is_active', true)
     .order('name', { ascending: true });
 
-  if (error) throw new Error(error.message);
-
-  return ((data ?? []) as BasicUserWithRoleRow[]).map((row) => ({
-    id: row.id,
-    name: row.name ?? 'Ukjent',
-    email: row.email ?? '',
-    role: getJoinedName(row.roles) || undefined,
-    onLeave: row.on_leave ?? false,
-    isActive: row.is_active ?? false,
-  }));
+  return mapBasicUsersWithRole(result as unknown as SupabaseResult<BasicUserWithRoleRow>);
 }
 
 export async function getAllUsersWithRole(): Promise<BasicUserWithRole[]> {
-  const { data, error } = await supabase
+  const result = await supabase
     .from('users')
     .select('id, name, email, is_active, on_leave, roles(name)')
     .order('name', { ascending: true });
 
-  if (error) throw new Error(error.message);
-
-  return ((data ?? []) as BasicUserWithRoleRow[]).map((row) => ({
-    id: row.id,
-    name: row.name ?? 'Ukjent',
-    email: row.email ?? '',
-    role: getJoinedName(row.roles) || undefined,
-    onLeave: row.on_leave ?? false,
-    isActive: row.is_active ?? false,
-  }));
+  return mapBasicUsersWithRole(result as unknown as SupabaseResult<BasicUserWithRoleRow>);
 }
 
 export type Role = {
