@@ -102,9 +102,12 @@ export const validateCategoryUpdate = (data: unknown): CategoryUpdate => {
 };
 
 // Safe parsing functions
-export const safeParsCategory = (data: unknown) => {
+export const safeParseCategory = (data: unknown) => {
   return CategorySchema.safeParse(data);
 };
+
+/** @deprecated Use safeParseCategory instead. */
+export const safeParsCategory = safeParseCategory;
 
 export const safeParseCategoryFormData = (data: unknown) => {
   return CategoryFormDataSchema.safeParse(data);
