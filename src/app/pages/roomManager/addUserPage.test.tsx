@@ -65,4 +65,23 @@ describe('AddUserPage', () => {
       );
     });
   });
+
+  it('prevents submission when school and study lookups are unavailable', async () => {
+    const user = userEvent.setup();
+
+    mockGetSchools.mockResolvedValueOnce([]);
+    mockGetStudies.mockResolvedValueOnce([]);
+
+    render(<AddUserPage />);
+
+    await user.click(screen.getByRole('button', { name: 'Legg til bruker' }));
+    await user.type(screen.getByLabelText('Navn *'), 'Test Beboer');
+    await user.type(screen.getByLabelText('E-post *'), 'test@example.test');
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('button', { name: 'Legg til bruker' }).at(-1)).toBeDisabled();
+    });
+
+    expect(mockCreateUser).not.toHaveBeenCalled();
+  });
 });
