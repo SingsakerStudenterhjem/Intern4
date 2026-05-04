@@ -18,8 +18,12 @@ vi.mock('./userDAO', () => ({
   getUser: vi.fn(),
 }));
 
-function createOrderedBuilder(data: any[]) {
-  const builder: any = {
+function createOrderedBuilder(data: unknown[]) {
+  const builder: {
+    select: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+    order: ReturnType<typeof vi.fn>;
+  } = {
     select: vi.fn(() => builder),
     eq: vi.fn(() => builder),
     order: vi.fn(async () => ({ data, error: null })),
@@ -28,8 +32,12 @@ function createOrderedBuilder(data: any[]) {
   return builder;
 }
 
-function createMaybeSingleBuilder(data: any) {
-  const builder: any = {
+function createMaybeSingleBuilder(data: unknown) {
+  const builder: {
+    select: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+    maybeSingle: ReturnType<typeof vi.fn>;
+  } = {
     select: vi.fn(() => builder),
     eq: vi.fn(() => builder),
     maybeSingle: vi.fn(async () => ({ data, error: null })),
@@ -39,7 +47,10 @@ function createMaybeSingleBuilder(data: any) {
 }
 
 function createDeleteBuilder() {
-  const builder: any = {
+  const builder: {
+    delete: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+  } = {
     delete: vi.fn(() => builder),
     eq: vi.fn(async () => ({ error: null })),
   };
@@ -47,8 +58,11 @@ function createDeleteBuilder() {
   return builder;
 }
 
-function createSelectEqBuilder(data: any[]) {
-  const builder: any = {
+function createSelectEqBuilder(data: unknown[]) {
+  const builder: {
+    select: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+  } = {
     select: vi.fn(() => builder),
     eq: vi.fn(async () => ({ data, error: null })),
   };
@@ -57,7 +71,10 @@ function createSelectEqBuilder(data: any[]) {
 }
 
 function createUpdateBuilder() {
-  const builder: any = {
+  const builder: {
+    update: ReturnType<typeof vi.fn>;
+    eq: ReturnType<typeof vi.fn>;
+  } = {
     update: vi.fn(() => builder),
     eq: vi.fn(async () => ({ error: null })),
   };
@@ -65,8 +82,12 @@ function createUpdateBuilder() {
   return builder;
 }
 
-function createInsertSingleBuilder(data: any) {
-  const builder: any = {
+function createInsertSingleBuilder(data: unknown) {
+  const builder: {
+    insert: ReturnType<typeof vi.fn>;
+    select: ReturnType<typeof vi.fn>;
+    single: ReturnType<typeof vi.fn>;
+  } = {
     insert: vi.fn(() => builder),
     select: vi.fn(() => builder),
     single: vi.fn(async () => ({ data, error: null })),

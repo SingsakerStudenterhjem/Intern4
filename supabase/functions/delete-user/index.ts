@@ -11,7 +11,7 @@ Deno.serve(
   async (req: {
     method: string;
     headers: { get: (arg0: string) => string };
-    json: () => Promise<any>;
+    json: () => Promise<unknown>;
   }) => {
     if (req.method === 'OPTIONS') {
       return new Response('ok', { status: 200, headers: corsHeaders });
@@ -71,7 +71,7 @@ Deno.serve(
       .eq('id', body.userId)
       .maybeSingle();
 
-    const targetRoleName = (targetRole?.roles as any)?.name as string | undefined;
+    const targetRoleName = (targetRole?.roles as { name?: string } | null | undefined)?.name;
     if (targetRoleName === 'Admin') {
       return new Response('Kan ikke slette admin-brukere', { status: 403, headers: corsHeaders });
     }
