@@ -11,6 +11,14 @@ import {
 import { canManageTasks, canViewAllParticipants } from '../../../constants/userRoles';
 import { TaskModalProps } from './types';
 
+type DateValue = Date | string | { seconds: number } | null | undefined;
+
+const hasSeconds = (value: DateValue): value is { seconds: number } =>
+  typeof value === 'object' &&
+  value !== null &&
+  'seconds' in value &&
+  typeof value.seconds === 'number';
+
 const TaskModal: React.FC<TaskModalProps> = ({
   task,
   onClose,
@@ -28,10 +36,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   if (!task) return null;
 
-  const formatDeadline = (deadline: any) => {
+  const formatDeadline = (deadline: DateValue) => {
     if (!deadline) return 'Ingen frist';
 
-    if (deadline?.seconds) {
+    if (hasSeconds(deadline)) {
       return new Date(deadline.seconds * 1000).toLocaleString('no-NO');
     }
 

@@ -26,6 +26,25 @@ function toDate(value: Date | string | { seconds: number } | null | undefined): 
 
 type WorkItemTypeRelation = { type: string | null } | Array<{ type: string | null }> | null;
 
+type RegiWorkItemRelation = {
+  title?: string | null;
+  description?: string | null;
+  type?: string | null;
+  work_categories?: { name?: string | null } | null;
+} | null;
+
+type RegiAssignmentRow = {
+  id?: number | string;
+  user_uuid?: string | null;
+  work_id?: number | string | null;
+  hours_used?: number | string | null;
+  created_at?: Date | string | { seconds: number } | null;
+  approved_state?: number | null;
+  approval_comment?: string | null;
+  approved_by_uuid?: string | null;
+  work_items?: RegiWorkItemRelation;
+};
+
 function getWorkItemType(workItems: WorkItemTypeRelation): string | undefined {
   if (Array.isArray(workItems)) {
     return workItems[0]?.type ?? undefined;
@@ -34,7 +53,7 @@ function getWorkItemType(workItems: WorkItemTypeRelation): string | undefined {
   return workItems?.type ?? undefined;
 }
 
-export function isCountableRegiAssignment(row: any): boolean {
+export function isCountableRegiAssignment(row: RegiAssignmentRow): boolean {
   const workType = row.work_items?.type;
 
   if (workType === 'misc') {
@@ -135,14 +154,14 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
     2: 'rejected',
   };
 
-  return (data ?? []).filter(isCountableRegiAssignment).map((d: any) => ({
+  return ((data ?? []) as RegiAssignmentRow[]).filter(isCountableRegiAssignment).map((d) => ({
     id: String(d.id),
     workId: d.work_id ? String(d.work_id) : undefined,
     title: d.work_items?.title ?? '',
     description: d.work_items?.description ?? undefined,
-    hours: d.hours_used ?? 0,
+    hours: Number(d.hours_used ?? 0),
     date: toDate(d.created_at),
-    status: statusMap[d.approved_state] ?? 'pending',
+    status: statusMap[d.approved_state ?? 0] ?? 'pending',
     type: d.work_items?.work_categories?.name ?? d.work_items?.type ?? 'misc',
     sourceType: d.work_items?.type === 'task' ? 'task' : 'misc',
     userId,
@@ -211,11 +230,11 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
 
   if (error) throw new Error(error.message);
 
-  const pendingAssignments = (data ?? []).filter(isCountableRegiAssignment);
-
-  const uniqueUserIds = Array.from(
-    new Set(pendingAssignments.map((r: any) => String(r.user_uuid)))
+  const pendingAssignments = ((data ?? []) as RegiAssignmentRow[]).filter(
+    isCountableRegiAssignment
   );
+
+  const uniqueUserIds = Array.from(new Set(pendingAssignments.map((row) => String(row.user_uuid))));
   const userRows = await Promise.all(
     uniqueUserIds.map(async (uid) => {
       try {
@@ -235,7 +254,7 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
     {} as Record<string, { uid: string; name: string; email: string }>
   );
 
-  return pendingAssignments.map((row: any) => {
+  return pendingAssignments.map((row) => {
     const uid = String(row.user_uuid);
     const u = userMap[uid];
 
@@ -248,7 +267,7 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
       title: row.work_items?.title ?? '',
       description: row.work_items?.description ?? undefined,
       category: row.work_items?.work_categories?.name ?? 'Regi',
-      hours: row.hours_used ?? 0,
+      hours: Number(row.hours_used ?? 0),
       createdAt: toDate(row.created_at),
     };
   });
@@ -264,11 +283,13 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
 
   if (error) throw new Error(error.message);
 
-  const rows = (data ?? []).filter(isCountableRegiAssignment);
+  const rows = ((data ?? []) as RegiAssignmentRow[]).filter(isCountableRegiAssignment);
   const uniqueUserIds = Array.from(
     new Set(
-      rows.flatMap((r: any) =>
-        [r.user_uuid, r.approved_by_uuid].filter(Boolean).map((id: any) => String(id))
+      rows.flatMap((row) =>
+        [row.user_uuid, row.approved_by_uuid]
+          .filter((id): id is string => Boolean(id))
+          .map((id) => String(id))
       )
     )
   );
@@ -293,7 +314,7 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
     2: 'rejected',
   };
 
-  return rows.map((row: any) => {
+  return rows.map((row) => {
     const uid = row.user_uuid ? String(row.user_uuid) : '';
     const owner = uid ? userMap[uid] : undefined;
     const approverId = row.approved_by_uuid ? String(row.approved_by_uuid) : '';
@@ -309,7 +330,7 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
       description: row.work_items?.description ?? undefined,
       category: row.work_items?.work_categories?.name ?? 'Regi',
       hours: Number(row.hours_used ?? 0),
-      status: statusMap[row.approved_state] ?? 'pending',
+      status: statusMap[row.approved_state ?? 0] ?? 'pending',
       createdAt: toDate(row.created_at),
       approvedByName: approver?.name,
       approvalComment: row.approval_comment ?? null,

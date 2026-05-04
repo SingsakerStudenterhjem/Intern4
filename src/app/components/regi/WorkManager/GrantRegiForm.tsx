@@ -8,6 +8,9 @@ import { getActiveUsersWithRole } from '../../../../server/dao/userDAO';
 import { BasicUserWithRole } from '../../../../shared/types/user';
 import { getCategories } from '../../../../server/dao/categoriesDAO';
 
+const getErrorMessage = (error: unknown, fallback: string): string =>
+  error instanceof Error ? error.message : fallback;
+
 const FormSchema = z.object({
   userId: z.string().uuid({ message: 'Velg en bruker' }),
   title: z.string().min(1, 'Påkrevd'),
@@ -123,9 +126,9 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         type: categories[0]?.name ?? '',
       });
       onCreated?.();
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setMessage(err?.message ?? 'Kunne ikke registrere regi.');
+      setMessage(getErrorMessage(err, 'Kunne ikke registrere regi.'));
     } finally {
       setSubmitting(false);
     }

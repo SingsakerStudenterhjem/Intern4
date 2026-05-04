@@ -7,6 +7,14 @@ import { ROUTES } from '../../constants/routes';
 import { useAuth } from '../../../contexts/authContext';
 import { canApproveWork } from '../../constants/userRoles';
 
+type DateValue = Date | string | { seconds: number } | null | undefined;
+
+const hasSeconds = (value: DateValue): value is { seconds: number } =>
+  typeof value === 'object' &&
+  value !== null &&
+  'seconds' in value &&
+  typeof value.seconds === 'number';
+
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
 
 const RegiLogsPage: React.FC = () => {
@@ -50,9 +58,9 @@ const RegiLogsPage: React.FC = () => {
     });
   }, [logs, status, query]);
 
-  const formatDate = (value: any) => {
+  const formatDate = (value: DateValue) => {
     if (!value) return '-';
-    if (value?.seconds) return new Date(value.seconds * 1000).toLocaleDateString('no-NO');
+    if (hasSeconds(value)) return new Date(value.seconds * 1000).toLocaleDateString('no-NO');
     if (typeof value === 'string') return new Date(value).toLocaleDateString('no-NO');
     if (value instanceof Date) return value.toLocaleDateString('no-NO');
     return '-';

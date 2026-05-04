@@ -1,14 +1,30 @@
 import { supabase } from '../supabaseClient';
 import { Category } from '../../shared/types/regi/tasks';
 
-function toAppCategory(row: any): Category {
+type CategoryRow = {
+  id: number | string;
+  name?: string | null;
+  description?: string | null;
+  color?: string | null;
+  is_active?: boolean | null;
+  created_at?: Date | string | null;
+};
+
+type CategoryUpdatePayload = {
+  name?: string;
+  description?: string;
+  color?: string;
+  is_active?: boolean;
+};
+
+function toAppCategory(row: CategoryRow): Category {
   return {
     id: String(row.id),
     name: row.name ?? '',
     description: row.description ?? '',
     color: row.color ?? 'gray',
     isActive: row.is_active ?? true,
-    createdAt: row.created_at,
+    createdAt: row.created_at ? new Date(row.created_at) : new Date(0),
   };
 }
 
@@ -48,13 +64,15 @@ export async function getCategories(): Promise<Category[]> {
 }
 
 export async function updateCategory(categoryId: string, data: Partial<Category>): Promise<void> {
-  const payload: any = {
+  const payload: CategoryUpdatePayload = {
     name: data.name,
     description: data.description,
     color: data.color,
     is_active: data.isActive,
   };
-  Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
+  (Object.keys(payload) as (keyof CategoryUpdatePayload)[]).forEach((key) => {
+    if (payload[key] === undefined) delete payload[key];
+  });
 
   const { error } = await supabase
     .from('work_categories')

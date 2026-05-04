@@ -13,6 +13,9 @@ import { BasicUserWithRole, Role } from '../../../shared/types/user';
 import { getDefaultLookupId, LookupOption } from '../../../shared/types/lookup';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
 
+const getErrorMessage = (error: unknown, fallback: string): string =>
+  error instanceof Error ? error.message : fallback;
+
 const AddUserPage: React.FC = () => {
   const [userData, setUserData] = useState<NewUserInput>({
     name: '',
@@ -68,8 +71,8 @@ const AddUserPage: React.FC = () => {
       setDeleteConfirm(null);
       await loadUsers();
       setTimeout(() => setMessage(null), 4000);
-    } catch (err: any) {
-      setMessage({ type: 'error', text: err?.message ?? 'Kunne ikke slette bruker' });
+    } catch (err) {
+      setMessage({ type: 'error', text: getErrorMessage(err, 'Kunne ikke slette bruker') });
     } finally {
       setIsDeleting(false);
     }
@@ -120,23 +123,23 @@ const AddUserPage: React.FC = () => {
     return matchesQuery && matchesRole;
   });
 
-  const validateField = (name: string, value: any) => {
+  const validateField = (name: string, value: unknown) => {
     const errors: { [key: string]: string } = {};
 
     if (name === 'phone' && value) {
-      const phoneError = validatePhoneNumber(value);
+      const phoneError = validatePhoneNumber(String(value));
       if (phoneError) errors.phone = phoneError;
     }
 
     if (name === 'seniority' && value !== undefined) {
-      const seniorityNum = typeof value === 'string' ? parseInt(value) : value;
+      const seniorityNum = typeof value === 'number' ? value : parseInt(String(value));
       if (isNaN(seniorityNum) || seniorityNum < 0) {
         errors.seniority = 'Ansiennitet må være et positivt tall';
       }
     }
 
     if (name === 'roomNumber' && value) {
-      const roomNum = typeof value === 'string' ? parseInt(value) : value;
+      const roomNum = typeof value === 'number' ? value : parseInt(String(value));
       if (isNaN(roomNum)) {
         errors.roomNumber = 'Romnummer må være et tall';
       } else if (
@@ -169,16 +172,16 @@ const AddUserPage: React.FC = () => {
     }
 
     if (name.includes('.')) {
-      const [parent, child] = name.split('.');
+      const [, child] = name.split('.');
       setUserData((prev) => ({
         ...prev,
-        [parent]: {
-          ...(prev[parent as keyof typeof prev] as any),
+        address: {
+          ...prev.address,
           [child]: value,
         },
       }));
     } else {
-      let processedValue: any = value;
+      let processedValue: string | number | boolean = value;
 
       if (type === 'checkbox') {
         processedValue = (e.target as HTMLInputElement).checked;
@@ -274,10 +277,10 @@ const AddUserPage: React.FC = () => {
       setTimeout(() => {
         setMessage(null);
       }, 4000);
-    } catch (error: any) {
+    } catch (error) {
       setMessage({
         type: 'error',
-        text: error?.message ?? 'En feil oppstod ved oppretting av bruker',
+        text: getErrorMessage(error, 'En feil oppstod ved oppretting av bruker'),
       });
     } finally {
       setIsSubmitting(false);

@@ -79,6 +79,13 @@ type SupabaseResult<Row> = {
   error: { message: string } | null;
 };
 
+type CreateUserResult = {
+  user: {
+    id: string;
+  };
+  initialPassword?: string;
+};
+
 function getJoinedName(value: SupabaseJoin<LookupJoin | RoleJoin>): string {
   const joined = Array.isArray(value) ? value[0] : value;
   return joined?.name ?? '';
@@ -183,10 +190,10 @@ export async function createUser(
     throw new Error(error.message ?? 'Kunne ikke opprette beboer');
   }
 
-  const anyResult = result as any;
+  const createUserResult = result as CreateUserResult;
   return {
-    id: anyResult.user.id as string,
-    initialPassword: anyResult.initialPassword as string | undefined,
+    id: createUserResult.user.id,
+    initialPassword: createUserResult.initialPassword,
   };
 }
 
