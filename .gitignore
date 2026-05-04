@@ -29,3 +29,5 @@ yarn-error.log*
 /src/generated/prisma
 
 /AGENTS.md
+/skills-lock.json
+/.agents/

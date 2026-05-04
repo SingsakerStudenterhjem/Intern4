@@ -25,8 +25,8 @@ type CreateUserInput = {
   phone?: string;
   birthDate?: string; // ISO date string "YYYY-MM-DD"
   address?: AddressInput;
-  study?: string;
-  studyPlace?: string;
+  studyId?: string;
+  schoolId?: string;
   profilePicture?: string;
   seniority?: number;
   roomNumber?: number;
@@ -40,6 +40,54 @@ function generatePassword(length = 12): string {
   const bytes = new Uint8Array(length);
   crypto.getRandomValues(bytes);
   return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('');
+}
+
+async function resolveLookupId(
+  adminClient: ReturnType<typeof createClient>,
+  table: 'schools' | 'studies',
+  suppliedId: string | undefined
+): Promise<{ id?: string; error?: Response }> {
+  if (suppliedId) {
+    const { data, error } = await adminClient
+      .from(table)
+      .select('id')
+      .eq('id', suppliedId)
+      .maybeSingle();
+
+    if (error) {
+      return {
+        error: new Response(`Failed to look up ${table}`, { status: 500, headers: corsHeaders }),
+      };
+    }
+
+    if (!data?.id) {
+      return {
+        error: new Response(`Ugyldig ${table === 'schools' ? 'skole' : 'studie'}`, {
+          status: 400,
+          headers: corsHeaders,
+        }),
+      };
+    }
+
+    return { id: data.id as string };
+  }
+
+  const { data, error } = await adminClient
+    .from(table)
+    .select('id')
+    .eq('slug', 'annet')
+    .maybeSingle();
+
+  if (error || !data?.id) {
+    return {
+      error: new Response(`Failed to look up default ${table}`, {
+        status: 500,
+        headers: corsHeaders,
+      }),
+    };
+  }
+
+  return { id: data.id as string };
 }
 
 Deno.serve(async (req) => {
@@ -118,6 +166,12 @@ Deno.serve(async (req) => {
     return new Response(`Ugyldig rolle: ${roleName}`, { status: 400, headers: corsHeaders });
   }
 
+  const schoolLookup = await resolveLookupId(adminClient, 'schools', body.schoolId);
+  if (schoolLookup.error) return schoolLookup.error;
+
+  const studyLookup = await resolveLookupId(adminClient, 'studies', body.studyId);
+  if (studyLookup.error) return studyLookup.error;
+
   const { data: created, error: createErr } = await adminClient.auth.admin.createUser({
     email: body.email,
     password,
@@ -142,9 +196,9 @@ Deno.serve(async (req) => {
     postal_code: address.postalCode ?? null,
     city: address.city ?? null,
     country: address.country ?? null,
-    place_of_education: body.studyPlace ?? null,
+    school_id: schoolLookup.id ?? null,
     profile_picture: body.profilePicture ?? null,
-    study_program: body.study ?? null,
+    study_id: studyLookup.id ?? null,
     seniority: body.seniority ?? 0,
     room_number: body.roomNumber ?? 0,
     on_leave: body.onLeave ?? false,

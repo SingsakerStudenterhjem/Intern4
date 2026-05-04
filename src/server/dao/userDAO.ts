@@ -1,6 +1,11 @@
 import { supabase } from '../supabaseClient';
 import { User, NewUserInput } from '../../shared/types/user';
 
+function getJoinedName(value: any): string {
+  if (Array.isArray(value)) return value[0]?.name ?? '';
+  return value?.name ?? '';
+}
+
 function toAppUser(row: any): User {
   return {
     name: row.name ?? '',
@@ -14,8 +19,10 @@ function toAppUser(row: any): User {
       country: row.country,
     },
     profilePicture: row.profile_picture ?? '',
-    studyPlace: row.place_of_education ?? '',
-    study: row.study_program ?? 'annet',
+    schoolId: row.school_id ?? undefined,
+    studyId: row.study_id ?? undefined,
+    studyPlace: getJoinedName(row.schools),
+    study: getJoinedName(row.studies) || 'Annet',
     seniority: row.seniority ?? 0,
     roomNumber: row.room_number ?? 0,
     onLeave: row.on_leave ?? false,
@@ -26,7 +33,11 @@ function toAppUser(row: any): User {
 }
 
 export async function getUser(uid: string): Promise<User | undefined> {
-  const { data, error } = await supabase.from('users').select('*').eq('id', uid).maybeSingle();
+  const { data, error } = await supabase
+    .from('users')
+    .select('*, schools(name), studies(name)')
+    .eq('id', uid)
+    .maybeSingle();
   if (error) throw new Error(error.message);
   return data ? toAppUser(data) : undefined;
 }
@@ -37,9 +48,9 @@ export async function updateUser(uid: string, data: Partial<User>): Promise<void
     email: data.email,
     birth_date: data.birthDate ?? undefined,
     phone: data.phone,
-    place_of_education: data.studyPlace,
+    school_id: data.schoolId,
     profile_picture: data.profilePicture,
-    study_program: data.study,
+    study_id: data.studyId,
     seniority: data.seniority,
     room_number: data.roomNumber,
     on_leave: data.onLeave,
@@ -69,8 +80,8 @@ export async function createUser(
       city: data.address?.city,
       country: data.address?.country,
     },
-    study: data.study,
-    studyPlace: data.studyPlace,
+    schoolId: data.schoolId,
+    studyId: data.studyId,
     profilePicture: data.profilePicture,
     seniority: data.seniority,
     roomNumber: data.roomNumber,
@@ -132,8 +143,8 @@ function toResidentDirectoryUser(row: any): ResidentDirectoryUser {
     email: row.email ?? '',
     phone: row.phone ?? '',
     birthDate: row.birth_date ?? null,
-    study: row.study_program ?? '',
-    studyPlace: row.place_of_education ?? '',
+    study: getJoinedName(row.studies),
+    studyPlace: getJoinedName(row.schools),
     seniority: row.seniority ?? 0,
     roomNumber: row.room_number ?? null,
     createdAt: row.created_at ?? null,
@@ -158,8 +169,10 @@ export async function getResidentDirectoryUsers(
     'email',
     'phone',
     'birth_date',
-    'study_program',
-    'place_of_education',
+    'study_id',
+    'school_id',
+    'studies(name)',
+    'schools(name)',
     'seniority',
     'room_number',
     'created_at',
@@ -230,6 +243,11 @@ export type Role = {
   name: string;
 };
 
+export type LookupOption = {
+  id: string;
+  name: string;
+};
+
 export async function deleteUser(userId: string): Promise<void> {
   const { error } = await supabase.functions.invoke('delete-user', {
     body: { userId },
@@ -243,6 +261,26 @@ export async function deleteUser(userId: string): Promise<void> {
 export async function getRoles(): Promise<Role[]> {
   const { data, error } = await supabase
     .from('roles')
+    .select('id, name')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export async function getSchools(): Promise<LookupOption[]> {
+  const { data, error } = await supabase
+    .from('schools')
+    .select('id, name')
+    .order('name', { ascending: true });
+
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export async function getStudies(): Promise<LookupOption[]> {
+  const { data, error } = await supabase
+    .from('studies')
     .select('id, name')
     .order('name', { ascending: true });
 
