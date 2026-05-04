@@ -1,14 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import { Ban, Check, RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../../contexts/authContext';
 import { PendingRegiApproval } from '../../../../shared/types/regi';
-import {
-  approveRegiLog,
-  getPendingRegiApprovals,
-  rejectRegiLog,
-} from '../../../../server/dao/regiDAO';
 import WorkApprovalModal from './WorkApprovalModal';
 import { canApproveWork } from '../../../constants/userRoles';
+import { useWorkApprovals } from '../../../hooks/useWorkApprovals';
 
 type DateValue = Date | string | { seconds: number } | null | undefined;
 
@@ -20,78 +16,19 @@ const hasSeconds = (value: DateValue): value is { seconds: number } =>
 
 const WorkApprovalList: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
-  const [approvals, setApprovals] = useState<PendingRegiApproval[]>([]);
-  const [selected, setSelected] = useState<PendingRegiApproval | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState<string>('');
-
-  const load = useCallback(async (): Promise<void> => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await getPendingRegiApprovals();
-      setApprovals(data);
-    } catch (e) {
-      console.error(e);
-      setError('Kunne ikke laste godkjenninger.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) return;
-    if (!canApproveWork(user.role)) return;
-    void load();
-  }, [authLoading, load, user]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return approvals;
-
-    return approvals.filter((a) => {
-      return (
-        a.userName.toLowerCase().includes(q) ||
-        a.title.toLowerCase().includes(q) ||
-        (a.description ?? '').toLowerCase().includes(q) ||
-        (a.category ?? '').toLowerCase().includes(q)
-      );
-    });
-  }, [approvals, query]);
-
-  const handleApprove = async (assignmentId: string, approvalComment?: string): Promise<void> => {
-    try {
-      if (!user) return;
-
-      setActionLoadingId(assignmentId);
-      await approveRegiLog(assignmentId, user.id, approvalComment);
-
-      setApprovals((prev) => prev.filter((a) => a.id !== assignmentId));
-      if (selected?.id === assignmentId) setSelected(null);
-    } catch (e) {
-      console.error(e);
-      setError('Kunne ikke godkjenne.');
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
-
-  const handleReject = async (assignmentId: string): Promise<void> => {
-    try {
-      setActionLoadingId(assignmentId);
-      await rejectRegiLog(assignmentId);
-      setApprovals((prev) => prev.filter((a) => a.id !== assignmentId));
-      if (selected?.id === assignmentId) setSelected(null);
-    } catch (e) {
-      console.error(e);
-      setError('Kunne ikke avvise.');
-    } finally {
-      setActionLoadingId(null);
-    }
-  };
+  const {
+    filtered,
+    selected,
+    setSelected,
+    loading,
+    actionLoadingId,
+    error,
+    query,
+    setQuery,
+    load,
+    approve,
+    reject,
+  } = useWorkApprovals(user, authLoading);
 
   const formatDate = (value: DateValue) => {
     if (!value) return '-';
@@ -123,7 +60,7 @@ const WorkApprovalList: React.FC = () => {
           disabled={busy}
           onClick={(e) => {
             e.stopPropagation();
-            void handleApprove(approval.id);
+            void approve(approval.id);
           }}
           aria-label={`Godkjenn ${approval.title}`}
           className="inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
@@ -135,7 +72,7 @@ const WorkApprovalList: React.FC = () => {
           disabled={busy}
           onClick={(e) => {
             e.stopPropagation();
-            void handleReject(approval.id);
+            void reject(approval.id);
           }}
           aria-label={`Avvis ${approval.title}`}
           className="inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
@@ -353,8 +290,8 @@ const WorkApprovalList: React.FC = () => {
           key={selected.id}
           approval={selected}
           onClose={() => setSelected(null)}
-          onApprove={handleApprove}
-          onReject={handleReject}
+          onApprove={approve}
+          onReject={reject}
           isProcessing={actionLoadingId === selected.id}
         />
       )}

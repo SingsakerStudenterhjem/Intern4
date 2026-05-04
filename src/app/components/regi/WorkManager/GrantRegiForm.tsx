@@ -1,12 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
 import { useAuth } from '../../../../contexts/authContext';
-import { Category } from '../../../../shared/types/regi/tasks';
 import { WorkTypeSchema } from '../../../../shared/types/regi';
-import { addRegiLog } from '../../../../server/dao/regiDAO';
-import { getActiveUsersWithRole } from '../../../../server/dao/userDAO';
-import { BasicUserWithRole } from '../../../../shared/types/user';
-import { getCategories } from '../../../../server/dao/categoriesDAO';
+import { useGrantRegiWorkflow } from '../../../hooks/useGrantRegiWorkflow';
 
 const getErrorMessage = (error: unknown, fallback: string): string =>
   error instanceof Error ? error.message : fallback;
@@ -31,6 +27,8 @@ type FormState = {
 
 const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const { user } = useAuth();
+  const { categories, users, loading, message, setMessage, createGrantedLog } =
+    useGrantRegiWorkflow();
   const [form, setForm] = useState<FormState>({
     userId: '',
     title: '',
@@ -40,38 +38,12 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     type: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [users, setUsers] = useState<BasicUserWithRole[]>([]);
-  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const [cats, activeUsers] = await Promise.all([getCategories(), getActiveUsersWithRole()]);
-        if (!mounted) return;
-
-        setCategories(cats);
-        setUsers(activeUsers.filter((u) => u.isActive));
-
-        if (cats.length > 0) {
-          setForm((prev) => ({ ...prev, type: prev.type || cats[0].name }));
-        }
-      } catch (error) {
-        console.error('Kunne ikke laste data', error);
-        setMessage('Kunne ikke laste brukere eller kategorier.');
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    if (categories.length === 0) return;
+    setForm((prev) => ({ ...prev, type: prev.type || categories[0].name }));
+  }, [categories]);
 
   const setField = (k: keyof FormState, v: string) => {
     setForm((s) => ({ ...s, [k]: v }));
@@ -107,7 +79,7 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
 
     try {
       setSubmitting(true);
-      await addRegiLog({
+      await createGrantedLog({
         userId: parsed.data.userId,
         title: parsed.data.title,
         description: parsed.data.description,

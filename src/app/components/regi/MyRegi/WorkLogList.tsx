@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { RegiLogWithId } from '../../../../shared/types/regi';
-import { deletePendingRegiLog, getRegiLogsByUser } from '../../../../server/dao/regiDAO';
 import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
+import { useWorkLogList } from '../../../hooks/useWorkLogList';
 import WorkLogDetailsModal from './WorkLogDetailsModal';
 
 const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: number }> = ({
@@ -10,37 +10,8 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
   userRole,
   refreshKey,
 }) => {
-  const [logs, setLogs] = useState<RegiLogWithId[]>([]);
-  const [, setLoading] = useState(true);
-  const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const { logs, deletingId, error, deleteLog } = useWorkLogList(userId, refreshKey);
   const [selectedLog, setSelectedLog] = useState<RegiLogWithId | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getRegiLogsByUser(userId);
-        if (mounted) {
-          setLogs(data);
-        }
-      } catch (loadError) {
-        console.error(loadError);
-        if (mounted) {
-          setError('Kunne ikke laste registreringene.');
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, [userId, refreshKey]);
 
   const totals = useMemo(() => {
     const approved = logs.filter((l) => l.status === 'approved').reduce((s, l) => s + l.hours, 0);
@@ -89,19 +60,7 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
     if (!canDeleteLog(log)) return;
     if (!window.confirm('Vil du slette denne ventende registreringen?')) return;
 
-    try {
-      setDeletingId(log.id);
-      setError(null);
-      await deletePendingRegiLog(log.id, userId);
-      setLogs((currentLogs) => currentLogs.filter((currentLog) => currentLog.id !== log.id));
-    } catch (deleteError) {
-      console.error(deleteError);
-      setError(
-        deleteError instanceof Error ? deleteError.message : 'Kunne ikke slette registreringen.'
-      );
-    } finally {
-      setDeletingId(null);
-    }
+    await deleteLog(log);
   };
 
   //if (loading) return <div>Laster...</div>;

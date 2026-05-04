@@ -2,10 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
 import { z } from 'zod';
 import { RegiLogSchema, WorkTypeSchema } from '../../../../shared/types/regi';
-import { addRegiLog } from '../../../../server/dao/regiDAO';
 import { useAuth } from '../../../../contexts/authContext';
-import { Category } from '../../../../shared/types/regi/tasks';
-import { getCategories } from '../../../../server/dao/categoriesDAO';
+import { useWorkLogFormWorkflow } from '../../../hooks/useWorkLogFormWorkflow';
 
 const FormSchema = z.object({
   title: z.string().min(1, 'Påkrevd'),
@@ -24,7 +22,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { categories, createWorkLog } = useWorkLogFormWorkflow();
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -34,30 +32,12 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   });
 
   useEffect(() => {
-    let mounted = true;
-
-    (async () => {
-      try {
-        const data = await getCategories();
-        if (!mounted) return;
-
-        setCategories(data);
-
-        if (data.length > 0) {
-          setForm((prev) => ({
-            ...prev,
-            type: prev.type || data[0].name,
-          }));
-        }
-      } catch (error) {
-        console.error('Kunne ikke laste kategorier', error);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    if (categories.length === 0) return;
+    setForm((prev) => ({
+      ...prev,
+      type: prev.type || categories[0].name,
+    }));
+  }, [categories]);
 
   const setField = (k: string, v: string) => setForm((s) => ({ ...s, [k]: v }));
 
@@ -112,7 +92,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         status: 'pending',
       });
 
-      await addRegiLog({
+      await createWorkLog({
         userId: payload.userId,
         title: payload.title,
         description: payload.description,
