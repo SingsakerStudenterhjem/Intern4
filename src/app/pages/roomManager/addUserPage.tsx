@@ -8,9 +8,8 @@ import {
   getStudies,
   getRoles,
   getAllUsersWithRole,
-  Role,
-  BasicUserWithRole,
 } from '../../../server/dao/userDAO';
+import { BasicUserWithRole, Role } from '../../../shared/types/user';
 import { getDefaultLookupId, LookupOption } from '../../../shared/types/lookup';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
 
