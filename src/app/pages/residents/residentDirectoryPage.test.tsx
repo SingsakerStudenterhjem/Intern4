@@ -16,7 +16,7 @@ const activeResidents = [
     email: 'test.beboer.en@example.test',
     phone: '40000001',
     birthDate: '2000-01-01',
-    study: 'BioTek',
+    study: 'Bioteknologi',
     studyPlace: 'NTNU',
     seniority: 4,
     roomNumber: 101,
@@ -32,7 +32,7 @@ const activeResidents = [
     email: 'demo.beboer.to@example.test',
     phone: '40000002',
     birthDate: null,
-    study: 'FysMat',
+    study: 'Fysikk og matematikk',
     studyPlace: 'NTNU',
     seniority: 1,
     roomNumber: 202,
@@ -92,7 +92,7 @@ describe('ResidentDirectoryPage', () => {
     expect(screen.getByText('Test Beboer En')).toBeInTheDocument();
     expect(screen.getByText('101')).toBeInTheDocument();
     expect(screen.getByText('40000001')).toBeInTheDocument();
-    expect(screen.getByText('4. BioTek (NTNU)')).toBeInTheDocument();
+    expect(screen.getByText('4. Bioteknologi (NTNU)')).toBeInTheDocument();
   });
 
   it('filters active residents by search query', async () => {
@@ -102,7 +102,7 @@ describe('ResidentDirectoryPage', () => {
     renderPage('/beboere');
 
     await screen.findByText('Test Beboer En');
-    await user.type(screen.getByPlaceholderText(/søk etter navn/i), 'FysMat');
+    await user.type(screen.getByPlaceholderText(/søk etter navn/i), 'Fysikk');
 
     expect(screen.queryByText('Test Beboer En')).not.toBeInTheDocument();
     expect(screen.getByText('Demo Beboer To')).toBeInTheDocument();
@@ -136,8 +136,8 @@ describe('ResidentDirectoryPage', () => {
     expect(screen.getByLabelText('2000: 1')).toBeInTheDocument();
     expect(screen.getAllByLabelText('1: 1').length).toBeGreaterThan(0);
     expect(screen.getAllByLabelText('4: 1').length).toBeGreaterThan(0);
-    expect(screen.getByLabelText('BioTek: 1')).toBeInTheDocument();
-    expect(screen.getByLabelText('FysMat: 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('Bioteknologi: 1')).toBeInTheDocument();
+    expect(screen.getByLabelText('Fysikk og matematikk: 1')).toBeInTheDocument();
     expect(screen.queryByLabelText('Maskin: 0')).not.toBeInTheDocument();
   });
 
