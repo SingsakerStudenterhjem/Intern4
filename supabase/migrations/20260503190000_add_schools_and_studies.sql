@@ -85,6 +85,9 @@ on conflict (slug) do update set name = excluded.name;
 
 do $$
 begin
+  -- This repo now includes a pulled remote-schema baseline after this migration.
+  -- Supabase CLI shadow-database replays can still evaluate this file before
+  -- public.users exists, so user linkage is skipped only in that baseline replay case.
   if to_regclass('public.users') is null then
     return;
   end if;

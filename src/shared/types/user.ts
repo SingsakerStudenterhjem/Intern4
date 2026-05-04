@@ -1,16 +1,18 @@
 import { z } from 'zod';
 
+const AddressSchema = z.object({
+  street: z.string(),
+  postalCode: z.string(),
+  city: z.string(),
+  country: z.string().optional(),
+});
+
 const UserSchema = z.object({
   name: z.string(),
   email: z.email(),
   phone: z.string(),
   birthDate: z.date().optional(),
-  address: z.object({
-    street: z.string(),
-    postalCode: z.string(),
-    city: z.string(),
-    country: z.string().optional(),
-  }),
+  address: AddressSchema,
   schoolId: z.string().optional(),
   studyId: z.string().optional(),
   study: z.string(),
@@ -26,19 +28,37 @@ const UserSchema = z.object({
 
 export type User = z.infer<typeof UserSchema>;
 
-export const NewUserInputSchema = UserSchema.omit({ createdAt: true }).extend({
+export const NewUserInputSchema = z.object({
+  name: UserSchema.shape.name,
+  email: UserSchema.shape.email,
   phone: UserSchema.shape.phone.optional(),
   birthDate: UserSchema.shape.birthDate.optional(),
-  address: UserSchema.shape.address.partial(),
+  address: AddressSchema.partial(),
   schoolId: UserSchema.shape.schoolId.optional(),
   studyId: UserSchema.shape.studyId.optional(),
-  study: UserSchema.shape.study.optional(),
-  studyPlace: UserSchema.shape.studyPlace.optional(),
   profilePicture: UserSchema.shape.profilePicture.optional(),
   seniority: UserSchema.shape.seniority.default(0),
   roomNumber: UserSchema.shape.roomNumber.default(0),
+  role: UserSchema.shape.role,
   onLeave: UserSchema.shape.onLeave.default(false),
   isActive: UserSchema.shape.isActive.default(true),
 });
 
 export type NewUserInput = z.infer<typeof NewUserInputSchema>;
+
+export const UpdateUserInputSchema = z.object({
+  name: UserSchema.shape.name.optional(),
+  email: UserSchema.shape.email.optional(),
+  phone: UserSchema.shape.phone.optional(),
+  birthDate: UserSchema.shape.birthDate.optional(),
+  address: AddressSchema.partial().optional(),
+  schoolId: UserSchema.shape.schoolId.optional(),
+  studyId: UserSchema.shape.studyId.optional(),
+  profilePicture: UserSchema.shape.profilePicture.optional(),
+  seniority: UserSchema.shape.seniority.optional(),
+  roomNumber: UserSchema.shape.roomNumber.optional(),
+  onLeave: UserSchema.shape.onLeave.optional(),
+  isActive: UserSchema.shape.isActive.optional(),
+});
+
+export type UpdateUserInput = z.infer<typeof UpdateUserInputSchema>;

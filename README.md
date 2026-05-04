@@ -31,3 +31,12 @@ Your app is ready to be deployed!
 ### `npm run lint`
 
 Runs ESLint across the project.
+
+## Supabase migrations
+
+This repo tracks the current remote Supabase schema as a pulled baseline in
+`supabase/migrations/20260504193842_remote_schema.sql`, plus later project migrations.
+The study/school lookup migration is intentionally guarded around `public.users` so the
+Supabase CLI can replay migrations while creating a shadow database during `db pull`.
+For new schema changes, add a new migration instead of editing the pulled baseline or writing
+destructive follow-up SQL against production data.
