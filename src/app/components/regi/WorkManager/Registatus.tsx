@@ -1,98 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import { RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../../contexts/authContext';
 import { canApproveWork } from '../../../constants/userRoles';
-import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
-import { getApprovedRegiHoursByUserSince } from '../../../../server/dao/regiDAO';
-import { getActiveUsersWithRole } from '../../../../server/dao/userDAO';
-
-type RegistatusRow = {
-  id: string;
-  name: string;
-  email: string;
-  role?: string;
-  requiredHours: number;
-  approvedHours: number;
-  remainingHours: number;
-  onLeave: boolean;
-};
-
-const getSemesterStart = (): Date => {
-  const now = new Date();
-  const year = now.getFullYear();
-  return now.getMonth() < 7 ? new Date(year, 0, 1) : new Date(year, 7, 1);
-};
-
-const semesterStart = getSemesterStart();
-const semesterLabel = semesterStart.toLocaleDateString('no-NO');
+import { semesterLabel, useRegistatus } from '../../../hooks/useRegistatus';
 
 const Registatus: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
-  const [rows, setRows] = useState<RegistatusRow[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [query, setQuery] = useState('');
-
-  const load = useCallback(async (): Promise<void> => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const [activeUsers, hoursMap] = await Promise.all([
-        getActiveUsersWithRole(),
-        getApprovedRegiHoursByUserSince(semesterStart),
-      ]);
-
-      const nextRows = activeUsers.map((u) => {
-        const requiredHours = getRequiredRegiHoursForRole(u.role);
-        const approvedHours = hoursMap[u.id] ?? 0;
-        const remainingHours = Math.max(requiredHours - approvedHours, 0);
-
-        return {
-          id: u.id,
-          name: u.name,
-          email: u.email,
-          role: u.role ?? 'Halv/Halv',
-          requiredHours,
-          approvedHours,
-          remainingHours,
-          onLeave: u.onLeave,
-        };
-      });
-
-      nextRows.sort(
-        (a, b) =>
-          b.remainingHours - a.remainingHours ||
-          a.name.localeCompare(b.name, 'no', { sensitivity: 'base' })
-      );
-
-      setRows(nextRows);
-    } catch (e) {
-      console.error(e);
-      setError('Kunne ikke laste registatus.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (authLoading) return;
-    if (!user) return;
-    if (!canApproveWork(user.role)) return;
-    void load();
-  }, [authLoading, load, user]);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return rows;
-
-    return rows.filter(
-      (r) =>
-        r.name.toLowerCase().includes(q) ||
-        r.email.toLowerCase().includes(q) ||
-        (r.role ?? '').toLowerCase().includes(q)
-    );
-  }, [query, rows]);
+  const { filtered, loading, error, query, setQuery, load } = useRegistatus(user, authLoading);
 
   if (authLoading) return null;
   if (!user || !canApproveWork(user.role)) {
