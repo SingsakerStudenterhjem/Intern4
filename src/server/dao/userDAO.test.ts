@@ -217,11 +217,8 @@ describe('userDAO profile and lookup writes', () => {
   });
 
   it('passes lookup ids to the create-user function', async () => {
-    vi.mocked(supabase.functions.invoke).mockResolvedValueOnce({
-      data: {
-        user: { id: '11111111-1111-1111-1111-111111111111' },
-        initialPassword: 'abc123',
-      },
+    vi.mocked(supabase.functions.invoke).mockResolvedValue({
+      data: { user: { id: '11111111-1111-1111-1111-111111111111' }, initialPassword: 'abc123' },
       error: null,
     });
 
@@ -247,6 +244,26 @@ describe('userDAO profile and lookup writes', () => {
     expect(result).toEqual({
       id: '11111111-1111-1111-1111-111111111111',
       initialPassword: 'abc123',
+    });
+
+    await createUser({
+      name: 'Annet Beboer',
+      email: 'annet@example.test',
+      address: {},
+      role: 'Halv/Halv',
+      schoolId: '  ',
+      studyId: '',
+      seniority: 0,
+      roomNumber: 0,
+      onLeave: false,
+      isActive: true,
+    });
+
+    expect(supabase.functions.invoke).toHaveBeenLastCalledWith('create-user', {
+      body: expect.objectContaining({
+        schoolId: undefined,
+        studyId: undefined,
+      }),
     });
   });
 

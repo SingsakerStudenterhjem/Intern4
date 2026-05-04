@@ -228,6 +228,13 @@ $$;
 alter table public.schools enable row level security;
 alter table public.studies enable row level security;
 
+grant select on table public.schools to authenticated;
+grant select on table public.studies to authenticated;
+grant select on table public.schools to anon;
+grant select on table public.studies to anon;
+grant select on table public.schools to service_role;
+grant select on table public.studies to service_role;
+
 drop policy if exists "Authenticated users can read schools" on public.schools;
 create policy "Authenticated users can read schools"
   on public.schools for select

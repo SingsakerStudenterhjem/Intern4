@@ -63,6 +63,13 @@ CREATE POLICY "Authenticated users can read roles"
 ALTER TABLE schools ENABLE ROW LEVEL SECURITY;
 ALTER TABLE studies ENABLE ROW LEVEL SECURITY;
 
+GRANT SELECT ON TABLE schools TO authenticated;
+GRANT SELECT ON TABLE studies TO authenticated;
+GRANT SELECT ON TABLE schools TO anon;
+GRANT SELECT ON TABLE studies TO anon;
+GRANT SELECT ON TABLE schools TO service_role;
+GRANT SELECT ON TABLE studies TO service_role;
+
 CREATE POLICY "Authenticated users can read schools"
   ON schools FOR SELECT
   TO authenticated

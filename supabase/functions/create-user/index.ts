@@ -47,11 +47,13 @@ async function resolveLookupId(
   table: 'schools' | 'studies',
   suppliedId: string | undefined
 ): Promise<{ id?: string; error?: Response }> {
-  if (suppliedId) {
+  const lookupId = suppliedId?.trim();
+
+  if (lookupId) {
     const { data, error } = await adminClient
       .from(table)
       .select('id')
-      .eq('id', suppliedId)
+      .eq('id', lookupId)
       .maybeSingle();
 
     if (error) {

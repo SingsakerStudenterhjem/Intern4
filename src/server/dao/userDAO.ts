@@ -77,6 +77,11 @@ function getJoinedName(value: SupabaseJoin<LookupJoin | RoleJoin>): string {
   return joined?.name ?? '';
 }
 
+function normalizeOptionalId(value?: string): string | undefined {
+  const normalized = value?.trim();
+  return normalized || undefined;
+}
+
 function toAppUser(row: UserRow): User {
   return {
     name: row.name ?? '',
@@ -153,8 +158,8 @@ export async function createUser(
       city: data.address?.city,
       country: data.address?.country,
     },
-    schoolId: data.schoolId,
-    studyId: data.studyId,
+    schoolId: normalizeOptionalId(data.schoolId),
+    studyId: normalizeOptionalId(data.studyId),
     profilePicture: data.profilePicture,
     seniority: data.seniority,
     roomNumber: data.roomNumber,

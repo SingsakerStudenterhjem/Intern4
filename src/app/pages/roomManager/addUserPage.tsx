@@ -54,6 +54,12 @@ const AddUserPage: React.FC = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<BasicUserWithRole | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const lookupOptionsReady = !lookupsLoading && schools.length > 0 && studies.length > 0;
+  const canSubmit =
+    !isSubmitting &&
+    lookupOptionsReady &&
+    Boolean(userData.name.trim()) &&
+    Boolean(userData.email.trim());
 
   const handleDeleteUser = async (user: BasicUserWithRole) => {
     setIsDeleting(true);
@@ -220,6 +226,12 @@ const AddUserPage: React.FC = () => {
 
     if (!userData.name.trim() || !userData.email.trim()) {
       setMessage({ type: 'error', text: 'Navn og e-post er obligatoriske felter' });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (!lookupOptionsReady) {
+      setMessage({ type: 'error', text: 'Kunne ikke laste skoler og studier.' });
       setIsSubmitting(false);
       return;
     }
@@ -596,9 +608,9 @@ const AddUserPage: React.FC = () => {
             <div className="flex justify-end">
               <button
                 onClick={handleSubmit}
-                disabled={isSubmitting || !userData.name.trim() || !userData.email.trim()}
+                disabled={!canSubmit}
                 className={`px-6 py-2 rounded-md font-medium transition-colors ${
-                  isSubmitting || !userData.name.trim() || !userData.email.trim()
+                  !canSubmit
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     : 'bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
                 }`}
