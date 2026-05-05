@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { RefreshCw, Search } from 'lucide-react';
-import { RegiLogWithUser } from '../../../shared/types/regi';
-import { getAllRegiLogs } from '../../../server/dao/regiDAO';
-import { ROUTES } from '../../../app/constants/routes';
-import { useAuth } from '../../../app/providers/AuthContext';
-import { canApproveWork } from '../permissions';
+import { RegiLogWithUser } from '../../../../shared/types/regi';
+import { getAllRegiLogs } from '../../../../server/dao/regiDAO';
+import { ROUTES } from '../../../../app/constants/routes';
+import { useAuth } from '../../../../app/providers/AuthContext';
+import { canApproveWork } from '../../permissions';
 
 type DateValue = Date | string | { seconds: number } | null | undefined;
 

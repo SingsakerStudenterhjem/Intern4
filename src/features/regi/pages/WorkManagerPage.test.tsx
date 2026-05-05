@@ -3,15 +3,15 @@ import { MemoryRouter } from 'react-router-dom';
 import { describe, expect, it, vi } from 'vitest';
 import WorkManagerPage from './WorkManagerPage';
 
-vi.mock('../components/work-manager/WorkApprovalList', () => ({
+vi.mock('../approvals/components/WorkApprovalList', () => ({
   default: () => <div data-testid="approval-list">Approval list</div>,
 }));
 
-vi.mock('../components/work-manager/GrantRegiForm', () => ({
+vi.mock('../granting/components/GrantRegiForm', () => ({
   default: () => <div data-testid="grant-regi-form">Grant regi form</div>,
 }));
 
-vi.mock('../components/work-manager/Registatus', () => ({
+vi.mock('../status/components/Registatus', () => ({
   default: () => <div data-testid="registatus">Registatus</div>,
 }));
 

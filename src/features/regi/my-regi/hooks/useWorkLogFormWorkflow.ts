@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { RegiLog } from '../../../shared/types/regi';
-import { Category } from '../../../shared/types/regi/tasks';
-import { addRegiLog } from '../../../server/dao/regiDAO';
-import { getCategories } from '../../../server/dao/categoriesDAO';
+import { RegiLog } from '../../../../shared/types/regi';
+import { Category } from '../../../../shared/types/regi/tasks';
+import { addRegiLog } from '../../../../server/dao/regiDAO';
+import { getCategories } from '../../../../server/dao/categoriesDAO';
 
 export const useWorkLogFormWorkflow = () => {
   const [categories, setCategories] = useState<Category[]>([]);

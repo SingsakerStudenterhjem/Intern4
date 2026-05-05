@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import WorkLogForm from '../components/my-regi/WorkLogForm';
-import WorkLogList from '../components/my-regi/WorkLogList';
-import { useAuth } from '../../../app/providers/AuthContext';
-import { ROUTES } from '../../../app/constants/routes';
+import WorkLogForm from '../components/WorkLogForm';
+import WorkLogList from '../components/WorkLogList';
+import { useAuth } from '../../../../app/providers/AuthContext';
+import { ROUTES } from '../../../../app/constants/routes';
 
 const WorkPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);

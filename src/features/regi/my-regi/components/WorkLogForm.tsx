@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { z } from 'zod';
 import { RegiLogSchema, WorkTypeSchema } from '../../../../shared/types/regi';
 import { useAuth } from '../../../../app/providers/AuthContext';
-import { useWorkLogFormWorkflow } from '../../hooks/useWorkLogFormWorkflow';
+import { useWorkLogFormWorkflow } from '../hooks/useWorkLogFormWorkflow';
 
 const FormSchema = z.object({
   title: z.string().min(1, 'Påkrevd'),
