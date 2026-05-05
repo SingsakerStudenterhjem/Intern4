@@ -26,11 +26,17 @@ function toDate(value: Date | string | { seconds: number } | null | undefined): 
 
 type WorkItemTypeRelation = { type: string | null } | Array<{ type: string | null }> | null;
 
+type WorkMiscRelation =
+  | { image?: string | null; image_paths?: string[] | null }
+  | Array<{ image?: string | null; image_paths?: string[] | null }>
+  | null;
+
 type RegiWorkItemRelation = {
   title?: string | null;
   description?: string | null;
   type?: string | null;
   work_categories?: { name?: string | null } | null;
+  work_misc?: WorkMiscRelation;
 } | null;
 
 type RegiAssignmentRow = {
@@ -51,6 +57,15 @@ function getWorkItemType(workItems: WorkItemTypeRelation): string | undefined {
   }
 
   return workItems?.type ?? undefined;
+}
+
+function getImagePaths(workItems: RegiWorkItemRelation): string[] {
+  const workMisc = Array.isArray(workItems?.work_misc)
+    ? workItems?.work_misc[0]
+    : workItems?.work_misc;
+  const imagePaths = workMisc?.image_paths ?? [];
+  const legacyImage = workMisc?.image;
+  return [...imagePaths, legacyImage].filter((path): path is string => Boolean(path));
 }
 
 export function isCountableRegiAssignment(row: RegiAssignmentRow): boolean {
@@ -134,6 +149,22 @@ export async function addRegiLog(
     .single();
 
   if (e2) throw new Error(e2.message);
+
+  const imagePaths = data.imagePaths ?? [];
+  if (imagePaths.length > 0) {
+    const { error: e3 } = await supabase.from('work_misc').insert({
+      id: item.id,
+      image: imagePaths[0] ?? null,
+      image_paths: imagePaths,
+    });
+
+    if (e3) {
+      await supabase.from('work_assignments').delete().eq('id', assignment.id);
+      await supabase.from('work_items').delete().eq('id', item.id);
+      throw new Error(e3.message);
+    }
+  }
+
   return String(assignment.id);
 }
 
@@ -141,7 +172,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, work_id, hours_used, created_at, approved_state, approval_comment, work_items(title, description, type, work_categories(name))'
+      'id, work_id, hours_used, created_at, approved_state, approval_comment, work_items(title, description, type, work_categories(name), work_misc(image, image_paths))'
     )
     .eq('user_uuid', userId)
     .order('created_at', { ascending: false });
@@ -167,6 +198,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
     userId,
     createdAt: toDate(d.created_at),
     reviewerComment: d.approval_comment ?? undefined,
+    imagePaths: getImagePaths(d.work_items),
   }));
 }
 
@@ -223,7 +255,7 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, user_uuid, hours_used, created_at, approved_state, work_items(title, description, type, work_categories(name))'
+      'id, user_uuid, hours_used, created_at, approved_state, work_items(title, description, type, work_categories(name), work_misc(image, image_paths))'
     )
     .eq('approved_state', 0)
     .order('created_at', { ascending: false });
@@ -269,6 +301,7 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
       category: row.work_items?.work_categories?.name ?? 'Regi',
       hours: Number(row.hours_used ?? 0),
       createdAt: toDate(row.created_at),
+      imagePaths: getImagePaths(row.work_items),
     };
   });
 }
@@ -277,7 +310,7 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, user_uuid, hours_used, created_at, approved_state, approval_comment, approved_by_uuid, work_items(title, description, type, work_categories(name))'
+      'id, user_uuid, hours_used, created_at, approved_state, approval_comment, approved_by_uuid, work_items(title, description, type, work_categories(name), work_misc(image, image_paths))'
     )
     .order('created_at', { ascending: false });
 
@@ -334,6 +367,7 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
       createdAt: toDate(row.created_at),
       approvedByName: approver?.name,
       approvalComment: row.approval_comment ?? null,
+      imagePaths: getImagePaths(row.work_items),
     };
   });
 }

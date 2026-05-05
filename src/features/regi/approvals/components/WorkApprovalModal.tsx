@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Ban, Calendar, Check, Clock, User, X } from 'lucide-react';
 import { PendingRegiApproval } from '../../../../shared/types/regi';
 import { formatDateTime } from '../../../../shared/utils/date';
+import { ImagePreviewGrid } from '../../../../shared/components';
 
 interface WorkApprovalModalProps {
   approval: PendingRegiApproval | null;
@@ -93,6 +94,8 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
               {approval.description || 'Ingen beskrivelse.'}
             </div>
           </div>
+
+          <ImagePreviewGrid paths={approval.imagePaths} title="Bilder" />
         </div>
 
         <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-lg">

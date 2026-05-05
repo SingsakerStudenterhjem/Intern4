@@ -6,10 +6,15 @@ import type { RegiLogWithId } from '../../../../shared/types/regi';
 
 const getRegiLogsByUser = vi.fn();
 const deletePendingRegiLog = vi.fn();
+const createSignedImageUrls = vi.fn();
 
 vi.mock('../../../../server/dao/regiDAO', () => ({
   getRegiLogsByUser: (...args: unknown[]) => getRegiLogsByUser(...args),
   deletePendingRegiLog: (...args: unknown[]) => deletePendingRegiLog(...args),
+}));
+
+vi.mock('../../../../server/storage', () => ({
+  createSignedImageUrls: (...args: unknown[]) => createSignedImageUrls(...args),
 }));
 
 const createLog = (overrides: Partial<RegiLogWithId> = {}): RegiLogWithId => ({
@@ -42,8 +47,10 @@ describe('WorkLogList', () => {
         id: 'approved-log',
         status: 'approved',
         reviewerComment: 'Ser bra ut.',
+        imagePaths: ['user/regi/one.png'],
       }),
     ]);
+    createSignedImageUrls.mockResolvedValue(['https://example.com/one.png']);
 
     render(
       <WorkLogList
@@ -59,6 +66,10 @@ describe('WorkLogList', () => {
     expect(await screen.findByText('Kommentar fra regisjef')).toBeInTheDocument();
     expect(screen.getByText('Ser bra ut.')).toBeInTheDocument();
     expect(screen.getByText('Manuell registrering')).toBeInTheDocument();
+    expect(await screen.findByAltText('Opplastet bilde 1')).toHaveAttribute(
+      'src',
+      'https://example.com/one.png'
+    );
   });
 
   it('shows delete only for pending manual logs', async () => {

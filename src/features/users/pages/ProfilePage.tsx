@@ -4,6 +4,7 @@ import { useAuth } from '../../../app/providers/AuthContext';
 import { supabase } from '../../../server/supabaseClient';
 import { getSchools, getStudies, getUser, updateUser } from '../../../server/dao/userDAO';
 import { resetPassword } from '../../../server/dao/authentication';
+import { createSignedImageUrl, deleteImages, uploadImages } from '../../../server/storage';
 import { PageLayout } from '../../../shared/layouts';
 import { getDefaultLookupId, LookupOption } from '../../../shared/types/lookup';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
@@ -168,6 +169,11 @@ const ProfilePage: React.FC = () => {
   const [savingPassword, setSavingPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [profilePicturePath, setProfilePicturePath] = useState('');
+  const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
+  const [savingProfilePicture, setSavingProfilePicture] = useState(false);
+  const [profilePictureError, setProfilePictureError] = useState<string | null>(null);
+  const [profilePictureSuccess, setProfilePictureSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const loadProfile = async () => {
@@ -209,6 +215,17 @@ const ProfilePage: React.FC = () => {
           schoolId: profile.schoolId ?? getDefaultLookupId(schoolOptions),
           studyId: profile.studyId ?? getDefaultLookupId(studyOptions),
         });
+        setProfilePicturePath(profile.profilePicture ?? '');
+        if (profile.profilePicture) {
+          createSignedImageUrl(profile.profilePicture)
+            .then(setProfilePictureUrl)
+            .catch((imageError) => {
+              console.error(imageError);
+              setProfilePictureUrl(null);
+            });
+        } else {
+          setProfilePictureUrl(null);
+        }
       } catch (error) {
         console.error(error);
         setFormError('Kunne ikke laste profilinformasjon.');
@@ -315,6 +332,49 @@ const ProfilePage: React.FC = () => {
       setPasswordError('Kunne ikke oppdatere passordet.');
     } finally {
       setSavingPassword(false);
+    }
+  };
+
+  const handleProfilePictureChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+
+    if (!file || !user?.id) return;
+
+    let uploadedPaths: string[] = [];
+
+    try {
+      setSavingProfilePicture(true);
+      setProfilePictureError(null);
+      setProfilePictureSuccess(null);
+
+      uploadedPaths = await uploadImages(user.id, 'profile', [file]);
+      const nextPath = uploadedPaths[0];
+
+      await updateUser(user.id, {
+        profilePicture: nextPath,
+      });
+
+      if (
+        profilePicturePath &&
+        profilePicturePath !== nextPath &&
+        profilePicturePath.startsWith(`${user.id}/`)
+      ) {
+        await deleteImages([profilePicturePath]);
+      }
+
+      setProfilePicturePath(nextPath);
+      setProfilePictureUrl(await createSignedImageUrl(nextPath));
+      await supabase.auth.refreshSession();
+      setProfilePictureSuccess('Profilbildet ble oppdatert.');
+    } catch (error) {
+      await deleteImages(uploadedPaths);
+      console.error(error);
+      setProfilePictureError(
+        error instanceof Error ? error.message : 'Kunne ikke laste opp profilbilde.'
+      );
+    } finally {
+      setSavingProfilePicture(false);
     }
   };
 
@@ -593,32 +653,57 @@ const ProfilePage: React.FC = () => {
         <div className="space-y-4">
           <ProfileSectionCard
             title="Profilbilde"
-            description="Visningsbilde og opplasting kommer som egen funksjon."
+            description="Last opp bildet som vises på profilen din."
           >
             <div className="space-y-2.5">
               <div className="h-32 overflow-hidden rounded-xl border border-gray-200 bg-linear-to-br from-gray-50 to-gray-100">
                 <div className="flex h-full items-center justify-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-gray-400 shadow-sm">
-                    {fullName
-                      .split(' ')
-                      .filter(Boolean)
-                      .slice(0, 2)
-                      .map((part) => part[0]?.toUpperCase())
-                      .join('') || 'PI'}
-                  </div>
+                  {profilePictureUrl ? (
+                    <img
+                      src={profilePictureUrl}
+                      alt="Profilbilde"
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-gray-400 shadow-sm">
+                      {fullName
+                        .split(' ')
+                        .filter(Boolean)
+                        .slice(0, 2)
+                        .map((part) => part[0]?.toUpperCase())
+                        .join('') || 'PI'}
+                    </div>
+                  )}
                 </div>
               </div>
-              <StubBadge>Kommer senere</StubBadge>
-              <div className="rounded-xl border border-gray-200 bg-gray-50 px-3.5 py-3 text-sm text-gray-500">
-                Opplasting av profilbilde blir lagt til i en senere iterasjon.
-              </div>
-              <button
-                type="button"
-                disabled
-                className="inline-flex items-center rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-sm font-medium text-gray-500 opacity-80"
+
+              <input
+                id="profile-picture"
+                type="file"
+                accept="image/*"
+                className="sr-only"
+                onChange={handleProfilePictureChange}
+                disabled={savingProfilePicture}
+              />
+              <label
+                htmlFor="profile-picture"
+                className="inline-flex cursor-pointer items-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+                aria-disabled={savingProfilePicture}
               >
-                Last opp bilde
-              </button>
+                {savingProfilePicture ? 'Laster opp...' : 'Last opp bilde'}
+              </label>
+
+              {profilePictureError && (
+                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {profilePictureError}
+                </div>
+              )}
+
+              {profilePictureSuccess && (
+                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                  {profilePictureSuccess}
+                </div>
+              )}
             </div>
           </ProfileSectionCard>
 
