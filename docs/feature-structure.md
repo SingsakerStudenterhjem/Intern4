@@ -38,3 +38,15 @@ Use the same pattern for future broad domains such as `alcohol`, `wine-cellar`, 
 Register new feature manifests in `src/features/index.ts`. App shell routing and navigation
 composition should consume the feature registry, not individual feature route or navigation files.
 Keep only app-shell paths, such as `/` and `/admin`, in `src/app/constants/appRoutes.ts`.
+
+## Adding a Feature
+
+1. Create `src/features/<feature-name>/`.
+2. Add `paths.ts` for route constants owned by the feature.
+3. Add `routes.tsx` for pages exposed by the feature.
+4. Add `navigation.ts` only if the feature appears in the navbar.
+5. Add `permissions.ts` only if the feature has role or capability checks.
+6. Export the feature manifest from `index.ts`.
+7. Register the manifest once in `src/features/index.ts`.
+
+Prefer copying the shape of a small existing feature before inventing a new pattern.
