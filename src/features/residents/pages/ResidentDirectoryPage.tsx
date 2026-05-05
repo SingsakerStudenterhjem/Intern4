@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { getResidentDirectoryUsers } from '../../../server/dao/userDAO';
+import { PageLayout } from '../../../shared/components';
 import { ResidentDirectoryUser } from '../../../shared/types/user';
 import { RESIDENT_PATHS } from '../paths';
 
@@ -292,206 +293,201 @@ const ResidentDirectoryPage: React.FC = () => {
       : 'Kontaktinformasjon og basisinfo for aktive beboere.';
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6 space-y-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
-            <p className="text-gray-600 mt-1">{description}</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <ResidentTab to={RESIDENT_PATHS.BEBOERE} active={!showOldResidents && !showStatistics}>
-              Beboerliste
-            </ResidentTab>
-            <ResidentTab to={RESIDENT_PATHS.BEBOER_STATISTIKK} active={showStatistics}>
-              Statistikk
-            </ResidentTab>
-            <ResidentTab disabled>Beboerkart</ResidentTab>
-            <ResidentTab to={RESIDENT_PATHS.GAMLE_BEBOERE} active={showOldResidents}>
-              Gamle beboere
-            </ResidentTab>
-          </div>
+    <PageLayout
+      title={title}
+      description={description}
+      headerContent={
+        <div className="flex flex-wrap items-center gap-2 pt-3">
+          <ResidentTab to={RESIDENT_PATHS.BEBOERE} active={!showOldResidents && !showStatistics}>
+            Beboerliste
+          </ResidentTab>
+          <ResidentTab to={RESIDENT_PATHS.BEBOER_STATISTIKK} active={showStatistics}>
+            Statistikk
+          </ResidentTab>
+          <ResidentTab disabled>Beboerkart</ResidentTab>
+          <ResidentTab to={RESIDENT_PATHS.GAMLE_BEBOERE} active={showOldResidents}>
+            Gamle beboere
+          </ResidentTab>
         </div>
+      }
+    >
+      {showStatistics ? (
+        <>
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
 
-        {showStatistics ? (
-          <>
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-700">{error}</p>
+          {loading ? (
+            <div className="bg-white rounded-lg shadow flex justify-center py-12">
+              <div
+                className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+                aria-label="Laster beboere"
+              ></div>
+            </div>
+          ) : residents.length === 0 ? (
+            <div className="bg-white rounded-lg shadow px-6 py-8 text-center text-gray-500">
+              Ingen beboere funnet.
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <ColumnChart title="Fødselsår" data={statistics.birthYears} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <ColumnChart title="Studieår" data={statistics.studyYears} />
+                <ColumnChart title="Antall semestre på huset" data={statistics.semesters} />
               </div>
-            )}
+              <HorizontalBarChart title="Studieprogram" data={statistics.courses} />
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type="text"
+                  placeholder={
+                    showOldResidents
+                      ? 'Søk etter navn, adresse eller postnummer...'
+                      : 'Søk etter navn, rom, telefon, e-post, studie eller rolle...'
+                  }
+                  value={query}
+                  onChange={(event) => setQuery(event.target.value)}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          </div>
 
+          {error && (
+            <div className="m-6 p-4 bg-red-50 border border-red-200 rounded-md">
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
             {loading ? (
-              <div className="bg-white rounded-lg shadow flex justify-center py-12">
+              <div className="flex justify-center py-12">
                 <div
                   className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
                   aria-label="Laster beboere"
                 ></div>
               </div>
-            ) : residents.length === 0 ? (
-              <div className="bg-white rounded-lg shadow px-6 py-8 text-center text-gray-500">
-                Ingen beboere funnet.
-              </div>
+            ) : showOldResidents ? (
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Navn
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Adresse
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Postnummer
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredResidents.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
+                        Ingen gamle beboere funnet.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredResidents.map((resident) => (
+                      <tr key={resident.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {resident.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {formatAddress(resident)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {resident.address.postalCode || '-'}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             ) : (
-              <div className="space-y-6">
-                <ColumnChart title="Fødselsår" data={statistics.birthYears} />
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <ColumnChart title="Studieår" data={statistics.studyYears} />
-                  <ColumnChart title="Antall semestre på huset" data={statistics.semesters} />
-                </div>
-                <HorizontalBarChart title="Studieprogram" data={statistics.courses} />
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    placeholder={
-                      showOldResidents
-                        ? 'Søk etter navn, adresse eller postnummer...'
-                        : 'Søk etter navn, rom, telefon, e-post, studie eller rolle...'
-                    }
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {error && (
-              <div className="m-6 p-4 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            )}
-
-            <div className="overflow-x-auto">
-              {loading ? (
-                <div className="flex justify-center py-12">
-                  <div
-                    className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-                    aria-label="Laster beboere"
-                  ></div>
-                </div>
-              ) : showOldResidents ? (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Navn
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Rom
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Telefon
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      E-post
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Studie
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Født
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Rolle
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredResidents.length === 0 ? (
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Navn
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Adresse
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Postnummer
-                      </th>
+                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                        Ingen beboere funnet.
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredResidents.length === 0 ? (
-                      <tr>
-                        <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
-                          Ingen gamle beboere funnet.
+                  ) : (
+                    filteredResidents.map((resident) => (
+                      <tr key={resident.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {resident.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {formatRoom(resident.roomNumber)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {resident.phone || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                          {resident.email || '-'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {formatStudy(resident)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {formatDate(resident.birthDate)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {resident.role ?? 'Ingen rolle'}
                         </td>
                       </tr>
-                    ) : (
-                      filteredResidents.map((resident) => (
-                        <tr key={resident.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {resident.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {formatAddress(resident)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {resident.address.postalCode || '-'}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Navn
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Rom
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Telefon
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        E-post
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Studie
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Født
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Rolle
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredResidents.length === 0 ? (
-                      <tr>
-                        <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
-                          Ingen beboere funnet.
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredResidents.map((resident) => (
-                        <tr key={resident.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {resident.name}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {formatRoom(resident.roomNumber)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {resident.phone || '-'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
-                            {resident.email || '-'}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {formatStudy(resident)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {formatDate(resident.birthDate)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {resident.role ?? 'Ingen rolle'}
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              )}
-            </div>
-
-            <div className="px-6 py-3 border-t border-gray-200 text-sm text-gray-500">
-              Viser {filteredResidents.length} av {residents.length}{' '}
-              {showOldResidents ? 'gamle beboere' : 'beboere'}
-            </div>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
-        )}
-      </div>
-    </div>
+
+          <div className="px-6 py-3 border-t border-gray-200 text-sm text-gray-500">
+            Viser {filteredResidents.length} av {residents.length}{' '}
+            {showOldResidents ? 'gamle beboere' : 'beboere'}
+          </div>
+        </div>
+      )}
+    </PageLayout>
   );
 };
 
