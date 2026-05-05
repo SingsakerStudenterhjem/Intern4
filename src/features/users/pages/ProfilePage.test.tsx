@@ -51,6 +51,7 @@ vi.mock('../../../server/supabaseClient', () => ({
 vi.mock('../../../server/storage', () => ({
   uploadImages: (...args: unknown[]) => mockUploadImages(...args),
   deleteImages: (...args: unknown[]) => mockDeleteImages(...args),
+  deleteImagesBestEffort: (...args: unknown[]) => mockDeleteImages(...args),
   createSignedImageUrl: (...args: unknown[]) => mockCreateSignedImageUrl(...args),
 }));
 
@@ -233,6 +234,33 @@ describe('ProfilePage', () => {
       'src',
       'https://example.com/avatar.png'
     );
+  });
+
+  it('does not delete the new profile image if post-save refresh fails', async () => {
+    const user = userEvent.setup();
+    mockCreateSignedImageUrl.mockRejectedValueOnce(new Error('signed url failed'));
+
+    render(
+      <MemoryRouter>
+        <ProfilePage />
+      </MemoryRouter>
+    );
+
+    await screen.findByLabelText('Fornavn');
+
+    await user.upload(
+      screen.getByLabelText('Last opp bilde'),
+      new File(['avatar'], 'avatar.png', { type: 'image/png' })
+    );
+
+    await waitFor(() => {
+      expect(mockUpdateUser).toHaveBeenCalledWith('11111111-1111-4111-8111-111111111111', {
+        profilePicture: '11111111-1111-4111-8111-111111111111/profile/avatar.png',
+      });
+    });
+
+    expect(await screen.findByText('signed url failed')).toBeInTheDocument();
+    expect(mockDeleteImages).not.toHaveBeenCalled();
   });
 
   it('renders legacy sections as clear stubs while profile picture upload is active', async () => {

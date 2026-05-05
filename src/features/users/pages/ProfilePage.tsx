@@ -4,7 +4,12 @@ import { useAuth } from '../../../app/providers/AuthContext';
 import { supabase } from '../../../server/supabaseClient';
 import { getSchools, getStudies, getUser, updateUser } from '../../../server/dao/userDAO';
 import { resetPassword } from '../../../server/dao/authentication';
-import { createSignedImageUrl, deleteImages, uploadImages } from '../../../server/storage';
+import {
+  createSignedImageUrl,
+  deleteImages,
+  deleteImagesBestEffort,
+  uploadImages,
+} from '../../../server/storage';
 import { PageLayout } from '../../../shared/layouts';
 import { getDefaultLookupId, LookupOption } from '../../../shared/types/lookup';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
@@ -342,6 +347,7 @@ const ProfilePage: React.FC = () => {
     if (!file || !user?.id) return;
 
     let uploadedPaths: string[] = [];
+    let profilePictureUpdated = false;
 
     try {
       setSavingProfilePicture(true);
@@ -354,13 +360,14 @@ const ProfilePage: React.FC = () => {
       await updateUser(user.id, {
         profilePicture: nextPath,
       });
+      profilePictureUpdated = true;
 
       if (
         profilePicturePath &&
         profilePicturePath !== nextPath &&
         profilePicturePath.startsWith(`${user.id}/`)
       ) {
-        await deleteImages([profilePicturePath]);
+        await deleteImagesBestEffort([profilePicturePath]);
       }
 
       setProfilePicturePath(nextPath);
@@ -368,10 +375,21 @@ const ProfilePage: React.FC = () => {
       await supabase.auth.refreshSession();
       setProfilePictureSuccess('Profilbildet ble oppdatert.');
     } catch (error) {
-      await deleteImages(uploadedPaths);
-      console.error(error);
+      let handledError = error;
+      if (!profilePictureUpdated) {
+        try {
+          await deleteImages(uploadedPaths);
+        } catch (cleanupError) {
+          const message =
+            error instanceof Error ? error.message : 'Kunne ikke laste opp profilbilde.';
+          const cleanupMessage =
+            cleanupError instanceof Error ? cleanupError.message : 'opprydding feilet';
+          handledError = new Error(`${message} ${cleanupMessage}`);
+        }
+      }
+      console.error(handledError);
       setProfilePictureError(
-        error instanceof Error ? error.message : 'Kunne ikke laste opp profilbilde.'
+        handledError instanceof Error ? handledError.message : 'Kunne ikke laste opp profilbilde.'
       );
     } finally {
       setSavingProfilePicture(false);

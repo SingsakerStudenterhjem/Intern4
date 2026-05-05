@@ -3,6 +3,8 @@ import {
   IMAGE_BUCKET,
   IMAGE_MAX_BYTES,
   createImagePath,
+  deleteImages,
+  deleteImagesBestEffort,
   uploadImages,
   validateImageFile,
 } from './storage';
@@ -67,5 +69,21 @@ describe('storage image helpers', () => {
     expect(fromMock).toHaveBeenCalledWith(IMAGE_BUCKET);
     expect(uploadMock).toHaveBeenCalledTimes(2);
     expect(removeMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('throws when deleting images fails', async () => {
+    removeMock.mockResolvedValueOnce({ data: null, error: new Error('delete failed') });
+
+    await expect(deleteImages(['user/regi/one.png'])).rejects.toThrow('delete failed');
+  });
+
+  it('keeps best-effort deletion non-blocking', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
+    removeMock.mockResolvedValueOnce({ data: null, error: new Error('delete failed') });
+
+    await expect(deleteImagesBestEffort(['user/regi/one.png'])).resolves.toBeUndefined();
+
+    expect(consoleSpy).toHaveBeenCalled();
+    consoleSpy.mockRestore();
   });
 });

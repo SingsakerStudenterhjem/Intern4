@@ -5,6 +5,7 @@ import {
   RegiLogWithId,
   RegiLogWithUser,
 } from '../../shared/types/regi';
+import { deleteImages } from '../storage';
 import { getUser } from './userDAO';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
@@ -24,20 +25,27 @@ function toDate(value: Date | string | { seconds: number } | null | undefined): 
   return new Date(0);
 }
 
-type WorkItemTypeRelation = { type: string | null } | Array<{ type: string | null }> | null;
+type WorkItemTypeRelation =
+  | { type: string | null }
+  | Array<{ type: string | null }>
+  | null
+  | undefined;
 
 type WorkMiscRelation =
   | { image_paths?: string[] | null }
   | Array<{ image_paths?: string[] | null }>
   | null;
 
-type RegiWorkItemRelation = {
-  title?: string | null;
-  description?: string | null;
-  type?: string | null;
-  work_categories?: { name?: string | null } | null;
-  work_misc?: WorkMiscRelation;
-} | null;
+type RegiWorkItemRelation =
+  | {
+      title?: string | null;
+      description?: string | null;
+      type?: string | null;
+      work_categories?: { name?: string | null } | null;
+      work_misc?: WorkMiscRelation;
+    }
+  | null
+  | undefined;
 
 type RegiAssignmentRow = {
   id?: number | string;
@@ -202,7 +210,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
 export async function deletePendingRegiLog(assignmentId: string, userId: string): Promise<void> {
   const { data: assignment, error: fetchError } = await supabase
     .from('work_assignments')
-    .select('id, user_uuid, approved_state, work_id, work_items(type)')
+    .select('id, user_uuid, approved_state, work_id, work_items(type, work_misc(image_paths))')
     .eq('id', Number(assignmentId))
     .maybeSingle();
 
@@ -219,8 +227,11 @@ export async function deletePendingRegiLog(assignmentId: string, userId: string)
   }
 
   const workId = assignment.work_id ? Number(assignment.work_id) : null;
+  const imagePaths = getImagePaths(assignment.work_items as RegiWorkItemRelation);
 
   if (workId) {
+    await deleteImages(imagePaths);
+
     const { error: deleteWorkMiscError } = await supabase
       .from('work_misc')
       .delete()
