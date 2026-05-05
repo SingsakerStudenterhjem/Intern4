@@ -187,6 +187,34 @@ describe('regiDAO', () => {
     expect(result[0].createdAt).toBeInstanceOf(Date);
   });
 
+  it('does not duplicate legacy image when image_paths contains the same path', async () => {
+    const rows = [
+      {
+        id: 1,
+        work_id: 44,
+        hours_used: 1,
+        created_at: '2026-04-10T10:00:00.000Z',
+        approved_state: 0,
+        work_items: {
+          title: 'Med bilde',
+          description: 'Detaljer',
+          type: 'misc',
+          work_categories: { name: 'Regi' },
+          work_misc: {
+            image: 'user/regi/one.png',
+            image_paths: ['user/regi/one.png'],
+          },
+        },
+      },
+    ];
+
+    vi.mocked(supabase.from).mockImplementationOnce(() => createOrderedBuilder(rows));
+
+    const result = await getRegiLogsByUser('11111111-1111-1111-1111-111111111111');
+
+    expect(result[0].imagePaths).toEqual(['user/regi/one.png']);
+  });
+
   it('stores approver metadata when approving regi work', async () => {
     const updateBuilder = createUpdateBuilder();
     vi.mocked(supabase.from).mockImplementationOnce(() => updateBuilder);
