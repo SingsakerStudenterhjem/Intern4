@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import WorkApprovalList from '../approvals/components/WorkApprovalList';
 import Registatus from '../status/components/Registatus';
 import GrantRegiForm from '../granting/components/GrantRegiForm';
-import { ROUTES } from '../../../app/constants/routes';
+import { REGI_PATHS } from '../paths';
 
 const WorkManagerPage: React.FC = () => {
   return (
@@ -57,7 +57,7 @@ const WorkManagerPage: React.FC = () => {
                 </p>
               </div>
               <Link
-                to={ROUTES.REGILOGS}
+                to={REGI_PATHS.REGILOGS}
                 className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700"
               >
                 Åpne logg

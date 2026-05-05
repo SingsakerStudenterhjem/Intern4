@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../providers/AuthContext';
-import { ROUTES } from '../constants/routes';
 import DropdownMenu from './DropdownMenu';
 import { ChevronDown, Menu, UserCircle, X } from 'lucide-react';
 import { logOut } from '../../server/dao/authentication';
 import { appNavigation } from './navigation';
 import type { FeatureNavItem } from '../../shared/types/feature';
+import { APP_ROUTES } from '../constants/appRoutes';
+import { AUTH_PATHS } from '../../features/auth/paths';
+import { USER_PATHS } from '../../features/users/paths';
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -63,7 +65,7 @@ const Navbar = () => {
   return (
     <nav className="bg-white shadow px-8 py-2 flex justify-between items-center relative">
       <div className="text-xl font-semibold">
-        <Link to="/">Internsiden</Link>
+        <Link to={APP_ROUTES.HOME}>Internsiden</Link>
       </div>
 
       {user && (
@@ -108,7 +110,7 @@ const Navbar = () => {
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                   <Link
-                    to={ROUTES.PROFILE}
+                    to={USER_PATHS.PROFILE}
                     onClick={() => setUserMenuOpen(false)}
                     className="block px-4 py-2 text-sm hover:bg-gray-100"
                   >
@@ -125,7 +127,7 @@ const Navbar = () => {
             </div>
           </>
         ) : (
-          <Link to={ROUTES.LOGIN} className="hover:text-blue-500">
+          <Link to={AUTH_PATHS.LOGIN} className="hover:text-blue-500">
             Logg inn
           </Link>
         )}
@@ -186,7 +188,7 @@ const Navbar = () => {
             </div>
             <div className="flex items-center gap-3">
               <Link
-                to={ROUTES.PROFILE}
+                to={USER_PATHS.PROFILE}
                 onClick={() => setMobileOpen(false)}
                 className="text-blue-600"
               >

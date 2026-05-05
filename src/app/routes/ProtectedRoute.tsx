@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../providers/AuthContext';
-import { ROUTES } from '../constants/routes';
+import { AUTH_PATHS } from '../../features/auth/paths';
 
 type ProtectedRouteProps = {
   children?: ReactNode;
@@ -20,7 +20,7 @@ const ProtectedRoute = ({ children, allowedRoles = [] }: ProtectedRouteProps) =>
   }
 
   if (!user) {
-    return <Navigate to={ROUTES.LOGIN} replace />;
+    return <Navigate to={AUTH_PATHS.LOGIN} replace />;
   }
 
   if (allowedRoles.length > 0 && (!user.role || !allowedRoles.includes(user.role))) {

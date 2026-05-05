@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { RefreshCw, Search } from 'lucide-react';
 import { RegiLogWithUser } from '../../../../shared/types/regi';
 import { getAllRegiLogs } from '../../../../server/dao/regiDAO';
-import { ROUTES } from '../../../../app/constants/routes';
+import { REGI_PATHS } from '../../paths';
 import { useAuth } from '../../../../app/providers/AuthContext';
 import { canApproveWork } from '../../permissions';
 
@@ -82,7 +82,7 @@ const RegiLogsPage: React.FC = () => {
             <h1 className="text-3xl font-bold text-gray-900">Regilogger</h1>
             <p className="text-gray-600">Alle registrerte timer, inkludert godkjente og avviste.</p>
           </div>
-          <Link to={ROUTES.REGISJEF} className="text-blue-600 hover:underline text-sm">
+          <Link to={REGI_PATHS.REGISJEF} className="text-blue-600 hover:underline text-sm">
             Tilbake til oversikt
           </Link>
         </div>

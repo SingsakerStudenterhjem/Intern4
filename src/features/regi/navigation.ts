@@ -1,6 +1,7 @@
-import { ROUTES } from '../../app/constants/routes';
 import type { FeatureNavItem, PermissionCheck } from '../../shared/types/feature';
 import { canApproveWork } from './permissions';
+import { REGI_PATHS } from './paths';
+import { TASK_PATHS } from '../tasks/paths';
 
 const canAccessRegiManager: PermissionCheck = ({ user }) => canApproveWork(user?.role);
 
@@ -12,23 +13,23 @@ export const regiNavigation: FeatureNavItem[] = [
       {
         key: 'regi-tasks',
         label: 'Oppgaver',
-        to: ROUTES.TASKS,
+        to: TASK_PATHS.TASKS,
       },
       {
         key: 'my-regi',
         label: 'Min regi',
-        to: ROUTES.REGI,
+        to: REGI_PATHS.REGI,
       },
       {
         key: 'regi-manager',
         label: 'Regisjef',
-        to: ROUTES.REGISJEF,
+        to: REGI_PATHS.REGISJEF,
         canAccess: canAccessRegiManager,
       },
       {
         key: 'regi-logs',
         label: 'Regilogger',
-        to: ROUTES.REGILOGS,
+        to: REGI_PATHS.REGILOGS,
         canAccess: canAccessRegiManager,
       },
     ],

@@ -1,10 +1,10 @@
-import { ROUTES } from '../../app/constants/routes';
 import type { FeatureNavItem } from '../../shared/types/feature';
+import { TASK_PATHS } from './paths';
 
 export const taskNavigation: FeatureNavItem[] = [
   {
     key: 'dash',
     label: 'Dashboard',
-    to: ROUTES.DASHBOARD,
+    to: TASK_PATHS.DASHBOARD,
   },
 ];

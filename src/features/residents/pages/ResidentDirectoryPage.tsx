@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { getResidentDirectoryUsers } from '../../../server/dao/userDAO';
 import { ResidentDirectoryUser } from '../../../shared/types/user';
-import { ROUTES } from '../../../app/constants/routes';
+import { RESIDENT_PATHS } from '../paths';
 
 const formatDate = (value: string | null): string => {
   if (!value) return '-';
@@ -228,8 +228,8 @@ const ResidentTab = ({ to, active = false, disabled = false, children }: Residen
 
 const ResidentDirectoryPage: React.FC = () => {
   const location = useLocation();
-  const showOldResidents = location.pathname === ROUTES.GAMLE_BEBOERE;
-  const showStatistics = location.pathname === ROUTES.BEBOER_STATISTIKK;
+  const showOldResidents = location.pathname === RESIDENT_PATHS.GAMLE_BEBOERE;
+  const showStatistics = location.pathname === RESIDENT_PATHS.BEBOER_STATISTIKK;
   const [residents, setResidents] = useState<ResidentDirectoryUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -301,14 +301,14 @@ const ResidentDirectoryPage: React.FC = () => {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <ResidentTab to={ROUTES.BEBOERE} active={!showOldResidents && !showStatistics}>
+            <ResidentTab to={RESIDENT_PATHS.BEBOERE} active={!showOldResidents && !showStatistics}>
               Beboerliste
             </ResidentTab>
-            <ResidentTab to={ROUTES.BEBOER_STATISTIKK} active={showStatistics}>
+            <ResidentTab to={RESIDENT_PATHS.BEBOER_STATISTIKK} active={showStatistics}>
               Statistikk
             </ResidentTab>
             <ResidentTab disabled>Beboerkart</ResidentTab>
-            <ResidentTab to={ROUTES.GAMLE_BEBOERE} active={showOldResidents}>
+            <ResidentTab to={RESIDENT_PATHS.GAMLE_BEBOERE} active={showOldResidents}>
               Gamle beboere
             </ResidentTab>
           </div>

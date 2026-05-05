@@ -1,18 +1,18 @@
 import ResidentDirectoryPage from './pages/ResidentDirectoryPage';
-import { ROUTES } from '../../app/constants/routes';
 import type { FeatureRoute } from '../../shared/types/feature';
+import { RESIDENT_PATHS } from './paths';
 
 export const residentRoutes: FeatureRoute[] = [
   {
-    path: ROUTES.BEBOERE,
+    path: RESIDENT_PATHS.BEBOERE,
     element: <ResidentDirectoryPage />,
   },
   {
-    path: ROUTES.BEBOER_STATISTIKK,
+    path: RESIDENT_PATHS.BEBOER_STATISTIKK,
     element: <ResidentDirectoryPage />,
   },
   {
-    path: ROUTES.GAMLE_BEBOERE,
+    path: RESIDENT_PATHS.GAMLE_BEBOERE,
     element: <ResidentDirectoryPage />,
   },
 ];

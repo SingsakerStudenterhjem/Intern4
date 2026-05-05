@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { logIn } from '../../../server/dao/authentication';
 import { useAuth } from '../../../app/providers/AuthContext';
 import { useEffect } from 'react';
-import { ROUTES } from '../../../app/constants/routes';
+import { AUTH_PATHS } from '../paths';
 
 const LoginForm = () => {
   const router = useNavigate();
@@ -80,7 +80,7 @@ const LoginForm = () => {
         </div>
 
         <div className="mb-6 text-right">
-          <Link to={ROUTES.FORGOT_PASSWORD} className="text-sm text-blue-600 hover:underline">
+          <Link to={AUTH_PATHS.FORGOT_PASSWORD} className="text-sm text-blue-600 hover:underline">
             Glemt passord?
           </Link>
         </div>
