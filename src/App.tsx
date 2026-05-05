@@ -1,7 +1,7 @@
 import { BrowserRouter, useLocation } from 'react-router-dom';
-import { AuthProvider } from './contexts/authContext';
-import AppRouter from './app/components/common/appRouter';
-import Navbar from './app/components/Navbar/Navbar';
+import { AuthProvider } from './app/providers/AuthContext';
+import AppRouter from './app/routes/AppRouter';
+import Navbar from './app/layout/Navbar';
 import { ROUTES } from './app/constants/routes';
 
 const HIDE_NAVBAR_ROUTES = [ROUTES.LOGIN, ROUTES.FORGOT_PASSWORD, ROUTES.RESET_PASSWORD];
