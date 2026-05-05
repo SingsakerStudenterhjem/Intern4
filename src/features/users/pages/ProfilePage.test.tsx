@@ -11,6 +11,9 @@ const mockGetSchools = vi.fn();
 const mockGetStudies = vi.fn();
 const mockResetPassword = vi.fn();
 const mockRefreshSession = vi.fn();
+const mockUploadImages = vi.fn();
+const mockDeleteImages = vi.fn();
+const mockCreateSignedImageUrl = vi.fn();
 
 vi.mock('../../../app/providers/AuthContext', () => ({
   useAuth: () => mockUseAuth(),
@@ -43,6 +46,12 @@ vi.mock('../../../server/supabaseClient', () => ({
       refreshSession: (...args: unknown[]) => mockRefreshSession(...args),
     },
   },
+}));
+
+vi.mock('../../../server/storage', () => ({
+  uploadImages: (...args: unknown[]) => mockUploadImages(...args),
+  deleteImages: (...args: unknown[]) => mockDeleteImages(...args),
+  createSignedImageUrl: (...args: unknown[]) => mockCreateSignedImageUrl(...args),
 }));
 
 const profile = {
@@ -89,6 +98,9 @@ describe('ProfilePage', () => {
     mockUpdateUser.mockResolvedValue(undefined);
     mockResetPassword.mockResolvedValue({ success: true });
     mockRefreshSession.mockResolvedValue(undefined);
+    mockUploadImages.mockResolvedValue(['11111111-1111-4111-8111-111111111111/profile/avatar.png']);
+    mockDeleteImages.mockResolvedValue(undefined);
+    mockCreateSignedImageUrl.mockResolvedValue('https://example.com/avatar.png');
   });
 
   afterEach(() => {
@@ -189,7 +201,41 @@ describe('ProfilePage', () => {
     expect(await screen.findByText('Passordet ditt ble oppdatert.')).toBeInTheDocument();
   });
 
-  it('renders the planned legacy sections as clear stubs', async () => {
+  it('uploads and saves a new profile picture', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter>
+        <ProfilePage />
+      </MemoryRouter>
+    );
+
+    await screen.findByLabelText('Fornavn');
+
+    const file = new File(['avatar'], 'avatar.png', { type: 'image/png' });
+    await user.upload(screen.getByLabelText('Last opp bilde'), file);
+
+    await waitFor(() => {
+      expect(mockUploadImages).toHaveBeenCalledWith(
+        '11111111-1111-4111-8111-111111111111',
+        'profile',
+        [file]
+      );
+    });
+
+    await waitFor(() => {
+      expect(mockUpdateUser).toHaveBeenCalledWith('11111111-1111-4111-8111-111111111111', {
+        profilePicture: '11111111-1111-4111-8111-111111111111/profile/avatar.png',
+      });
+    });
+    expect(await screen.findByText('Profilbildet ble oppdatert.')).toBeInTheDocument();
+    expect(await screen.findByAltText('Profilbilde')).toHaveAttribute(
+      'src',
+      'https://example.com/avatar.png'
+    );
+  });
+
+  it('renders legacy sections as clear stubs while profile picture upload is active', async () => {
     render(
       <MemoryRouter>
         <ProfilePage />
@@ -203,6 +249,6 @@ describe('ProfilePage', () => {
     expect(screen.getByRole('heading', { name: 'Varsler' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'E-postlister' })).toBeInTheDocument();
     expect(screen.getAllByText('Kommer senere').length).toBeGreaterThan(0);
-    expect(screen.getByRole('button', { name: 'Last opp bilde' })).toBeDisabled();
+    expect(screen.getByLabelText('Last opp bilde')).toBeEnabled();
   });
 });

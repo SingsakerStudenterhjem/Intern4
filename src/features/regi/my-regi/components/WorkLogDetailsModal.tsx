@@ -1,6 +1,7 @@
 import React from 'react';
 import { Calendar, Clock, FileText, MessageSquare, Tag, X } from 'lucide-react';
 import { RegiLogWithId } from '../../../../shared/types/regi';
+import { ImagePreviewGrid } from '../../../../shared/components';
 
 type WorkLogDetailsModalProps = {
   log: RegiLogWithId | null;
@@ -88,6 +89,8 @@ const WorkLogDetailsModal: React.FC<WorkLogDetailsModalProps> = ({ log, onClose 
               {log.description || 'Ingen beskrivelse.'}
             </div>
           </div>
+
+          <ImagePreviewGrid paths={log.imagePaths} title="Bilder" />
 
           {log.reviewerComment && (
             <div className="space-y-2 rounded-md border border-blue-100 bg-blue-50 p-4">

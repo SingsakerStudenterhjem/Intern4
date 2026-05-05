@@ -105,6 +105,16 @@ function createInsertSingleBuilder(data: unknown) {
   return asSupabaseBuilder(builder);
 }
 
+function createInsertErrorBuilder(message: string) {
+  const builder: {
+    insert: MockFn;
+  } = {
+    insert: mockFn(async () => ({ error: new Error(message) })),
+  };
+
+  return asSupabaseBuilder(builder);
+}
+
 describe('regiDAO', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -216,6 +226,69 @@ describe('regiDAO', () => {
       hours_used: 2,
       approved_state: 0,
     });
+  });
+
+  it('stores image paths for manual regi logs', async () => {
+    const categoryBuilder = createMaybeSingleBuilder({ id: 7 });
+    const workItemBuilder = createInsertSingleBuilder({ id: 44 });
+    const assignmentBuilder = createInsertSingleBuilder({ id: 12 });
+    const workMiscBuilder = createInsertErrorBuilder('');
+    workMiscBuilder.insert.mockResolvedValueOnce({ error: null });
+
+    vi.mocked(supabase.from)
+      .mockImplementationOnce(() => categoryBuilder)
+      .mockImplementationOnce(() => workItemBuilder)
+      .mockImplementationOnce(() => assignmentBuilder)
+      .mockImplementationOnce(() => workMiscBuilder);
+
+    await addRegiLog({
+      userId: '11111111-1111-1111-1111-111111111111',
+      title: 'Med bilder',
+      description: 'Test',
+      date: new Date('2026-04-21T00:00:00.000Z'),
+      hours: 2,
+      type: 'Regi',
+      imagePaths: ['user/regi/one.png', 'user/regi/two.png'],
+    });
+
+    expect(supabase.from).toHaveBeenLastCalledWith('work_misc');
+    expect(workMiscBuilder.insert).toHaveBeenCalledWith({
+      id: 44,
+      image: 'user/regi/one.png',
+      image_paths: ['user/regi/one.png', 'user/regi/two.png'],
+    });
+  });
+
+  it('rolls back work rows when storing regi image metadata fails', async () => {
+    const categoryBuilder = createMaybeSingleBuilder({ id: 7 });
+    const workItemBuilder = createInsertSingleBuilder({ id: 44 });
+    const assignmentBuilder = createInsertSingleBuilder({ id: 12 });
+    const workMiscBuilder = createInsertErrorBuilder('image metadata failed');
+    const deleteAssignmentBuilder = createDeleteBuilder();
+    const deleteWorkItemBuilder = createDeleteBuilder();
+
+    vi.mocked(supabase.from)
+      .mockImplementationOnce(() => categoryBuilder)
+      .mockImplementationOnce(() => workItemBuilder)
+      .mockImplementationOnce(() => assignmentBuilder)
+      .mockImplementationOnce(() => workMiscBuilder)
+      .mockImplementationOnce(() => deleteAssignmentBuilder)
+      .mockImplementationOnce(() => deleteWorkItemBuilder);
+
+    await expect(
+      addRegiLog({
+        userId: '11111111-1111-1111-1111-111111111111',
+        title: 'Med bilder',
+        description: 'Test',
+        date: new Date('2026-04-21T00:00:00.000Z'),
+        hours: 2,
+        type: 'Regi',
+        imagePaths: ['user/regi/one.png'],
+      })
+    ).rejects.toThrow('image metadata failed');
+
+    expect(deleteAssignmentBuilder.eq).toHaveBeenCalledWith('id', 12);
+    expect(deleteWorkItemBuilder.eq).toHaveBeenCalledWith('id', 44);
   });
 
   it('deletes only the current users pending manual regi log and removes its work item when orphaned', async () => {

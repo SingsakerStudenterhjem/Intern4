@@ -182,6 +182,11 @@ const WorkApprovalList: React.FC = () => {
                           {a.description}
                         </div>
                       )}
+                      {a.imagePaths && a.imagePaths.length > 0 && (
+                        <div className="mt-1 text-xs text-gray-500">
+                          {a.imagePaths.length} {a.imagePaths.length === 1 ? 'bilde' : 'bilder'}
+                        </div>
+                      )}
                     </div>
                   </td>
                   <td className="px-4 py-3 align-top whitespace-nowrap">
@@ -252,6 +257,11 @@ const WorkApprovalList: React.FC = () => {
                   {a.description && (
                     <div className="mt-1 text-sm text-gray-600 wrap-break-word">
                       {a.description}
+                    </div>
+                  )}
+                  {a.imagePaths && a.imagePaths.length > 0 && (
+                    <div className="mt-1 text-xs text-gray-500">
+                      {a.imagePaths.length} {a.imagePaths.length === 1 ? 'bilde' : 'bilder'}
                     </div>
                   )}
                 </div>

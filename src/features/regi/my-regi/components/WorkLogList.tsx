@@ -129,7 +129,14 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
                       Registrert {formatLogDate(l.createdAt)}
                     </div>
                   </td>
-                  <td className="px-4 py-3">{l.title}</td>
+                  <td className="px-4 py-3">
+                    <div>{l.title}</div>
+                    {l.imagePaths && l.imagePaths.length > 0 && (
+                      <div className="mt-1 text-xs text-gray-500">
+                        {l.imagePaths.length} {l.imagePaths.length === 1 ? 'bilde' : 'bilder'}
+                      </div>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{l.hours.toFixed(2)}</td>
                   <td className="px-4 py-3 capitalize">{l.type}</td>
                   <td className="px-4 py-3 capitalize">

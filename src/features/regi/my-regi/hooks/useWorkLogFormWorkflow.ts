@@ -3,6 +3,7 @@ import { RegiLog } from '../../../../shared/types/regi';
 import { Category } from '../../../../shared/types/regi/tasks';
 import { addRegiLog } from '../../../../server/dao/regiDAO';
 import { getCategories } from '../../../../server/dao/categoriesDAO';
+import { deleteImages, uploadImages } from '../../../../server/storage';
 
 export const useWorkLogFormWorkflow = () => {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -26,8 +27,18 @@ export const useWorkLogFormWorkflow = () => {
     };
   }, []);
 
-  const createWorkLog = async (payload: Omit<RegiLog, 'id' | 'createdAt' | 'status'>) => {
-    await addRegiLog(payload);
+  const createWorkLog = async (
+    payload: Omit<RegiLog, 'id' | 'createdAt' | 'status'>,
+    files: File[] = []
+  ) => {
+    const imagePaths = await uploadImages(payload.userId, 'regi', files);
+
+    try {
+      await addRegiLog({ ...payload, imagePaths });
+    } catch (error) {
+      await deleteImages(imagePaths);
+      throw error;
+    }
   };
 
   return {

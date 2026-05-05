@@ -45,10 +45,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     setFiles(nextFiles);
 
     if (!fileInputRef.current) return;
-
-    const transfer = new DataTransfer();
-    nextFiles.forEach((file) => transfer.items.add(file));
-    fileInputRef.current.files = transfer.files;
+    fileInputRef.current.value = '';
   };
 
   const addFiles = (selectedFiles: File[]) => {
@@ -92,14 +89,17 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         status: 'pending',
       });
 
-      await createWorkLog({
-        userId: payload.userId,
-        title: payload.title,
-        description: payload.description,
-        date: payload.date,
-        hours: payload.hours,
-        type: payload.type,
-      });
+      await createWorkLog(
+        {
+          userId: payload.userId,
+          title: payload.title,
+          description: payload.description,
+          date: payload.date,
+          hours: payload.hours,
+          type: payload.type,
+        },
+        files
+      );
 
       setForm({
         title: '',
@@ -115,6 +115,11 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       if (onCreated) {
         onCreated();
       }
+    } catch (submitError) {
+      setErrors({
+        form:
+          submitError instanceof Error ? submitError.message : 'Kunne ikke registrere regiarbeid.',
+      });
     } finally {
       setSubmitting(false);
     }
@@ -233,6 +238,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       >
         {submitting ? 'Lagrer...' : 'Registrer'}
       </button>
+      {errors.form && <p className="text-sm text-red-600">{errors.form}</p>}
     </form>
   );
 };
