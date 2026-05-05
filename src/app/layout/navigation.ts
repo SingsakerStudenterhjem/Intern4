@@ -1,10 +1,10 @@
 import { APP_ROUTES } from '../constants/appRoutes';
 import { USER_ROLES } from '../constants/userRoles';
-import { features } from '../../features';
+import { featureNavigation } from '../../features/navigation';
 import type { FeatureNavItem } from '../../shared/types/feature';
 
 export const appNavigation: FeatureNavItem[] = [
-  ...features.flatMap((feature) => feature.navigation ?? []),
+  ...featureNavigation,
   {
     key: 'admin',
     label: 'Admin',
