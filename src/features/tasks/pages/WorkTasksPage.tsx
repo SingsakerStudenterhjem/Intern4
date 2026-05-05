@@ -5,7 +5,7 @@ import TaskModal from '../components/TaskModal';
 import TaskCreationModal from '../components/TaskCreationModal';
 import CategoryManagement from '../components/CategoryManagement';
 import { useTaskManagement } from '../hooks/useTaskManagement';
-import { PageLayout } from '../../../shared/components';
+import { PageLayout } from '../../../shared/layouts';
 
 const WorkTasksPage: React.FC = () => {
   const {

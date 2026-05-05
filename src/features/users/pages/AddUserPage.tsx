@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Search, Trash2 } from 'lucide-react';
 import { NewUserInput } from '../../../shared/types/user';
-import { PageLayout } from '../../../shared/components';
+import { PageLayout } from '../../../shared/layouts';
 import {
   createUser,
   deleteUser,

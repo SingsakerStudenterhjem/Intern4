@@ -5,7 +5,7 @@ import WorkApprovalList from '../approvals/components/WorkApprovalList';
 import Registatus from '../status/components/Registatus';
 import GrantRegiForm from '../granting/components/GrantRegiForm';
 import { REGI_PATHS } from '../paths';
-import { PageLayout } from '../../../shared/components';
+import { PageLayout } from '../../../shared/layouts';
 
 const WorkManagerPage: React.FC = () => {
   return (
