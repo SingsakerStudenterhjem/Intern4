@@ -9,6 +9,9 @@ export const USER_ROLES = {
   GENERAL_MANAGER: 'Daglig leder',
   ADMIN: 'Admin',
   USER: 'user',
-};
+} as const;
 
 export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+
+export const isUserRole = (role?: string): role is UserRole =>
+  Boolean(role && Object.values(USER_ROLES).includes(role as UserRole));
