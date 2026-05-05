@@ -63,7 +63,7 @@ const Navbar = () => {
   }, []);
 
   return (
-    <nav className="bg-white shadow px-8 py-2 flex justify-between items-center relative">
+    <nav className="relative z-40 bg-white shadow px-8 py-2 flex justify-between items-center">
       <div className="text-xl font-semibold">
         <Link to={APP_ROUTES.HOME}>Internsiden</Link>
       </div>
@@ -134,7 +134,7 @@ const Navbar = () => {
       </div>
 
       {user && mobileOpen && (
-        <div className="absolute top-full inset-x-0 bg-white shadow-md p-4 md:hidden">
+        <div className="absolute top-full inset-x-0 z-50 bg-white shadow-md p-4 md:hidden">
           <ul className="space-y-2">
             {visibleItems.map((item) => (
               <li key={item.key}>
