@@ -1,23 +1,21 @@
 import { ROUTES } from '../../app/constants/routes';
-import { USER_ROLES } from '../../app/constants/userRoles';
 import type { FeatureNavItem, PermissionCheck } from '../../shared/types/feature';
+import { canAccessRoomManagement } from './permissions';
 
-const canAccessRoomManagement: PermissionCheck = ({ user }) =>
-  Boolean(
-    user?.role && [USER_ROLES.ADMIN, USER_ROLES.ROOMMANAGER, USER_ROLES.DATA].includes(user.role)
-  );
+const canAccessRoomManagementItem: PermissionCheck = ({ user }) =>
+  canAccessRoomManagement(user?.role);
 
 export const userNavigation: FeatureNavItem[] = [
   {
     key: 'rom',
     label: 'Rom',
-    canAccess: canAccessRoomManagement,
+    canAccess: canAccessRoomManagementItem,
     children: [
       {
         key: 'manage-users',
         label: 'Administrer brukere',
         to: ROUTES.LEGG_TIL_BEBOER,
-        canAccess: canAccessRoomManagement,
+        canAccess: canAccessRoomManagementItem,
       },
     ],
   },

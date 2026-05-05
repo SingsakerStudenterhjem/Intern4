@@ -1,13 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../providers/AuthContext';
-import { USER_ROLES } from '../constants/userRoles';
 import { LucideChevronDown } from 'lucide-react';
 
 type DropdownItem = {
   label: string;
   to: string;
-  roles?: string[];
 };
 
 type DropdownMenuProps = {
@@ -16,7 +13,6 @@ type DropdownMenuProps = {
 };
 
 const DropdownMenu = ({ label, items }: DropdownMenuProps) => {
-  const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement | null>(null);
 
@@ -32,16 +28,6 @@ const DropdownMenu = ({ label, items }: DropdownMenuProps) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // only include items with no roles restriction or where user.role is allowed
-  const visible = items.filter((item) => {
-    if (!item.roles) return true;
-    const role = user?.role;
-    if (!role) return false;
-    return item.roles.includes(role) || item.roles.includes(USER_ROLES.DATA);
-  });
-
-  if (visible.length === 0) return null;
-
   return (
     <div className="relative" ref={ref}>
       <button
@@ -54,7 +40,7 @@ const DropdownMenu = ({ label, items }: DropdownMenuProps) => {
       </button>
       {open && (
         <ul className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg z-10">
-          {visible.map(({ label, to }) => (
+          {items.map(({ label, to }) => (
             <li key={to}>
               <Link
                 to={to}

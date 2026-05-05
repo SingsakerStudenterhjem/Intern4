@@ -24,7 +24,7 @@ import {
   TaskCreationData,
 } from '../../../shared/types/regi/tasks';
 import { ParticipantNames, TaskContactPersonOption } from '../components/types';
-import { canManageCategories, canManageTasks } from '../../../app/constants/userRoles';
+import { canManageCategories, canManageTasks } from '../permissions';
 import { useTasks } from './useTasks';
 
 type StatusMessage = { type: 'success' | 'error'; text: string };

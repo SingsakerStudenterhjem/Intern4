@@ -3,10 +3,8 @@ import WorkManagerPage from './pages/WorkManagerPage';
 import WorkApprovalsPage from './pages/WorkApprovalsPage';
 import RegiLogsPage from './pages/RegiLogsPage';
 import { ROUTES } from '../../app/constants/routes';
-import { USER_ROLES } from '../../app/constants/userRoles';
 import type { FeatureRoute } from '../../shared/types/feature';
-
-const regiManagerRoles = [USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER];
+import { regiManagerRoles } from './permissions';
 
 export const regiRoutes: FeatureRoute[] = [
   {

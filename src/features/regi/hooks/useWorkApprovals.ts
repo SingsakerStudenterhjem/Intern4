@@ -5,7 +5,7 @@ import {
   getPendingRegiApprovals,
   rejectRegiLog,
 } from '../../../server/dao/regiDAO';
-import { canApproveWork } from '../../../app/constants/userRoles';
+import { canApproveWork } from '../permissions';
 import { AuthUser } from '../../auth/hooks/useAuth';
 
 export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getRequiredRegiHoursForRole } from '../../../app/constants/regiRequirements';
-import { canApproveWork } from '../../../app/constants/userRoles';
+import { canApproveWork } from '../permissions';
 import { getApprovedRegiHoursByUserSince } from '../../../server/dao/regiDAO';
 import { getActiveUsersWithRole } from '../../../server/dao/userDAO';
 import { AuthUser } from '../../auth/hooks/useAuth';
