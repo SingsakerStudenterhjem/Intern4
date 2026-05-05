@@ -5,14 +5,7 @@ import { PendingRegiApproval } from '../../../../shared/types/regi';
 import WorkApprovalModal from './WorkApprovalModal';
 import { canApproveWork } from '../../permissions';
 import { useWorkApprovals } from '../hooks/useWorkApprovals';
-
-type DateValue = Date | string | { seconds: number } | null | undefined;
-
-const hasSeconds = (value: DateValue): value is { seconds: number } =>
-  typeof value === 'object' &&
-  value !== null &&
-  'seconds' in value &&
-  typeof value.seconds === 'number';
+import { formatDate } from '../../../../shared/utils/date';
 
 const WorkApprovalList: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -29,14 +22,6 @@ const WorkApprovalList: React.FC = () => {
     approve,
     reject,
   } = useWorkApprovals(user, authLoading);
-
-  const formatDate = (value: DateValue) => {
-    if (!value) return '-';
-    if (hasSeconds(value)) return new Date(value.seconds * 1000).toLocaleDateString('no-NO');
-    if (typeof value === 'string') return new Date(value).toLocaleDateString('no-NO');
-    if (value instanceof Date) return value.toLocaleDateString('no-NO');
-    return '-';
-  };
 
   if (authLoading) return null;
   if (!user) return null;

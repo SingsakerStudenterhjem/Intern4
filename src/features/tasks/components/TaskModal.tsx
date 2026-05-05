@@ -10,14 +10,7 @@ import {
 } from '../../../shared/types/regi/tasks';
 import { canManageTasks, canViewAllParticipants } from '../permissions';
 import { TaskModalProps } from './types';
-
-type DateValue = Date | string | { seconds: number } | null | undefined;
-
-const hasSeconds = (value: DateValue): value is { seconds: number } =>
-  typeof value === 'object' &&
-  value !== null &&
-  'seconds' in value &&
-  typeof value.seconds === 'number';
+import { formatDateTime } from '../../../shared/utils/date';
 
 const TaskModal: React.FC<TaskModalProps> = ({
   task,
@@ -36,19 +29,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   if (!task) return null;
 
-  const formatDeadline = (deadline: DateValue) => {
-    if (!deadline) return 'Ingen frist';
-
-    if (hasSeconds(deadline)) {
-      return new Date(deadline.seconds * 1000).toLocaleString('no-NO');
-    }
-
-    if (typeof deadline === 'string') {
-      return new Date(deadline).toLocaleString('no-NO');
-    }
-
-    return 'Ugyldig dato';
-  };
+  const formatDeadline = (deadline: NonNullable<TaskModalProps['task']>['deadline']) =>
+    formatDateTime(deadline, deadline ? 'Ugyldig dato' : 'Ingen frist');
 
   const currentParticipant = getCurrentUserTaskParticipant(task, currentUserId);
   const participantCount = getTaskParticipantCount(task);

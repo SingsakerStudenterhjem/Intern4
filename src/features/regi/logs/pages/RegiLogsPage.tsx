@@ -7,14 +7,7 @@ import { REGI_PATHS } from '../../paths';
 import { useAuth } from '../../../../app/providers/AuthContext';
 import { canApproveWork } from '../../permissions';
 import { PageLayout } from '../../../../shared/layouts';
-
-type DateValue = Date | string | { seconds: number } | null | undefined;
-
-const hasSeconds = (value: DateValue): value is { seconds: number } =>
-  typeof value === 'object' &&
-  value !== null &&
-  'seconds' in value &&
-  typeof value.seconds === 'number';
+import { formatDate } from '../../../../shared/utils/date';
 
 type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
 
@@ -58,14 +51,6 @@ const RegiLogsPage: React.FC = () => {
       return matchesStatus && matchesQuery;
     });
   }, [logs, status, query]);
-
-  const formatDate = (value: DateValue) => {
-    if (!value) return '-';
-    if (hasSeconds(value)) return new Date(value.seconds * 1000).toLocaleDateString('no-NO');
-    if (typeof value === 'string') return new Date(value).toLocaleDateString('no-NO');
-    if (value instanceof Date) return value.toLocaleDateString('no-NO');
-    return '-';
-  };
 
   if (!user || !canApproveWork(user.role)) {
     return (

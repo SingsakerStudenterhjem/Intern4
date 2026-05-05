@@ -8,14 +8,7 @@ import {
   isTaskFull,
 } from '../../../shared/types/regi/tasks';
 import { TasksTableProps } from './types';
-
-type DateValue = Date | string | { seconds: number } | null | undefined;
-
-const hasSeconds = (value: DateValue): value is { seconds: number } =>
-  typeof value === 'object' &&
-  value !== null &&
-  'seconds' in value &&
-  typeof value.seconds === 'number';
+import { formatDate } from '../../../shared/utils/date';
 
 const TasksTable: React.FC<TasksTableProps> = ({
   tasks,
@@ -24,21 +17,8 @@ const TasksTable: React.FC<TasksTableProps> = ({
   currentUserId,
   participantNames = {},
 }) => {
-  const formatDeadline = (deadline: DateValue) => {
-    if (!deadline) return 'Ingen frist';
-
-    // Handle Firestore Timestamp
-    if (hasSeconds(deadline)) {
-      return new Date(deadline.seconds * 1000).toLocaleDateString('no-NO');
-    }
-
-    // Handle regular date string
-    if (typeof deadline === 'string') {
-      return new Date(deadline).toLocaleDateString('no-NO');
-    }
-
-    return 'Ugyldig dato';
-  };
+  const formatDeadline = (deadline: Task['deadline']) =>
+    formatDate(deadline, deadline ? 'Ugyldig dato' : 'Ingen frist');
 
   const getParticipantStatus = (task: Task) => {
     const currentParticipant = getCurrentUserTaskParticipant(task, currentUserId);

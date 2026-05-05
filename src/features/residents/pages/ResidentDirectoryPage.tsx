@@ -4,16 +4,8 @@ import { Search } from 'lucide-react';
 import { getResidentDirectoryUsers } from '../../../server/dao/userDAO';
 import { PageLayout } from '../../../shared/layouts';
 import { ResidentDirectoryUser } from '../../../shared/types/user';
+import { formatDate } from '../../../shared/utils/date';
 import { RESIDENT_PATHS } from '../paths';
-
-const formatDate = (value: string | null): string => {
-  if (!value) return '-';
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return '-';
-
-  return date.toLocaleDateString('no-NO');
-};
 
 const formatRoom = (roomNumber: number | null): string => {
   if (roomNumber === null || roomNumber === 0) return '-';
