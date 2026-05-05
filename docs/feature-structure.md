@@ -35,8 +35,8 @@ I.e. `regi` is split by workflow:
 
 Use the same pattern for future broad domains such as `alcohol`, `wine-cellar`, and `shifts`.
 
-Register new feature manifests in `src/features/index.ts`. App shell routing and navigation
-composition should consume the feature registry, not individual feature route or navigation files.
+Register new feature manifests in `src/features/index.ts`. Register navbar items in
+`src/features/navigation.ts` so layout tests and navigation rendering do not load route page modules.
 Keep only app-shell paths, such as `/` and `/admin`, in `src/app/constants/appRoutes.ts`.
 
 ## Adding a Feature
@@ -48,5 +48,6 @@ Keep only app-shell paths, such as `/` and `/admin`, in `src/app/constants/appRo
 5. Add `permissions.ts` only if the feature has role or capability checks.
 6. Export the feature manifest from `index.ts`.
 7. Register the manifest once in `src/features/index.ts`.
+8. Register navbar items in `src/features/navigation.ts` if the feature has navigation.
 
 Prefer copying the shape of a small existing feature before inventing a new pattern.
