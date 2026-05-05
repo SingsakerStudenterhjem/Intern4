@@ -82,6 +82,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   };
 
   const getCategoryColor = (category: string) => {
+    // FIXME: remove hardcoded
     const colors: { [key: string]: string } = {
       Generelt: 'bg-blue-100 text-blue-800 border-blue-200',
       Dataarbeid: 'bg-purple-100 text-purple-800 border-purple-200',
