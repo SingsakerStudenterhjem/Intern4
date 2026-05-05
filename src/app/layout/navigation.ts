@@ -1,12 +1,10 @@
 import { ROUTES } from '../constants/routes';
 import { USER_ROLES } from '../constants/userRoles';
 import { alcoholNavigation } from '../../features/alcohol/navigation';
-import { announcementNavigation } from '../../features/announcements/navigation';
 import { helgaNavigation } from '../../features/helga/navigation';
 import { regiNavigation } from '../../features/regi/navigation';
 import { receptionNavigation } from '../../features/reception/navigation';
 import { residentNavigation } from '../../features/residents/navigation';
-import { roomRentalNavigation } from '../../features/room-rental/navigation';
 import { shiftNavigation } from '../../features/shifts/navigation';
 import { taskNavigation } from '../../features/tasks/navigation';
 import { userNavigation } from '../../features/users/navigation';
@@ -24,8 +22,6 @@ export const appNavigation: FeatureNavItem[] = [
   ...wineCellarNavigation,
   ...helgaNavigation,
   ...userNavigation,
-  ...roomRentalNavigation,
-  ...announcementNavigation,
   ...receptionNavigation,
   {
     key: 'admin',
