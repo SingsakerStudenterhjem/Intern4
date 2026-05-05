@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { getResidentDirectoryUsers } from '../../../server/dao/userDAO';
-import { PageLayout } from '../../../shared/components';
+import { PageLayout } from '../../../shared/layouts';
 import { ResidentDirectoryUser } from '../../../shared/types/user';
 import { RESIDENT_PATHS } from '../paths';
 

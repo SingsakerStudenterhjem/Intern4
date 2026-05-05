@@ -4,7 +4,7 @@ import { useAuth } from '../../../app/providers/AuthContext';
 import { supabase } from '../../../server/supabaseClient';
 import { getSchools, getStudies, getUser, updateUser } from '../../../server/dao/userDAO';
 import { resetPassword } from '../../../server/dao/authentication';
-import { PageLayout } from '../../../shared/components';
+import { PageLayout } from '../../../shared/layouts';
 import { getDefaultLookupId, LookupOption } from '../../../shared/types/lookup';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
 

@@ -6,7 +6,7 @@ import { getAllRegiLogs } from '../../../../server/dao/regiDAO';
 import { REGI_PATHS } from '../../paths';
 import { useAuth } from '../../../../app/providers/AuthContext';
 import { canApproveWork } from '../../permissions';
-import { PageLayout } from '../../../../shared/components';
+import { PageLayout } from '../../../../shared/layouts';
 
 type DateValue = Date | string | { seconds: number } | null | undefined;
 

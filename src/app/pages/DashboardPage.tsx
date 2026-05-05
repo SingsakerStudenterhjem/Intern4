@@ -1,4 +1,4 @@
-import { PageLayout } from '../../shared/components';
+import { PageLayout } from '../../shared/layouts';
 
 const DashboardPage = () => {
   return (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { PageLayout } from '../../../../shared/components';
+import { PageLayout } from '../../../../shared/layouts';
 import WorkApprovalList from '../components/WorkApprovalList';
 
 const WorkApprovalsPage: React.FC = () => {

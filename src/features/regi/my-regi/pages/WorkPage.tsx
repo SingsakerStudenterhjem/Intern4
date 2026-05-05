@@ -4,7 +4,7 @@ import WorkLogForm from '../components/WorkLogForm';
 import WorkLogList from '../components/WorkLogList';
 import { useAuth } from '../../../../app/providers/AuthContext';
 import { TASK_PATHS } from '../../../tasks/paths';
-import { PageLayout } from '../../../../shared/components';
+import { PageLayout } from '../../../../shared/layouts';
 
 const WorkPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
