@@ -2,34 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../providers/AuthContext';
 import { ROUTES } from '../constants/routes';
-import { USER_ROLES } from '../constants/userRoles';
 import DropdownMenu from './DropdownMenu';
 import { ChevronDown, Menu, UserCircle, X } from 'lucide-react';
 import { logOut } from '../../server/dao/authentication';
-
-type MenuChildItem = {
-  label: string;
-  to: string;
-  roles?: string[];
-};
-
-type MenuLinkItem = {
-  key: string;
-  label: string;
-  to: string;
-  roles?: string[];
-  children?: never;
-};
-
-type MenuGroupItem = {
-  key: string;
-  label: string;
-  roles?: string[];
-  children: MenuChildItem[];
-  to?: never;
-};
-
-type MenuItem = MenuLinkItem | MenuGroupItem;
+import { appNavigation } from './navigation';
+import type { FeatureNavItem } from '../../shared/types/feature';
 
 const Navbar = () => {
   const { user } = useAuth();
@@ -62,58 +39,13 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const menuItems: MenuItem[] = [
-    { key: 'dash', label: 'Dashboard', to: ROUTES.DASHBOARD },
-    { key: 'beboere', label: 'Beboere', to: ROUTES.BEBOERE },
-    {
-      key: 'regi',
-      label: 'Regi',
-      children: [
-        { label: 'Oppgaver', to: ROUTES.TASKS },
-        { label: 'Min regi', to: ROUTES.REGI },
-        {
-          label: 'Regisjef',
-          to: ROUTES.REGISJEF,
-          roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
-        },
-        {
-          label: 'Regilogger',
-          to: ROUTES.REGILOGS,
-          roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
-        },
-      ],
-    },
-    {
-      key: 'rom',
-      label: 'Rom',
-      roles: [USER_ROLES.ADMIN, USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
-      children: [
-        {
-          label: 'Administrer brukere',
-          to: ROUTES.LEGG_TIL_BEBOER,
-          roles: [USER_ROLES.ADMIN, USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
-        },
-      ],
-    },
-    {
-      key: 'admin',
-      label: 'Admin',
-      to: ROUTES.ADMIN,
-      roles: [USER_ROLES.DATA],
-    },
-  ];
+  const canAccess = (item: Pick<FeatureNavItem, 'canAccess'>) =>
+    item.canAccess ? item.canAccess({ user }) : true;
 
-  const canAccess = (roles?: string[]) => {
-    if (!roles) return true;
-    const role = user?.role;
-    if (!role) return false;
-    return roles.includes(role);
-  };
-
-  const visibleItems = menuItems.reduce<MenuItem[]>((items, item) => {
+  const visibleItems = appNavigation.reduce<FeatureNavItem[]>((items, item) => {
     if (item.children) {
-      const visibleChildren = item.children.filter((child) => canAccess(child.roles));
-      if (!canAccess(item.roles) || visibleChildren.length === 0) {
+      const visibleChildren = item.children.filter((child) => canAccess(child));
+      if (!canAccess(item) || visibleChildren.length === 0) {
         return items;
       }
 
@@ -121,7 +53,7 @@ const Navbar = () => {
       return items;
     }
 
-    if (canAccess(item.roles)) {
+    if (canAccess(item)) {
       items.push(item);
     }
 
