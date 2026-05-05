@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../../server/supabaseClient';
 import { resetPassword } from '../../../server/dao/authentication';
-import { ROUTES } from '../../../app/constants/routes';
+import { AUTH_PATHS } from '../paths';
+import { TASK_PATHS } from '../../tasks/paths';
 import { useAuth } from '../../../app/providers/AuthContext';
 
 const ResetPasswordForm = () => {
@@ -56,7 +57,7 @@ const ResetPasswordForm = () => {
         <p className="text-red-500 mb-4">
           {error || 'Lenken er ugyldig eller utløpt. Vennligst be om en ny tilbakestillingslenke.'}
         </p>
-        <Link to={ROUTES.FORGOT_PASSWORD} className="text-sm text-blue-600 hover:underline">
+        <Link to={AUTH_PATHS.FORGOT_PASSWORD} className="text-sm text-blue-600 hover:underline">
           Be om ny lenke
         </Link>
       </div>
@@ -88,7 +89,7 @@ const ResetPasswordForm = () => {
       return;
     }
 
-    navigate(ROUTES.DASHBOARD);
+    navigate(TASK_PATHS.DASHBOARD);
   };
 
   return (

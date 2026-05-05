@@ -44,3 +44,9 @@ export type FeatureNavGroupItem = {
 };
 
 export type FeatureNavItem = FeatureNavLinkItem | FeatureNavGroupItem;
+
+export type FeatureDefinition = {
+  key: string;
+  routes?: FeatureRoute[];
+  navigation?: FeatureNavItem[];
+};

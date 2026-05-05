@@ -2,33 +2,12 @@ import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
 import NotFoundPage from '../pages/NotFoundPage';
 import ProtectedRoute from './ProtectedRoute';
-import { ROUTES } from '../constants/routes';
-import { authRoutes } from '../../features/auth/routes';
-import { alcoholRoutes } from '../../features/alcohol/routes';
-import { helgaRoutes } from '../../features/helga/routes';
-import { regiRoutes } from '../../features/regi/routes';
-import { receptionRoutes } from '../../features/reception/routes';
-import { residentRoutes } from '../../features/residents/routes';
-import { shiftRoutes } from '../../features/shifts/routes';
-import { taskRoutes } from '../../features/tasks/routes';
-import { userRoutes } from '../../features/users/routes';
-import { vervRoutes } from '../../features/verv/routes';
-import { wineCellarRoutes } from '../../features/wine-cellar/routes';
+import { APP_ROUTES } from '../constants/appRoutes';
+import { features } from '../../features';
 import type { FeatureRoute } from '../../shared/types/feature';
+import { TASK_PATHS } from '../../features/tasks/paths';
 
-const featureRoutes: FeatureRoute[] = [
-  ...authRoutes,
-  ...alcoholRoutes,
-  ...helgaRoutes,
-  ...residentRoutes,
-  ...regiRoutes,
-  ...receptionRoutes,
-  ...shiftRoutes,
-  ...taskRoutes,
-  ...userRoutes,
-  ...vervRoutes,
-  ...wineCellarRoutes,
-];
+const featureRoutes: FeatureRoute[] = features.flatMap((feature) => feature.routes ?? []);
 
 const toRouteObject = (route: FeatureRoute): RouteObject => ({
   path: route.path,
@@ -52,7 +31,7 @@ export const protectedRoutes: RouteObject[] = featureRoutes
 // Admin-only routes
 export const adminRoutes: RouteObject[] = [
   {
-    path: ROUTES.ADMIN,
+    path: APP_ROUTES.ADMIN,
     element: <ProtectedRoute />,
   },
 ];
@@ -63,8 +42,8 @@ export const regisjefRoutes: RouteObject[] = [];
 // Default redirects
 export const redirectRoutes: RouteObject[] = [
   {
-    path: ROUTES.HOME,
-    element: <Navigate to={ROUTES.DASHBOARD} replace />,
+    path: APP_ROUTES.HOME,
+    element: <Navigate to={TASK_PATHS.DASHBOARD} replace />,
   },
   {
     path: '*',

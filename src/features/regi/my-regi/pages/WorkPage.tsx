@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import WorkLogForm from '../components/WorkLogForm';
 import WorkLogList from '../components/WorkLogList';
 import { useAuth } from '../../../../app/providers/AuthContext';
-import { ROUTES } from '../../../../app/constants/routes';
+import { TASK_PATHS } from '../../../tasks/paths';
 
 const WorkPage = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -25,7 +25,7 @@ const WorkPage = () => {
 
             <div className="flex items-center gap-2">
               <Link
-                to={ROUTES.TASKS}
+                to={TASK_PATHS.TASKS}
                 className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50"
               >
                 Se oppgaver

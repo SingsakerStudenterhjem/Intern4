@@ -1,14 +1,14 @@
 import WorkTasksPage from './pages/WorkTasksPage';
-import { ROUTES } from '../../app/constants/routes';
 import type { FeatureRoute } from '../../shared/types/feature';
+import { TASK_PATHS } from './paths';
 
 export const taskRoutes: FeatureRoute[] = [
   {
-    path: ROUTES.DASHBOARD,
+    path: TASK_PATHS.DASHBOARD,
     element: <WorkTasksPage />,
   },
   {
-    path: ROUTES.TASKS,
+    path: TASK_PATHS.TASKS,
     element: <WorkTasksPage />,
   },
 ];

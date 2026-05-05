@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../../../server/dao/authentication';
-import { ROUTES } from '../../../app/constants/routes';
+import { AUTH_PATHS } from '../paths';
 
 const COOLDOWN_SECONDS = 60;
 
@@ -70,7 +70,7 @@ const ForgotPasswordForm = () => {
         {error && <div className="text-red-500 mb-4 text-sm">{error}</div>}
 
         <div className="flex items-center justify-between">
-          <Link to={ROUTES.LOGIN} className="text-sm text-blue-600 hover:underline">
+          <Link to={AUTH_PATHS.LOGIN} className="text-sm text-blue-600 hover:underline">
             Tilbake til innlogging
           </Link>
           <button
@@ -111,7 +111,7 @@ const ForgotPasswordForm = () => {
       </button>
 
       <div className="mt-4 text-center">
-        <Link to={ROUTES.LOGIN} className="text-sm text-blue-600 hover:underline">
+        <Link to={AUTH_PATHS.LOGIN} className="text-sm text-blue-600 hover:underline">
           Tilbake til innlogging
         </Link>
       </div>
