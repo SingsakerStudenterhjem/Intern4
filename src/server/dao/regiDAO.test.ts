@@ -187,7 +187,7 @@ describe('regiDAO', () => {
     expect(result[0].createdAt).toBeInstanceOf(Date);
   });
 
-  it('does not duplicate legacy image when image_paths contains the same path', async () => {
+  it('deduplicates stored image paths', async () => {
     const rows = [
       {
         id: 1,
@@ -201,8 +201,7 @@ describe('regiDAO', () => {
           type: 'misc',
           work_categories: { name: 'Regi' },
           work_misc: {
-            image: 'user/regi/one.png',
-            image_paths: ['user/regi/one.png'],
+            image_paths: ['user/regi/one.png', 'user/regi/one.png'],
           },
         },
       },
@@ -282,7 +281,6 @@ describe('regiDAO', () => {
     expect(supabase.from).toHaveBeenLastCalledWith('work_misc');
     expect(workMiscBuilder.insert).toHaveBeenCalledWith({
       id: 44,
-      image: 'user/regi/one.png',
       image_paths: ['user/regi/one.png', 'user/regi/two.png'],
     });
   });
@@ -328,11 +326,13 @@ describe('regiDAO', () => {
       work_items: { type: 'misc' },
     });
     const deleteAssignmentBuilder = createDeleteBuilder();
+    const deleteWorkMiscBuilder = createDeleteBuilder();
     const remainingAssignmentsBuilder = createSelectEqBuilder([]);
     const deleteWorkItemBuilder = createDeleteBuilder();
 
     vi.mocked(supabase.from)
       .mockImplementationOnce(() => assignmentBuilder)
+      .mockImplementationOnce(() => deleteWorkMiscBuilder)
       .mockImplementationOnce(() => deleteAssignmentBuilder)
       .mockImplementationOnce(() => remainingAssignmentsBuilder)
       .mockImplementationOnce(() => deleteWorkItemBuilder);
@@ -340,6 +340,7 @@ describe('regiDAO', () => {
     await deletePendingRegiLog('12', '11111111-1111-1111-1111-111111111111');
 
     expect(deleteAssignmentBuilder.delete).toHaveBeenCalled();
+    expect(deleteWorkMiscBuilder.eq).toHaveBeenCalledWith('id', 44);
     expect(deleteAssignmentBuilder.eq).toHaveBeenCalledWith('id', 12);
     expect(remainingAssignmentsBuilder.eq).toHaveBeenCalledWith('work_id', 44);
     expect(deleteWorkItemBuilder.eq).toHaveBeenCalledWith('id', 44);
