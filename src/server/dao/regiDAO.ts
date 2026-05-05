@@ -65,7 +65,9 @@ function getImagePaths(workItems: RegiWorkItemRelation): string[] {
     : workItems?.work_misc;
   const imagePaths = workMisc?.image_paths ?? [];
   const legacyImage = workMisc?.image;
-  return [...imagePaths, legacyImage].filter((path): path is string => Boolean(path));
+  return Array.from(
+    new Set([...imagePaths, legacyImage].filter((path): path is string => Boolean(path)))
+  );
 }
 
 export function isCountableRegiAssignment(row: RegiAssignmentRow): boolean {
