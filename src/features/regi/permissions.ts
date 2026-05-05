@@ -1,4 +1,4 @@
-import { USER_ROLES, type UserRole } from '../../shared/types/roles';
+import { isUserRole, USER_ROLES, type UserRole } from '../../shared/types/roles';
 
 export const regiManagerRoles: UserRole[] = [
   USER_ROLES.ADMIN,
@@ -7,4 +7,4 @@ export const regiManagerRoles: UserRole[] = [
 ];
 
 export const canApproveWork = (role?: string) =>
-  Boolean(role && regiManagerRoles.includes(role as UserRole));
+  isUserRole(role) && regiManagerRoles.includes(role);
