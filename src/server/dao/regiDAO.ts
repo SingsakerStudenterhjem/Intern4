@@ -27,8 +27,8 @@ function toDate(value: Date | string | { seconds: number } | null | undefined): 
 type WorkItemTypeRelation = { type: string | null } | Array<{ type: string | null }> | null;
 
 type WorkMiscRelation =
-  | { image?: string | null; image_paths?: string[] | null }
-  | Array<{ image?: string | null; image_paths?: string[] | null }>
+  | { image_paths?: string[] | null }
+  | Array<{ image_paths?: string[] | null }>
   | null;
 
 type RegiWorkItemRelation = {
@@ -63,11 +63,7 @@ function getImagePaths(workItems: RegiWorkItemRelation): string[] {
   const workMisc = Array.isArray(workItems?.work_misc)
     ? workItems?.work_misc[0]
     : workItems?.work_misc;
-  const imagePaths = workMisc?.image_paths ?? [];
-  const legacyImage = workMisc?.image;
-  return Array.from(
-    new Set([...imagePaths, legacyImage].filter((path): path is string => Boolean(path)))
-  );
+  return Array.from(new Set((workMisc?.image_paths ?? []).filter(Boolean)));
 }
 
 export function isCountableRegiAssignment(row: RegiAssignmentRow): boolean {
@@ -156,7 +152,6 @@ export async function addRegiLog(
   if (imagePaths.length > 0) {
     const { error: e3 } = await supabase.from('work_misc').insert({
       id: item.id,
-      image: imagePaths[0] ?? null,
       image_paths: imagePaths,
     });
 
@@ -174,7 +169,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, work_id, hours_used, created_at, approved_state, approval_comment, work_items(title, description, type, work_categories(name), work_misc(image, image_paths))'
+      'id, work_id, hours_used, created_at, approved_state, approval_comment, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
     )
     .eq('user_uuid', userId)
     .order('created_at', { ascending: false });
@@ -225,6 +220,15 @@ export async function deletePendingRegiLog(assignmentId: string, userId: string)
 
   const workId = assignment.work_id ? Number(assignment.work_id) : null;
 
+  if (workId) {
+    const { error: deleteWorkMiscError } = await supabase
+      .from('work_misc')
+      .delete()
+      .eq('id', workId);
+
+    if (deleteWorkMiscError) throw new Error(deleteWorkMiscError.message);
+  }
+
   const { error: deleteAssignmentError } = await supabase
     .from('work_assignments')
     .delete()
@@ -257,7 +261,7 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, user_uuid, hours_used, created_at, approved_state, work_items(title, description, type, work_categories(name), work_misc(image, image_paths))'
+      'id, user_uuid, hours_used, created_at, approved_state, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
     )
     .eq('approved_state', 0)
     .order('created_at', { ascending: false });
@@ -312,7 +316,7 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, user_uuid, hours_used, created_at, approved_state, approval_comment, approved_by_uuid, work_items(title, description, type, work_categories(name), work_misc(image, image_paths))'
+      'id, user_uuid, hours_used, created_at, approved_state, approval_comment, approved_by_uuid, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
     )
     .order('created_at', { ascending: false });
 
