@@ -1,128 +1,41 @@
 import type { RouteObject } from 'react-router-dom';
 import { Navigate } from 'react-router-dom';
-import LoginPage from '../../features/auth/pages/LoginPage';
-import AddUserPage from '../../features/users/pages/AddUserPage';
-import WorkTasksPage from '../../features/tasks/pages/WorkTasksPage';
-import WorkPage from '../../features/regi/pages/WorkPage';
-import WorkManagerPage from '../../features/regi/pages/WorkManagerPage';
 import NotFoundPage from '../pages/NotFoundPage';
 import ProtectedRoute from './ProtectedRoute';
 import { ROUTES } from '../constants/routes';
-import { USER_ROLES } from '../constants/userRoles';
-import ProfilePage from '../../features/users/pages/ProfilePage';
-import WorkApprovalsPage from '../../features/regi/pages/WorkApprovalsPage';
-import RegiLogsPage from '../../features/regi/pages/RegiLogsPage';
-import ForgotPasswordPage from '../../features/auth/pages/ForgotPasswordPage';
-import ResetPasswordPage from '../../features/auth/pages/ResetPasswordPage';
-import ResidentDirectoryPage from '../../features/residents/pages/ResidentDirectoryPage';
+import { authRoutes } from '../../features/auth/routes';
+import { regiRoutes } from '../../features/regi/routes';
+import { residentRoutes } from '../../features/residents/routes';
+import { taskRoutes } from '../../features/tasks/routes';
+import { userRoutes } from '../../features/users/routes';
+import type { FeatureRoute } from '../../shared/types/feature';
+
+const featureRoutes: FeatureRoute[] = [
+  ...authRoutes,
+  ...residentRoutes,
+  ...regiRoutes,
+  ...taskRoutes,
+  ...userRoutes,
+];
+
+const toRouteObject = (route: FeatureRoute): RouteObject => ({
+  path: route.path,
+  element: route.public ? (
+    route.element
+  ) : (
+    <ProtectedRoute allowedRoles={route.allowedRoles}>{route.element}</ProtectedRoute>
+  ),
+});
 
 // Public routes (no authentication required)
-export const publicRoutes: RouteObject[] = [
-  {
-    path: ROUTES.LOGIN,
-    element: <LoginPage />,
-  },
-  {
-    path: ROUTES.FORGOT_PASSWORD,
-    element: <ForgotPasswordPage />,
-  },
-  {
-    path: ROUTES.RESET_PASSWORD,
-    element: <ResetPasswordPage />,
-  },
-];
+export const publicRoutes: RouteObject[] = featureRoutes
+  .filter((route) => route.public)
+  .map(toRouteObject);
 
 // Protected routes (authentication required)
-export const protectedRoutes: RouteObject[] = [
-  {
-    path: ROUTES.DASHBOARD,
-    element: (
-      <ProtectedRoute>
-        <WorkTasksPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.BEBOERE,
-    element: (
-      <ProtectedRoute>
-        <ResidentDirectoryPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.BEBOER_STATISTIKK,
-    element: (
-      <ProtectedRoute>
-        <ResidentDirectoryPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.GAMLE_BEBOERE,
-    element: (
-      <ProtectedRoute>
-        <ResidentDirectoryPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.REGI,
-    element: (
-      <ProtectedRoute>
-        <WorkPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.REGISJEF,
-    element: (
-      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
-        <WorkManagerPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.REGIGODKJENNING,
-    element: (
-      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
-        <WorkApprovalsPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.REGILOGS,
-    element: (
-      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
-        <RegiLogsPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.LEGG_TIL_BEBOER,
-    element: (
-      <ProtectedRoute>
-        <AddUserPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.TASKS,
-    element: (
-      <ProtectedRoute>
-        <WorkTasksPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.PROFILE,
-    element: (
-      <ProtectedRoute>
-        <ProfilePage />
-      </ProtectedRoute>
-    ),
-  },
-];
+export const protectedRoutes: RouteObject[] = featureRoutes
+  .filter((route) => !route.public)
+  .map(toRouteObject);
 
 // Admin-only routes
 export const adminRoutes: RouteObject[] = [
