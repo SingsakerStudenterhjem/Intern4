@@ -53,7 +53,13 @@ export async function uploadImages(
     });
 
     if (error) {
-      await deleteImages(paths);
+      try {
+        await deleteImages(paths);
+      } catch (cleanupError) {
+        const cleanupMessage =
+          cleanupError instanceof Error ? cleanupError.message : 'opprydding feilet';
+        throw new Error(`${error.message}. ${cleanupMessage}`);
+      }
       throw new Error(error.message);
     }
 
@@ -68,6 +74,14 @@ export async function deleteImages(paths: string[]): Promise<void> {
 
   const { error } = await supabase.storage.from(IMAGE_BUCKET).remove(paths);
   if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function deleteImagesBestEffort(paths: string[]): Promise<void> {
+  try {
+    await deleteImages(paths);
+  } catch (error) {
     console.error('Kunne ikke slette bilder fra storage', error);
   }
 }

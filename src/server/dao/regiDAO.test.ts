@@ -7,6 +7,7 @@ import {
   isCountableRegiAssignment,
 } from './regiDAO';
 import { supabase } from '../supabaseClient';
+import { deleteImages } from '../storage';
 
 vi.mock('../supabaseClient', () => ({
   supabase: {
@@ -16,6 +17,10 @@ vi.mock('../supabaseClient', () => ({
 
 vi.mock('./userDAO', () => ({
   getUser: vi.fn(),
+}));
+
+vi.mock('../storage', () => ({
+  deleteImages: vi.fn(),
 }));
 
 type SupabaseFromResult = ReturnType<typeof supabase.from>;
@@ -118,6 +123,7 @@ function createInsertErrorBuilder(message: string) {
 describe('regiDAO', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(deleteImages).mockResolvedValue(undefined);
   });
 
   it('counts only manual logs and submitted task assignments as regi work', () => {
@@ -323,7 +329,12 @@ describe('regiDAO', () => {
       user_uuid: '11111111-1111-1111-1111-111111111111',
       approved_state: 0,
       work_id: 44,
-      work_items: { type: 'misc' },
+      work_items: {
+        type: 'misc',
+        work_misc: {
+          image_paths: ['user/regi/one.png', 'user/regi/two.png'],
+        },
+      },
     });
     const deleteAssignmentBuilder = createDeleteBuilder();
     const deleteWorkMiscBuilder = createDeleteBuilder();
@@ -339,6 +350,7 @@ describe('regiDAO', () => {
 
     await deletePendingRegiLog('12', '11111111-1111-1111-1111-111111111111');
 
+    expect(deleteImages).toHaveBeenCalledWith(['user/regi/one.png', 'user/regi/two.png']);
     expect(deleteAssignmentBuilder.delete).toHaveBeenCalled();
     expect(deleteWorkMiscBuilder.eq).toHaveBeenCalledWith('id', 44);
     expect(deleteAssignmentBuilder.eq).toHaveBeenCalledWith('id', 12);

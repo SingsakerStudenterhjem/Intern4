@@ -36,7 +36,14 @@ export const useWorkLogFormWorkflow = () => {
     try {
       await addRegiLog({ ...payload, imagePaths });
     } catch (error) {
-      await deleteImages(imagePaths);
+      try {
+        await deleteImages(imagePaths);
+      } catch (cleanupError) {
+        const message = error instanceof Error ? error.message : 'Kunne ikke registrere regi.';
+        const cleanupMessage =
+          cleanupError instanceof Error ? cleanupError.message : 'opprydding feilet';
+        throw new Error(`${message} ${cleanupMessage}`);
+      }
       throw error;
     }
   };
