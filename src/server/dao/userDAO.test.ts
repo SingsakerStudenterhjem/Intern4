@@ -19,18 +19,27 @@ vi.mock('../supabaseClient', () => ({
   },
 }));
 
+type SupabaseFromResult = ReturnType<typeof supabase.from>;
+type MockFn = ReturnType<typeof vi.fn>;
+
+const mockFn = (implementation: (...args: unknown[]) => unknown): MockFn =>
+  vi.fn(implementation) as unknown as MockFn;
+
+const asSupabaseBuilder = <T extends object>(builder: T): T & SupabaseFromResult =>
+  builder as T & SupabaseFromResult;
+
 function createResidentDirectoryBuilder(data: unknown[]) {
   const builder: {
-    select: ReturnType<typeof vi.fn>;
-    eq: ReturnType<typeof vi.fn>;
-    order: ReturnType<typeof vi.fn>;
+    select: MockFn;
+    eq: MockFn;
+    order: MockFn;
   } = {
-    select: vi.fn(() => builder),
-    eq: vi.fn(() => builder),
-    order: vi.fn(async () => ({ data, error: null })),
+    select: mockFn(() => builder),
+    eq: mockFn(() => builder),
+    order: mockFn(async () => ({ data, error: null })),
   };
 
-  return builder;
+  return asSupabaseBuilder(builder);
 }
 
 describe('userDAO resident directory', () => {
@@ -161,13 +170,13 @@ describe('userDAO profile and lookup writes', () => {
 
   it('loads a user with joined school and study names', async () => {
     const builder: {
-      select: ReturnType<typeof vi.fn>;
-      eq: ReturnType<typeof vi.fn>;
-      maybeSingle: ReturnType<typeof vi.fn>;
+      select: MockFn;
+      eq: MockFn;
+      maybeSingle: MockFn;
     } = {
-      select: vi.fn(() => builder),
-      eq: vi.fn(() => builder),
-      maybeSingle: vi.fn(async () => ({
+      select: mockFn(() => builder),
+      eq: mockFn(() => builder),
+      maybeSingle: mockFn(async () => ({
         data: {
           id: '11111111-1111-1111-1111-111111111111',
           name: 'Test Beboer',
@@ -188,7 +197,7 @@ describe('userDAO profile and lookup writes', () => {
       })),
     };
 
-    vi.mocked(supabase.from).mockImplementationOnce(() => builder);
+    vi.mocked(supabase.from).mockImplementationOnce(() => asSupabaseBuilder(builder));
 
     const result = await getUser('11111111-1111-1111-1111-111111111111');
 
@@ -203,14 +212,14 @@ describe('userDAO profile and lookup writes', () => {
 
   it('updates school_id and study_id when saving a user', async () => {
     const builder: {
-      update: ReturnType<typeof vi.fn>;
-      eq: ReturnType<typeof vi.fn>;
+      update: MockFn;
+      eq: MockFn;
     } = {
-      update: vi.fn(() => builder),
-      eq: vi.fn(async () => ({ error: null })),
+      update: mockFn(() => builder),
+      eq: mockFn(async () => ({ error: null })),
     };
 
-    vi.mocked(supabase.from).mockImplementationOnce(() => builder);
+    vi.mocked(supabase.from).mockImplementationOnce(() => asSupabaseBuilder(builder));
 
     await updateUser('11111111-1111-1111-1111-111111111111', {
       name: 'Test Beboer',
@@ -289,26 +298,26 @@ describe('userDAO profile and lookup writes', () => {
 
   it('loads school and study lookup options', async () => {
     const schoolsBuilder: {
-      select: ReturnType<typeof vi.fn>;
-      order: ReturnType<typeof vi.fn>;
+      select: MockFn;
+      order: MockFn;
     } = {
-      select: vi.fn(() => schoolsBuilder),
-      order: vi.fn(async () => ({ data: [{ id: 'school-ntnu', name: 'NTNU' }], error: null })),
+      select: mockFn(() => schoolsBuilder),
+      order: mockFn(async () => ({ data: [{ id: 'school-ntnu', name: 'NTNU' }], error: null })),
     };
     const studiesBuilder: {
-      select: ReturnType<typeof vi.fn>;
-      order: ReturnType<typeof vi.fn>;
+      select: MockFn;
+      order: MockFn;
     } = {
-      select: vi.fn(() => studiesBuilder),
-      order: vi.fn(async () => ({
+      select: mockFn(() => studiesBuilder),
+      order: mockFn(async () => ({
         data: [{ id: 'study-data', name: 'Datateknologi' }],
         error: null,
       })),
     };
 
     vi.mocked(supabase.from)
-      .mockImplementationOnce(() => schoolsBuilder)
-      .mockImplementationOnce(() => studiesBuilder);
+      .mockImplementationOnce(() => asSupabaseBuilder(schoolsBuilder))
+      .mockImplementationOnce(() => asSupabaseBuilder(studiesBuilder));
 
     await expect(getSchools()).resolves.toEqual([{ id: 'school-ntnu', name: 'NTNU' }]);
     await expect(getStudies()).resolves.toEqual([{ id: 'study-data', name: 'Datateknologi' }]);

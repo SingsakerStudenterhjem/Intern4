@@ -8,56 +8,65 @@ vi.mock('../supabaseClient', () => ({
   },
 }));
 
+type SupabaseFromResult = ReturnType<typeof supabase.from>;
+type MockFn = ReturnType<typeof vi.fn>;
+
+const mockFn = (implementation: (...args: unknown[]) => unknown): MockFn =>
+  vi.fn(implementation) as unknown as MockFn;
+
+const asSupabaseBuilder = <T extends object>(builder: T): T & SupabaseFromResult =>
+  builder as T & SupabaseFromResult;
+
 function createMaybeSingleBuilder(data: unknown) {
   const builder: {
-    select: ReturnType<typeof vi.fn>;
-    eq: ReturnType<typeof vi.fn>;
-    maybeSingle: ReturnType<typeof vi.fn>;
+    select: MockFn;
+    eq: MockFn;
+    maybeSingle: MockFn;
   } = {
-    select: vi.fn(() => builder),
-    eq: vi.fn(() => builder),
-    maybeSingle: vi.fn(async () => ({ data, error: null })),
+    select: mockFn(() => builder),
+    eq: mockFn(() => builder),
+    maybeSingle: mockFn(async () => ({ data, error: null })),
   };
 
-  return builder;
+  return asSupabaseBuilder(builder);
 }
 
 function createUpdateBuilder() {
   const builder: {
-    update: ReturnType<typeof vi.fn>;
-    eq: ReturnType<typeof vi.fn>;
+    update: MockFn;
+    eq: MockFn;
   } = {
-    update: vi.fn(() => builder),
-    eq: vi.fn(async () => ({ error: null })),
+    update: mockFn(() => builder),
+    eq: mockFn(async () => ({ error: null })),
   };
 
-  return builder;
+  return asSupabaseBuilder(builder);
 }
 
 function createEqSelectBuilder(data: unknown[]) {
   const builder: {
-    select: ReturnType<typeof vi.fn>;
-    eq: ReturnType<typeof vi.fn>;
+    select: MockFn;
+    eq: MockFn;
   } = {
-    select: vi.fn(() => builder),
-    eq: vi.fn(async () => ({ data, error: null })),
+    select: mockFn(() => builder),
+    eq: mockFn(async () => ({ data, error: null })),
   };
 
-  return builder;
+  return asSupabaseBuilder(builder);
 }
 
 function createInOrderBuilder(data: unknown[]) {
   const builder: {
-    select: ReturnType<typeof vi.fn>;
-    in: ReturnType<typeof vi.fn>;
-    order: ReturnType<typeof vi.fn>;
+    select: MockFn;
+    in: MockFn;
+    order: MockFn;
   } = {
-    select: vi.fn(() => builder),
-    in: vi.fn(() => builder),
-    order: vi.fn(async () => ({ data, error: null })),
+    select: mockFn(() => builder),
+    in: mockFn(() => builder),
+    order: mockFn(async () => ({ data, error: null })),
   };
 
-  return builder;
+  return asSupabaseBuilder(builder);
 }
 
 function createTaskRow(overrides: Record<string, unknown> = {}) {
