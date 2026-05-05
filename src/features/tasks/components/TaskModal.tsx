@@ -8,7 +8,7 @@ import {
   getTaskParticipantCount,
   isTaskFull,
 } from '../../../shared/types/regi/tasks';
-import { canManageTasks, canViewAllParticipants } from '../../../app/constants/userRoles';
+import { canManageTasks, canViewAllParticipants } from '../permissions';
 import { TaskModalProps } from './types';
 
 type DateValue = Date | string | { seconds: number } | null | undefined;

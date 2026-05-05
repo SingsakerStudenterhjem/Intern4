@@ -1,11 +1,8 @@
 import { ROUTES } from '../../app/constants/routes';
-import { USER_ROLES } from '../../app/constants/userRoles';
 import type { FeatureNavItem, PermissionCheck } from '../../shared/types/feature';
+import { canApproveWork } from './permissions';
 
-const canAccessRegiManager: PermissionCheck = ({ user }) =>
-  Boolean(
-    user?.role && [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA].includes(user.role)
-  );
+const canAccessRegiManager: PermissionCheck = ({ user }) => canApproveWork(user?.role);
 
 export const regiNavigation: FeatureNavItem[] = [
   {

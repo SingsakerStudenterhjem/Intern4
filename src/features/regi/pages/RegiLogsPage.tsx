@@ -5,7 +5,7 @@ import { RegiLogWithUser } from '../../../shared/types/regi';
 import { getAllRegiLogs } from '../../../server/dao/regiDAO';
 import { ROUTES } from '../../../app/constants/routes';
 import { useAuth } from '../../../app/providers/AuthContext';
-import { canApproveWork } from '../../../app/constants/userRoles';
+import { canApproveWork } from '../permissions';
 
 type DateValue = Date | string | { seconds: number } | null | undefined;
 
