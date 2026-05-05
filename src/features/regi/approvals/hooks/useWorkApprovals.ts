@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { PendingRegiApproval } from '../../../shared/types/regi';
+import { PendingRegiApproval } from '../../../../shared/types/regi';
 import {
   approveRegiLog,
   getPendingRegiApprovals,
   rejectRegiLog,
-} from '../../../server/dao/regiDAO';
-import { canApproveWork } from '../permissions';
-import { AuthUser } from '../../auth/hooks/useAuth';
+} from '../../../../server/dao/regiDAO';
+import { canApproveWork } from '../../permissions';
+import { AuthUser } from '../../../auth/hooks/useAuth';
 
 export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
   const [approvals, setApprovals] = useState<PendingRegiApproval[]>([]);

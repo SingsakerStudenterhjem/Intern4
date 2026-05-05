@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { RegiLogWithId } from '../../../shared/types/regi';
-import { deletePendingRegiLog, getRegiLogsByUser } from '../../../server/dao/regiDAO';
+import { RegiLogWithId } from '../../../../shared/types/regi';
+import { deletePendingRegiLog, getRegiLogsByUser } from '../../../../server/dao/regiDAO';
 
 export const useWorkLogList = (userId: string, refreshKey?: number) => {
   const [logs, setLogs] = useState<RegiLogWithId[]>([]);

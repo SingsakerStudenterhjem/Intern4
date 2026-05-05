@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import { RegiLog } from '../../../shared/types/regi';
-import { Category } from '../../../shared/types/regi/tasks';
-import { BasicUserWithRole } from '../../../shared/types/user';
-import { getCategories } from '../../../server/dao/categoriesDAO';
-import { addRegiLog } from '../../../server/dao/regiDAO';
-import { getActiveUsersWithRole } from '../../../server/dao/userDAO';
+import { RegiLog } from '../../../../shared/types/regi';
+import { Category } from '../../../../shared/types/regi/tasks';
+import { BasicUserWithRole } from '../../../../shared/types/user';
+import { getCategories } from '../../../../server/dao/categoriesDAO';
+import { addRegiLog } from '../../../../server/dao/regiDAO';
+import { getActiveUsersWithRole } from '../../../../server/dao/userDAO';
 
 export const useGrantRegiWorkflow = () => {
   const [categories, setCategories] = useState<Category[]>([]);

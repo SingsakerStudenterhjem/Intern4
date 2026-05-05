@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { RegiLogWithId } from '../../../../shared/types/regi';
 import { getRequiredRegiHoursForRole } from '../../../../app/constants/regiRequirements';
-import { useWorkLogList } from '../../hooks/useWorkLogList';
+import { useWorkLogList } from '../hooks/useWorkLogList';
 import WorkLogDetailsModal from './WorkLogDetailsModal';
 
 const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: number }> = ({

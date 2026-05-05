@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import WorkApprovalList from '../components/work-manager/WorkApprovalList';
-import Registatus from '../components/work-manager/Registatus';
-import GrantRegiForm from '../components/work-manager/GrantRegiForm';
+import WorkApprovalList from '../approvals/components/WorkApprovalList';
+import Registatus from '../status/components/Registatus';
+import GrantRegiForm from '../granting/components/GrantRegiForm';
 import { ROUTES } from '../../../app/constants/routes';
 
 const WorkManagerPage: React.FC = () => {

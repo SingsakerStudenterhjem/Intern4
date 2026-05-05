@@ -4,7 +4,7 @@ import { useAuth } from '../../../../app/providers/AuthContext';
 import { PendingRegiApproval } from '../../../../shared/types/regi';
 import WorkApprovalModal from './WorkApprovalModal';
 import { canApproveWork } from '../../permissions';
-import { useWorkApprovals } from '../../hooks/useWorkApprovals';
+import { useWorkApprovals } from '../hooks/useWorkApprovals';
 
 type DateValue = Date | string | { seconds: number } | null | undefined;
 

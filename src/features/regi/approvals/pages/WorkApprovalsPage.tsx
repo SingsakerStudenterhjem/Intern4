@@ -1,5 +1,5 @@
 import React from 'react';
-import WorkApprovalList from '../components/work-manager/WorkApprovalList';
+import WorkApprovalList from '../components/WorkApprovalList';
 
 const WorkApprovalsPage: React.FC = () => {
   return (

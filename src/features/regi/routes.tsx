@@ -1,7 +1,7 @@
-import WorkPage from './pages/WorkPage';
+import WorkPage from './my-regi/pages/WorkPage';
 import WorkManagerPage from './pages/WorkManagerPage';
-import WorkApprovalsPage from './pages/WorkApprovalsPage';
-import RegiLogsPage from './pages/RegiLogsPage';
+import WorkApprovalsPage from './approvals/pages/WorkApprovalsPage';
+import RegiLogsPage from './logs/pages/RegiLogsPage';
 import { ROUTES } from '../../app/constants/routes';
 import type { FeatureRoute } from '../../shared/types/feature';
 import { regiManagerRoles } from './permissions';
