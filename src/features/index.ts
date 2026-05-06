@@ -10,17 +10,20 @@ import { taskFeature } from './tasks';
 import { userFeature } from './users';
 import { vervFeature } from './verv';
 import { wineCellarFeature } from './wine-cellar';
+import { FEATURE_ORDER, type FeatureKey } from './featureOrder';
 
-export const features: FeatureDefinition[] = [
-  authFeature,
-  taskFeature,
-  residentFeature,
-  shiftFeature,
-  regiFeature,
-  vervFeature,
-  alcoholFeature,
-  wineCellarFeature,
-  helgaFeature,
-  userFeature,
-  receptionFeature,
-];
+const featuresByKey: Record<FeatureKey, FeatureDefinition> = {
+  alcohol: alcoholFeature,
+  auth: authFeature,
+  helga: helgaFeature,
+  reception: receptionFeature,
+  regi: regiFeature,
+  residents: residentFeature,
+  shifts: shiftFeature,
+  tasks: taskFeature,
+  users: userFeature,
+  verv: vervFeature,
+  'wine-cellar': wineCellarFeature,
+};
+
+export const features: FeatureDefinition[] = FEATURE_ORDER.map((key) => featuresByKey[key]);
