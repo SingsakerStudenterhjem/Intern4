@@ -3,7 +3,6 @@ import { useAuth } from '../../../app/providers/AuthContext';
 import {
   addTask,
   deleteTask,
-  getTasks,
   joinTask,
   leaveTask,
   submitTaskCompletion,
@@ -12,36 +11,38 @@ import {
 import {
   addCategory,
   deleteCategory,
-  getCategories,
   getCategoryUsageCount,
   updateCategory,
 } from '../../../server/dao/categoriesDAO';
-import { getActiveUsersWithRole, getUser } from '../../../server/dao/userDAO';
 import {
   Category,
   CategoryCreationData,
   Task,
   TaskCreationData,
 } from '../../../shared/types/regi/tasks';
-import { ParticipantNames, TaskContactPersonOption } from '../components/types';
 import { canManageCategories, canManageTasks } from '../permissions';
 import { useTasks } from './useTasks';
+import { useTaskManagementData } from './useTaskManagementData';
 
 type StatusMessage = { type: 'success' | 'error'; text: string };
 
 export const useTaskManagement = () => {
   const authData = useAuth();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [showCategoryManagement, setShowCategoryManagement] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<StatusMessage | null>(null);
-  const [participantNames, setParticipantNames] = useState<ParticipantNames>({});
-  const [contactPeople, setContactPeople] = useState<TaskContactPersonOption[]>([]);
+  const {
+    tasks,
+    categories,
+    participantNames,
+    contactPeople,
+    loading,
+    error,
+    clearError,
+    loadData,
+  } = useTaskManagementData();
 
   const user = authData?.user ?? null;
   const authLoading = authData?.loading || false;
@@ -52,10 +53,13 @@ export const useTaskManagement = () => {
   const canManageTaskCategories = canManageCategories(user?.role);
   const canDeleteTasks = canManageTasks(user?.role);
 
-  const showSuccessMessage = useCallback((nextMessage: string): void => {
-    setError(null);
-    setMessage({ type: 'success', text: nextMessage });
-  }, []);
+  const showSuccessMessage = useCallback(
+    (nextMessage: string): void => {
+      clearError();
+      setMessage({ type: 'success', text: nextMessage });
+    },
+    [clearError]
+  );
 
   const showErrorMessage = useCallback((nextMessage: string): void => {
     console.error('Error:', nextMessage);
@@ -68,69 +72,6 @@ export const useTaskManagement = () => {
     const timeout = window.setTimeout(() => setMessage(null), 5000);
     return () => window.clearTimeout(timeout);
   }, [message]);
-
-  const loadParticipantNames = useCallback(async (tasksData: Task[]): Promise<void> => {
-    const allParticipantIds = new Set<string>();
-    tasksData.forEach((task) => {
-      task.participants.forEach((participant) => allParticipantIds.add(participant.userId));
-      if (task.contactPersonId) {
-        allParticipantIds.add(task.contactPersonId);
-      }
-    });
-
-    const namePromises = Array.from(allParticipantIds).map(async (userId) => {
-      try {
-        const userData = await getUser(userId);
-        return { userId, name: userData?.name || 'Ukjent bruker' };
-      } catch {
-        return { userId, name: 'Ukjent bruker' };
-      }
-    });
-
-    const names = await Promise.all(namePromises);
-    const nameMap = names.reduce((acc, { userId, name }) => {
-      acc[userId] = name;
-      return acc;
-    }, {} as ParticipantNames);
-
-    setParticipantNames(nameMap);
-  }, []);
-
-  const loadData = useCallback(async (): Promise<void> => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const [tasksData, categoriesData, activeUsers] = await Promise.all([
-        getTasks(),
-        getCategories(),
-        getActiveUsersWithRole(),
-      ]);
-
-      setTasks(tasksData);
-      setCategories(categoriesData);
-      setContactPeople(
-        activeUsers.map((activeUser) => ({
-          id: activeUser.id,
-          name: activeUser.name,
-          email: activeUser.email,
-        }))
-      );
-
-      if (tasksData.length > 0) {
-        await loadParticipantNames(tasksData);
-      }
-    } catch (err) {
-      console.error('Error loading data:', err);
-      setError('Kunne ikke laste data. Prøv å oppdatere siden.');
-    } finally {
-      setLoading(false);
-    }
-  }, [loadParticipantNames]);
-
-  useEffect(() => {
-    void loadData();
-  }, [loadData]);
 
   const handleCreateTask = async (taskData: TaskCreationData): Promise<void> => {
     try {
