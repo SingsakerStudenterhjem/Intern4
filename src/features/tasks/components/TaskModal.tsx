@@ -1,13 +1,6 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle2, Clock, Pencil, Trash2, User, Users, X } from 'lucide-react';
-import {
-  canUserJoinTask,
-  canUserLeaveTask,
-  canUserSubmitTaskCompletion,
-  getCurrentUserTaskParticipant,
-  getTaskParticipantCount,
-  isTaskFull,
-} from '../../../shared/types/regi/tasks';
+import { getTaskWorkflowState } from '../../../shared/types/regi/tasks';
 import { canManageTasks, canViewAllParticipants } from '../permissions';
 import { TaskModalProps } from './types';
 import { formatDateTime } from '../../../shared/utils/date';
@@ -32,12 +25,14 @@ const TaskModal: React.FC<TaskModalProps> = ({
   const formatDeadline = (deadline: NonNullable<TaskModalProps['task']>['deadline']) =>
     formatDateTime(deadline, deadline ? 'Ugyldig dato' : 'Ingen frist');
 
-  const currentParticipant = getCurrentUserTaskParticipant(task, currentUserId);
-  const participantCount = getTaskParticipantCount(task);
-  const taskIsFull = isTaskFull(task);
-  const canJoin = canUserJoinTask(task, currentUserId);
-  const canLeave = canUserLeaveTask(task, currentUserId);
-  const canSubmitCompletion = canUserSubmitTaskCompletion(task, currentUserId);
+  const {
+    currentParticipant,
+    participantCount,
+    isFull: taskIsFull,
+    canJoin,
+    canLeave,
+    canSubmitCompletion,
+  } = getTaskWorkflowState(task, currentUserId);
 
   const handleJoin = () => {
     if (onJoinTask && task.id) {
