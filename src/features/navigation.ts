@@ -1,6 +1,29 @@
-import { features } from '.';
 import type { FeatureNavItem } from '../shared/types/feature';
+import { alcoholNavigation } from './alcohol/navigation';
+import { FEATURE_ORDER, type FeatureKey } from './featureOrder';
+import { helgaNavigation } from './helga/navigation';
+import { receptionNavigation } from './reception/navigation';
+import { regiNavigation } from './regi/navigation';
+import { residentNavigation } from './residents/navigation';
+import { shiftNavigation } from './shifts/navigation';
+import { taskNavigation } from './tasks/navigation';
+import { userNavigation } from './users/navigation';
+import { vervNavigation } from './verv/navigation';
+import { wineCellarNavigation } from './wine-cellar/navigation';
 
-export const featureNavigation: FeatureNavItem[] = features.flatMap(
-  (feature) => feature.navigation ?? []
+const navigationByFeature: Partial<Record<FeatureKey, FeatureNavItem[]>> = {
+  alcohol: alcoholNavigation,
+  helga: helgaNavigation,
+  reception: receptionNavigation,
+  regi: regiNavigation,
+  residents: residentNavigation,
+  shifts: shiftNavigation,
+  tasks: taskNavigation,
+  users: userNavigation,
+  verv: vervNavigation,
+  'wine-cellar': wineCellarNavigation,
+};
+
+export const featureNavigation: FeatureNavItem[] = FEATURE_ORDER.flatMap(
+  (featureKey) => navigationByFeature[featureKey] ?? []
 );
