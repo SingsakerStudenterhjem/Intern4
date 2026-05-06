@@ -12,16 +12,19 @@ import {
 const uploadMock = vi.fn();
 const removeMock = vi.fn();
 const createSignedUrlsMock = vi.fn();
-const fromMock = vi.fn(() => ({
-  upload: uploadMock,
-  remove: removeMock,
-  createSignedUrls: createSignedUrlsMock,
-}));
+const fromMock = vi.fn((bucket: string) => {
+  void bucket;
+  return {
+    upload: uploadMock,
+    remove: removeMock,
+    createSignedUrls: createSignedUrlsMock,
+  };
+});
 
 vi.mock('./supabaseClient', () => ({
   supabase: {
     storage: {
-      from: (...args: unknown[]) => fromMock(...args),
+      from: (bucket: string) => fromMock(bucket),
     },
   },
 }));
