@@ -1,12 +1,6 @@
 import React from 'react';
 import { Users, Clock, Calendar, User } from 'lucide-react';
-import {
-  Task,
-  canUserJoinTask,
-  getCurrentUserTaskParticipant,
-  getTaskParticipantCount,
-  isTaskFull,
-} from '../../../shared/types/regi/tasks';
+import { Task, getTaskWorkflowState } from '../../../shared/types/regi/tasks';
 import { TasksTableProps } from './types';
 import { formatDate } from '../../../shared/utils/date';
 
@@ -21,15 +15,13 @@ const TasksTable: React.FC<TasksTableProps> = ({
     formatDate(deadline, deadline ? 'Ugyldig dato' : 'Ingen frist');
 
   const getParticipantStatus = (task: Task) => {
-    const currentParticipant = getCurrentUserTaskParticipant(task, currentUserId);
-    const count = getTaskParticipantCount(task);
+    const workflow = getTaskWorkflowState(task, currentUserId);
     const max = task.maxParticipants;
-    const full = isTaskFull(task);
     return {
-      text: `${count}/${max}`,
-      isFull: full,
-      currentParticipant,
-      canJoin: canUserJoinTask(task, currentUserId),
+      text: `${workflow.participantCount}/${max}`,
+      isFull: workflow.isFull,
+      currentParticipant: workflow.currentParticipant,
+      canJoin: workflow.canJoin,
     };
   };
 

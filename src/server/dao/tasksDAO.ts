@@ -1,5 +1,7 @@
 import { supabase } from '../supabaseClient';
 import {
+  canLeaveTaskAssignment,
+  canSubmitTaskAssignment,
   Task,
   TaskAssignmentStatus,
   TaskCreationData,
@@ -311,7 +313,7 @@ export async function leaveTask(taskId: string, userId: string): Promise<boolean
   }
 
   const status = getTaskAssignmentStatus(assignment);
-  if (status !== 'joined' && status !== 'rejected') {
+  if (!canLeaveTaskAssignment(status)) {
     throw new Error('Du kan ikke melde deg av etter at oppgaven er sendt inn eller godkjent');
   }
 
@@ -330,7 +332,7 @@ export async function submitTaskCompletion(taskId: string, userId: string): Prom
   }
 
   const status = getTaskAssignmentStatus(assignment);
-  if (status !== 'joined' && status !== 'rejected') {
+  if (!canSubmitTaskAssignment(status)) {
     throw new Error('Oppgaven er allerede sendt inn eller ferdig behandlet');
   }
 

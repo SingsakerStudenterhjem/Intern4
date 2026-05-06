@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+  canLeaveTaskAssignment,
+  canSubmitTaskAssignment,
   canUserJoinTask,
   canUserLeaveTask,
   canUserSubmitTaskCompletion,
   getCurrentUserTaskParticipant,
+  getTaskWorkflowState,
   isTaskFull,
   type Task,
 } from './index';
@@ -65,5 +68,33 @@ describe('task.utils', () => {
     expect(
       getCurrentUserTaskParticipant(task, '11111111-1111-1111-1111-111111111111')?.status
     ).toBe('rejected');
+  });
+
+  it('uses assignment status as the shared leave and submit rule', () => {
+    expect(canLeaveTaskAssignment('joined')).toBe(true);
+    expect(canLeaveTaskAssignment('rejected')).toBe(true);
+    expect(canLeaveTaskAssignment('submitted')).toBe(false);
+    expect(canSubmitTaskAssignment('approved')).toBe(false);
+  });
+
+  it('projects task workflow state for callers that render actions', () => {
+    const task = baseTask({
+      participants: [
+        {
+          assignmentId: '1',
+          userId: '11111111-1111-1111-1111-111111111111',
+          status: 'joined',
+          joinedAt: '2026-04-10T10:00:00.000Z',
+        },
+      ],
+    });
+
+    expect(getTaskWorkflowState(task, '11111111-1111-1111-1111-111111111111')).toMatchObject({
+      participantCount: 1,
+      isFull: false,
+      canJoin: false,
+      canLeave: true,
+      canSubmitCompletion: true,
+    });
   });
 });

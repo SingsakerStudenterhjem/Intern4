@@ -25,10 +25,13 @@ export {
 } from './category.types';
 
 export {
+  canLeaveTaskAssignment,
+  canSubmitTaskAssignment,
   canUserJoinTask,
   canUserLeaveTask,
   canUserSubmitTaskCompletion,
   getCurrentUserTaskParticipant,
   getTaskParticipantCount,
+  getTaskWorkflowState,
   isTaskFull,
 } from './task.utils';
