@@ -29,5 +29,6 @@ yarn-error.log*
 /src/generated/prisma
 
 /AGENTS.md
+/CONTEXT.md
 /skills-lock.json
 /.agents/
