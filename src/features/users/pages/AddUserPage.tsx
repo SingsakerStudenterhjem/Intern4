@@ -12,31 +12,19 @@ import {
 } from '../../../server/dao/userDAO';
 import { BasicUserWithRole, Role } from '../../../shared/types/user';
 import { getDefaultLookupId, LookupOption } from '../../../shared/types/lookup';
-import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
+import {
+  canSubmitNewUser,
+  createEmptyNewUserInput,
+  prepareNewUserInput,
+  validateNewUserInput,
+  validateUserField,
+} from '../userLifecycle';
 
 const getErrorMessage = (error: unknown, fallback: string): string =>
   error instanceof Error ? error.message : fallback;
 
 const AddUserPage: React.FC = () => {
-  const [userData, setUserData] = useState<NewUserInput>({
-    name: '',
-    email: '',
-    phone: '',
-    birthDate: new Date(),
-    address: {
-      street: '',
-      postalCode: '',
-      city: '',
-    },
-    schoolId: '',
-    studyId: '',
-    profilePicture: '',
-    seniority: 0,
-    roomNumber: 0,
-    role: 'Halv/Halv',
-    onLeave: false,
-    isActive: true,
-  });
+  const [userData, setUserData] = useState<NewUserInput>(createEmptyNewUserInput());
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -58,11 +46,7 @@ const AddUserPage: React.FC = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<BasicUserWithRole | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const lookupOptionsReady = !lookupsLoading && schools.length > 0 && studies.length > 0;
-  const canSubmit =
-    !isSubmitting &&
-    lookupOptionsReady &&
-    Boolean(userData.name.trim()) &&
-    Boolean(userData.email.trim());
+  const canSubmit = canSubmitNewUser(userData, { isSubmitting, lookupOptionsReady });
 
   const handleDeleteUser = async (user: BasicUserWithRole) => {
     setIsDeleting(true);
@@ -124,38 +108,6 @@ const AddUserPage: React.FC = () => {
     return matchesQuery && matchesRole;
   });
 
-  const validateField = (name: string, value: unknown) => {
-    const errors: { [key: string]: string } = {};
-
-    if (name === 'phone' && value) {
-      const phoneError = validatePhoneNumber(String(value));
-      if (phoneError) errors.phone = phoneError;
-    }
-
-    if (name === 'seniority' && value !== undefined) {
-      const seniorityNum = typeof value === 'number' ? value : parseInt(String(value));
-      if (isNaN(seniorityNum) || seniorityNum < 0) {
-        errors.seniority = 'Ansiennitet må være et positivt tall';
-      }
-    }
-
-    if (name === 'roomNumber' && value) {
-      const roomNum = typeof value === 'number' ? value : parseInt(String(value));
-      if (isNaN(roomNum)) {
-        errors.roomNumber = 'Romnummer må være et tall';
-      } else if (
-        roomNum !== 60 &&
-        roomNum !== 0 &&
-        !(roomNum >= 100 && roomNum <= 173) &&
-        !(roomNum >= 200 && roomNum <= 273)
-      ) {
-        errors.roomNumber = 'Romnummer må være 060, 0, mellom 100-173, eller mellom 200-273';
-      }
-    }
-
-    return errors;
-  };
-
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
@@ -196,7 +148,7 @@ const AddUserPage: React.FC = () => {
       }));
     }
 
-    const fieldErrors = validateField(
+    const fieldErrors = validateUserField(
       name,
       type === 'number' ? (value === '' ? 0 : parseInt(value)) : value
     );
@@ -212,13 +164,7 @@ const AddUserPage: React.FC = () => {
     setIsSubmitting(true);
     setMessage(null);
 
-    const normalizedPhone = normalizePhoneNumber(userData.phone ?? '');
-
-    const allErrors: { [key: string]: string } = {};
-    Object.entries(userData).forEach(([key, value]) => {
-      const fieldErrors = validateField(key, value);
-      Object.assign(allErrors, fieldErrors);
-    });
+    const allErrors = validateNewUserInput(userData);
 
     if (Object.values(allErrors).some((error) => error)) {
       setValidationErrors(allErrors);
@@ -240,12 +186,7 @@ const AddUserPage: React.FC = () => {
     }
 
     try {
-      const { initialPassword } = await createUser({
-        ...userData,
-        phone: normalizedPhone,
-        schoolId: userData.schoolId || getDefaultLookupId(schools),
-        studyId: userData.studyId || getDefaultLookupId(studies),
-      });
+      const { initialPassword } = await createUser(prepareNewUserInput(userData, schools, studies));
 
       setMessage({
         type: 'success',
@@ -254,21 +195,9 @@ const AddUserPage: React.FC = () => {
           (initialPassword ? ` (midlertidig passord: ${initialPassword})` : ''),
       });
 
-      setUserData({
-        name: '',
-        email: '',
-        phone: '',
-        birthDate: new Date(),
-        address: { street: '', postalCode: '', city: '' },
-        schoolId: getDefaultLookupId(schools),
-        studyId: getDefaultLookupId(studies),
-        profilePicture: '',
-        seniority: 0,
-        roomNumber: 0,
-        role: 'Halv/Halv',
-        onLeave: false,
-        isActive: true,
-      });
+      setUserData(
+        createEmptyNewUserInput(getDefaultLookupId(schools), getDefaultLookupId(studies))
+      );
       setBirthDateString('');
       setValidationErrors({});
       setShowOptionalFields(false);
