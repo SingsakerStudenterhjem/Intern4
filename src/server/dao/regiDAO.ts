@@ -7,86 +7,22 @@ import {
 } from '../../shared/types/regi';
 import { deleteImages } from '../storage';
 import { getUser } from './userDAO';
+import {
+  getImagePaths,
+  getWorkItemType,
+  isCountableRegiAssignment,
+  RegiAssignmentRow,
+  RegiUserLookup,
+  RegiWorkItemRelation,
+  toPendingRegiApproval,
+  toRegiLogWithId,
+  toRegiLogWithUser,
+  WorkItemTypeRelation,
+} from '../mappers/regiAssignmentMapper';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
 
-function toDate(value: Date | string | { seconds: number } | null | undefined): Date {
-  if (value instanceof Date) return value;
-  if (typeof value === 'string') return new Date(value);
-  if (
-    value &&
-    typeof value === 'object' &&
-    'seconds' in value &&
-    typeof value.seconds === 'number'
-  ) {
-    return new Date(value.seconds * 1000);
-  }
-
-  return new Date(0);
-}
-
-type WorkItemTypeRelation =
-  | { type: string | null }
-  | Array<{ type: string | null }>
-  | null
-  | undefined;
-
-type WorkMiscRelation =
-  | { image_paths?: string[] | null }
-  | Array<{ image_paths?: string[] | null }>
-  | null;
-
-type RegiWorkItemRelation =
-  | {
-      title?: string | null;
-      description?: string | null;
-      type?: string | null;
-      work_categories?: { name?: string | null } | null;
-      work_misc?: WorkMiscRelation;
-    }
-  | null
-  | undefined;
-
-type RegiAssignmentRow = {
-  id?: number | string;
-  user_uuid?: string | null;
-  work_id?: number | string | null;
-  hours_used?: number | string | null;
-  created_at?: Date | string | { seconds: number } | null;
-  approved_state?: number | null;
-  approval_comment?: string | null;
-  approved_by_uuid?: string | null;
-  work_items?: RegiWorkItemRelation;
-};
-
-function getWorkItemType(workItems: WorkItemTypeRelation): string | undefined {
-  if (Array.isArray(workItems)) {
-    return workItems[0]?.type ?? undefined;
-  }
-
-  return workItems?.type ?? undefined;
-}
-
-function getImagePaths(workItems: RegiWorkItemRelation): string[] {
-  const workMisc = Array.isArray(workItems?.work_misc)
-    ? workItems?.work_misc[0]
-    : workItems?.work_misc;
-  return Array.from(new Set((workMisc?.image_paths ?? []).filter(Boolean)));
-}
-
-export function isCountableRegiAssignment(row: RegiAssignmentRow): boolean {
-  const workType = row.work_items?.type;
-
-  if (workType === 'misc') {
-    return true;
-  }
-
-  if (workType === 'task') {
-    return row.hours_used != null;
-  }
-
-  return false;
-}
+export { isCountableRegiAssignment };
 
 async function getOrCreateDefaultCategoryId(): Promise<number> {
   const { data: cat } = await supabase
@@ -184,27 +120,9 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
 
   if (error) throw new Error(error.message);
 
-  const statusMap: Record<number, 'pending' | 'approved' | 'rejected'> = {
-    0: 'pending',
-    1: 'approved',
-    2: 'rejected',
-  };
-
-  return ((data ?? []) as RegiAssignmentRow[]).filter(isCountableRegiAssignment).map((d) => ({
-    id: String(d.id),
-    workId: d.work_id ? String(d.work_id) : undefined,
-    title: d.work_items?.title ?? '',
-    description: d.work_items?.description ?? undefined,
-    hours: Number(d.hours_used ?? 0),
-    date: toDate(d.created_at),
-    status: statusMap[d.approved_state ?? 0] ?? 'pending',
-    type: d.work_items?.work_categories?.name ?? d.work_items?.type ?? 'misc',
-    sourceType: d.work_items?.type === 'task' ? 'task' : 'misc',
-    userId,
-    createdAt: toDate(d.created_at),
-    reviewerComment: d.approval_comment ?? undefined,
-    imagePaths: getImagePaths(d.work_items),
-  }));
+  return ((data ?? []) as RegiAssignmentRow[])
+    .filter(isCountableRegiAssignment)
+    .map((row) => toRegiLogWithId(row, userId));
 }
 
 export async function deletePendingRegiLog(assignmentId: string, userId: string): Promise<void> {
@@ -300,26 +218,12 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
       acc[u.uid] = u;
       return acc;
     },
-    {} as Record<string, { uid: string; name: string; email: string }>
+    {} as Record<string, RegiUserLookup>
   );
 
   return pendingAssignments.map((row) => {
     const uid = String(row.user_uuid);
-    const u = userMap[uid];
-
-    return {
-      id: String(row.id),
-      userId: uid,
-      userName: u?.name ?? 'Ukjent',
-      userEmail: u?.email ?? '',
-      sourceType: row.work_items?.type === 'task' ? 'task' : 'misc',
-      title: row.work_items?.title ?? '',
-      description: row.work_items?.description ?? undefined,
-      category: row.work_items?.work_categories?.name ?? 'Regi',
-      hours: Number(row.hours_used ?? 0),
-      createdAt: toDate(row.created_at),
-      imagePaths: getImagePaths(row.work_items),
-    };
+    return toPendingRegiApproval(row, userMap[uid]);
   });
 }
 
@@ -344,7 +248,7 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
     )
   );
 
-  const userMap: Record<string, { name: string; email: string }> = {};
+  const userMap: Record<string, RegiUserLookup> = {};
   await Promise.all(
     uniqueUserIds.map(async (uid) => {
       try {
@@ -358,34 +262,13 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
     })
   );
 
-  const statusMap: Record<number, 'pending' | 'approved' | 'rejected'> = {
-    0: 'pending',
-    1: 'approved',
-    2: 'rejected',
-  };
-
   return rows.map((row) => {
     const uid = row.user_uuid ? String(row.user_uuid) : '';
     const owner = uid ? userMap[uid] : undefined;
     const approverId = row.approved_by_uuid ? String(row.approved_by_uuid) : '';
     const approver = approverId ? userMap[approverId] : undefined;
 
-    return {
-      id: String(row.id),
-      userId: uid,
-      userName: owner?.name ?? 'Ukjent',
-      userEmail: owner?.email ?? '',
-      sourceType: row.work_items?.type === 'task' ? 'task' : 'misc',
-      title: row.work_items?.title ?? '',
-      description: row.work_items?.description ?? undefined,
-      category: row.work_items?.work_categories?.name ?? 'Regi',
-      hours: Number(row.hours_used ?? 0),
-      status: statusMap[row.approved_state ?? 0] ?? 'pending',
-      createdAt: toDate(row.created_at),
-      approvedByName: approver?.name,
-      approvalComment: row.approval_comment ?? null,
-      imagePaths: getImagePaths(row.work_items),
-    };
+    return toRegiLogWithUser(row, owner, approver);
   });
 }
 
