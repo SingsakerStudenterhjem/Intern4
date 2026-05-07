@@ -112,15 +112,14 @@ const WorkTasksPage: React.FC = () => {
       )}
 
       {showCategoryManagement && canManageTaskCategories && (
-        <div className="mb-8">
-          <CategoryManagement
-            categories={categories}
-            onAddCategory={handleAddCategory}
-            onUpdateCategory={handleUpdateCategory}
-            onDeleteCategory={handleDeleteCategory}
-            getCategoryUsage={getCategoryUsageCount}
-          />
-        </div>
+        <CategoryManagement
+          categories={categories}
+          onAddCategory={handleAddCategory}
+          onUpdateCategory={handleUpdateCategory}
+          onDeleteCategory={handleDeleteCategory}
+          getCategoryUsage={getCategoryUsageCount}
+          onClose={toggleCategoryManagement}
+        />
       )}
 
       <div className="bg-white rounded-lg shadow">
