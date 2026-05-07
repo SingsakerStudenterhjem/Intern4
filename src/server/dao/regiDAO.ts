@@ -24,6 +24,8 @@ const DEFAULT_REGI_CATEGORY = 'Regi';
 
 export { isCountableRegiAssignment };
 
+const toDateColumnValue = (date: Date): string => date.toISOString().split('T')[0];
+
 async function getOrCreateDefaultCategoryId(): Promise<number> {
   const { data: cat } = await supabase
     .from('work_categories')
@@ -85,6 +87,7 @@ export async function addRegiLog(
       user_uuid: data.userId,
       work_id: item.id,
       hours_used: data.hours,
+      performed_at: toDateColumnValue(data.date),
       approved_state: options?.autoApprove ? 1 : 0,
       approved_by_uuid: options?.autoApprove ? (options.approvedByUuid ?? null) : null,
     })
@@ -114,9 +117,10 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, work_id, hours_used, created_at, approved_state, approval_comment, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
+      'id, work_id, hours_used, created_at, performed_at, approved_state, approval_comment, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
     )
     .eq('user_uuid', userId)
+    .order('performed_at', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -191,9 +195,10 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, user_uuid, hours_used, created_at, approved_state, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
+      'id, user_uuid, hours_used, created_at, performed_at, approved_state, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
     )
     .eq('approved_state', 0)
+    .order('performed_at', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -232,8 +237,9 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, user_uuid, hours_used, created_at, approved_state, approval_comment, approved_by_uuid, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
+      'id, user_uuid, hours_used, created_at, performed_at, approved_state, approval_comment, approved_by_uuid, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
     )
+    .order('performed_at', { ascending: false })
     .order('created_at', { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -278,11 +284,11 @@ export async function getApprovedRegiHoursByUserSince(
 ): Promise<Record<string, number>> {
   let query = supabase
     .from('work_assignments')
-    .select('user_uuid, hours_used, created_at, approved_state')
+    .select('user_uuid, hours_used, performed_at, approved_state')
     .eq('approved_state', 1);
 
   if (startDate) {
-    query = query.gte('created_at', startDate.toISOString());
+    query = query.gte('performed_at', toDateColumnValue(startDate));
   }
 
   const { data, error } = await query;

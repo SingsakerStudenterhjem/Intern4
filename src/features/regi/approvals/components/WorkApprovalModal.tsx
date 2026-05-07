@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Ban, Calendar, Check, Clock, User, X } from 'lucide-react';
 import { PendingRegiApproval } from '../../../../shared/types/regi';
-import { formatDateTime } from '../../../../shared/utils/date';
+import { formatDate, formatDateTime } from '../../../../shared/utils/date';
 import { ImagePreviewGrid } from '../../../../shared/components';
 
 interface WorkApprovalModalProps {
@@ -75,6 +75,11 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
                 <Clock className="w-4 h-4" />
                 <span className="font-medium">Timer</span>
                 <span className="text-gray-900">{approval.hours.toFixed(2)} t</span>
+              </div>
+              <div className="flex items-center space-x-2 text-sm text-gray-700">
+                <Calendar className="w-4 h-4" />
+                <span className="font-medium">Utført</span>
+                <span className="text-gray-900">{formatDate(approval.date)}</span>
               </div>
               <div className="flex items-center space-x-2 text-sm text-gray-700">
                 <Calendar className="w-4 h-4" />

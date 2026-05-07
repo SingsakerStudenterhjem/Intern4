@@ -190,7 +190,7 @@ const WorkApprovalList: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-4 py-3 align-top whitespace-nowrap">
-                    {formatDate(a.createdAt)}
+                    {formatDate(a.date)}
                   </td>
                   <td className="px-4 py-3 align-top whitespace-nowrap">{a.hours.toFixed(2)}</td>
                   <td className="px-4 py-3 align-top min-w-48">{renderActionButtons(a)}</td>
@@ -230,7 +230,7 @@ const WorkApprovalList: React.FC = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="font-medium text-gray-900">{a.userName}</div>
-                    <div className="mt-1 text-xs text-gray-500">{formatDate(a.createdAt)}</div>
+                    <div className="mt-1 text-xs text-gray-500">{formatDate(a.date)}</div>
                   </div>
                   <div className="text-sm font-semibold text-gray-900 whitespace-nowrap">
                     {a.hours.toFixed(2)} t

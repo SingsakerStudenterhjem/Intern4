@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getTasksByUser, joinTask, leaveTask, submitTaskCompletion } from './tasksDAO';
 import { supabase } from '../supabaseClient';
 
@@ -92,6 +92,10 @@ describe('tasksDAO', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it('rejects duplicate joins before inserting an assignment', async () => {
     const fromMock = vi.mocked(supabase.from);
     fromMock
@@ -127,6 +131,9 @@ describe('tasksDAO', () => {
   });
 
   it('submits task completion as a pending regi approval using the task hour estimate', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-04-21T12:00:00.000Z'));
+
     const taskBuilder = createMaybeSingleBuilder(createTaskRow());
     const assignmentBuilder = createMaybeSingleBuilder({
       id: 9,
@@ -146,6 +153,7 @@ describe('tasksDAO', () => {
 
     expect(updateBuilder.update).toHaveBeenCalledWith({
       hours_used: 2,
+      performed_at: '2026-04-21',
       approved_state: 0,
       approved_by_uuid: null,
       approval_comment: null,

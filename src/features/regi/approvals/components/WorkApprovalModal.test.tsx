@@ -19,6 +19,7 @@ const approval: PendingRegiApproval = {
   description: 'Dokumentert med bilder',
   category: 'Regi',
   hours: 2,
+  date: new Date('2026-04-10T00:00:00.000Z'),
   createdAt: new Date('2026-04-11T10:00:00.000Z'),
   imagePaths: ['user/regi/one.png'],
 };

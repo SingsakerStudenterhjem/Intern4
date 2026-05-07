@@ -2,6 +2,7 @@ import React from 'react';
 import { Calendar, Clock, FileText, MessageSquare, Tag, X } from 'lucide-react';
 import { RegiLogWithId } from '../../../../shared/types/regi';
 import { ImagePreviewGrid } from '../../../../shared/components';
+import { formatDate } from '../../../../shared/utils/date';
 
 type WorkLogDetailsModalProps = {
   log: RegiLogWithId | null;
@@ -58,7 +59,7 @@ const WorkLogDetailsModal: React.FC<WorkLogDetailsModalProps> = ({ log, onClose 
               <div className="flex items-center gap-2 text-sm text-gray-700">
                 <Calendar className="h-4 w-4" />
                 <span className="font-medium">Dato utført</span>
-                <span className="text-gray-900">{formatLogDateTime(log.date)}</span>
+                <span className="text-gray-900">{formatDate(log.date)}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-700">
                 <Clock className="h-4 w-4" />

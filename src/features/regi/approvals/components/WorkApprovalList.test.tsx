@@ -36,6 +36,7 @@ const approvals = [
     description: 'Lang beskrivelse for å teste at radlayouten holder seg stabil.',
     category: 'Generelt',
     hours: 2,
+    date: new Date('2026-04-10T00:00:00.000Z'),
     createdAt: new Date('2026-04-11T10:00:00.000Z'),
   },
   {
@@ -48,6 +49,7 @@ const approvals = [
     description: 'Kort beskrivelse.',
     category: 'Dataarbeid',
     hours: 1.5,
+    date: new Date('2026-04-09T00:00:00.000Z'),
     createdAt: new Date('2026-04-10T12:00:00.000Z'),
   },
 ];
