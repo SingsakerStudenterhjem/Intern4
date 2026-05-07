@@ -7,6 +7,7 @@ import {
 } from '../../shared/types/regi';
 import { deleteImages } from '../storage';
 import { getUser } from './userDAO';
+import { formatDateColumnValue } from '../../shared/utils/date';
 import {
   getImagePaths,
   getWorkItemType,
@@ -24,7 +25,9 @@ const DEFAULT_REGI_CATEGORY = 'Regi';
 
 export { isCountableRegiAssignment };
 
-const toDateColumnValue = (date: Date): string => date.toISOString().split('T')[0];
+type AddRegiLogOptions =
+  | { autoApprove?: false; approvedByUuid?: never }
+  | { autoApprove: true; approvedByUuid: string };
 
 async function getOrCreateDefaultCategoryId(): Promise<number> {
   const { data: cat } = await supabase
@@ -96,8 +99,12 @@ async function getRegiUserMap(
 
 export async function addRegiLog(
   data: Omit<RegiLog, 'id' | 'createdAt' | 'status'>,
-  options?: { autoApprove?: boolean; approvedByUuid?: string }
+  options?: AddRegiLogOptions
 ) {
+  if (options?.autoApprove && !options.approvedByUuid) {
+    throw new Error('approvedByUuid is required when auto-approving regi work');
+  }
+
   const catId = await getCategoryIdByNameOrDefault(data.type);
 
   const { data: item, error: e1 } = await supabase
@@ -118,9 +125,9 @@ export async function addRegiLog(
       user_uuid: data.userId,
       work_id: item.id,
       hours_used: data.hours,
-      performed_at: toDateColumnValue(data.date),
+      performed_at: formatDateColumnValue(data.date),
       approved_state: options?.autoApprove ? 1 : 0,
-      approved_by_uuid: options?.autoApprove ? (options.approvedByUuid ?? null) : null,
+      approved_by_uuid: options?.autoApprove ? options.approvedByUuid : null,
     })
     .select('id')
     .single();
@@ -280,7 +287,7 @@ export async function getApprovedRegiHoursByUserSince(
     .eq('approved_state', 1);
 
   if (startDate) {
-    query = query.gte('performed_at', toDateColumnValue(startDate));
+    query = query.gte('performed_at', formatDateColumnValue(startDate));
   }
 
   const { data, error } = await query;

@@ -31,3 +31,20 @@ export const formatDate = (value: DateLike, fallback = '-'): string =>
 
 export const formatDateTime = (value: DateLike, fallback = '-'): string =>
   toDate(value)?.toLocaleString('no-NO') ?? fallback;
+
+export const APP_TIME_ZONE = 'Europe/Oslo';
+
+const dateColumnFormatter = new Intl.DateTimeFormat('en', {
+  timeZone: APP_TIME_ZONE,
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+});
+
+export const formatDateColumnValue = (date: Date): string => {
+  const parts = Object.fromEntries(
+    dateColumnFormatter.formatToParts(date).map((part) => [part.type, part.value])
+  );
+
+  return `${parts.year}-${parts.month}-${parts.day}`;
+};

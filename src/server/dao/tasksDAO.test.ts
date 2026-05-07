@@ -132,7 +132,7 @@ describe('tasksDAO', () => {
 
   it('submits task completion as a pending regi approval using the task hour estimate', async () => {
     vi.useFakeTimers();
-    vi.setSystemTime(new Date('2026-04-21T12:00:00.000Z'));
+    vi.setSystemTime(new Date('2026-04-20T22:30:00.000Z'));
 
     const taskBuilder = createMaybeSingleBuilder(createTaskRow());
     const assignmentBuilder = createMaybeSingleBuilder({

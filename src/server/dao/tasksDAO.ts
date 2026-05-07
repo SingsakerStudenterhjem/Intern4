@@ -1,4 +1,5 @@
 import { supabase } from '../supabaseClient';
+import { formatDateColumnValue } from '../../shared/utils/date';
 import {
   canLeaveTaskAssignment,
   canSubmitTaskAssignment,
@@ -344,7 +345,7 @@ export async function submitTaskCompletion(taskId: string, userId: string): Prom
     .from('work_assignments')
     .update({
       hours_used: task.hourEstimate,
-      performed_at: new Date().toISOString().split('T')[0],
+      performed_at: formatDateColumnValue(new Date()),
       approved_state: 0,
       approved_by_uuid: null,
       approval_comment: null,
