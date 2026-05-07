@@ -35,8 +35,11 @@ export const useGrantRegiWorkflow = () => {
     };
   }, []);
 
-  const createGrantedLog = async (payload: Omit<RegiLog, 'id' | 'createdAt' | 'status'>) => {
-    await addRegiLog(payload);
+  const createGrantedLog = async (
+    payload: Omit<RegiLog, 'id' | 'createdAt' | 'status'>,
+    approvedByUuid: string
+  ) => {
+    await addRegiLog(payload, { autoApprove: true, approvedByUuid });
   };
 
   return {

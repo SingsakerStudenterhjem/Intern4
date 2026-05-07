@@ -79,16 +79,19 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
 
     try {
       setSubmitting(true);
-      await createGrantedLog({
-        userId: parsed.data.userId,
-        title: parsed.data.title,
-        description: parsed.data.description,
-        date: new Date(parsed.data.date),
-        hours: parsed.data.hours,
-        type: parsed.data.type,
-      });
+      await createGrantedLog(
+        {
+          userId: parsed.data.userId,
+          title: parsed.data.title,
+          description: parsed.data.description,
+          date: new Date(parsed.data.date),
+          hours: parsed.data.hours,
+          type: parsed.data.type,
+        },
+        user.id
+      );
 
-      setMessage('Regitimer registrert og sendt til godkjenning.');
+      setMessage('Regitimer registrert og godkjent.');
       setForm({
         userId: '',
         title: '',
@@ -110,7 +113,7 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     <div className="space-y-1">
       <h2 className="font-medium text-xl mb-2">Gi regitimer</h2>
       <p className="text-sm text-gray-600 mb-4">
-        Registrer regi på vegne av aktive brukere. Registreringer må fortsatt godkjennes.
+        Registrer og godkjenn regi på vegne av aktive brukere.
       </p>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
