@@ -217,13 +217,18 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
   }, []);
 
   return createPortal(
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4">
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4"
+      onMouseDown={onClose}
+      role="presentation"
+    >
       <div className="flex min-h-full items-center justify-center">
         <div
           className="relative flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
           role="dialog"
           aria-modal="true"
           aria-labelledby="category-management-title"
+          onMouseDown={(event) => event.stopPropagation()}
         >
           <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-5 py-4">
             <h2 id="category-management-title" className="text-xl font-semibold text-gray-900">
@@ -346,6 +351,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
             role="dialog"
             aria-modal="true"
             aria-labelledby="category-form-title"
+            onMouseDown={(event) => event.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
               <h3 id="category-form-title" className="text-lg font-semibold text-gray-900">

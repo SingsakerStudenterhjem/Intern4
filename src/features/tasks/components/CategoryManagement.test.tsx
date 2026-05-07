@@ -84,6 +84,20 @@ describe('CategoryManagement', () => {
     expect(screen.getByText('Vask')).toBeInTheDocument();
   });
 
+  it('closes when clicking the backdrop but not when clicking inside the dialog', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    renderCategoryManagement({ onClose });
+
+    const dialog = screen.getByRole('dialog', { name: 'Kategorier' });
+    await screen.findByText('Dataarbeid');
+    await user.click(dialog);
+    expect(onClose).not.toHaveBeenCalled();
+
+    await user.click(dialog.parentElement?.parentElement as HTMLElement);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it('adds a category with trimmed form data', async () => {
     const user = userEvent.setup();
     const onAddCategory = vi.fn().mockResolvedValue(undefined);
