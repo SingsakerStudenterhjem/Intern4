@@ -239,7 +239,8 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
         <div
           className="relative flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
           role="dialog"
-          aria-modal="true"
+          aria-modal={!isFormOpen}
+          aria-hidden={isFormOpen || undefined}
           aria-labelledby="category-management-title"
           onMouseDown={(event) => event.stopPropagation()}
         >
@@ -358,7 +359,14 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
       </div>
 
       {isFormOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/30 p-4">
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/30 p-4"
+          onMouseDown={(event) => {
+            event.stopPropagation();
+            cancelEdit();
+          }}
+          role="presentation"
+        >
           <div
             className="w-full max-w-xl rounded-lg bg-white shadow-xl"
             role="dialog"
