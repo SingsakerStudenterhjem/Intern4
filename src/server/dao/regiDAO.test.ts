@@ -370,6 +370,24 @@ describe('regiDAO', () => {
     });
   });
 
+  it('requires approver metadata when auto-approving granted regi logs', async () => {
+    await expect(
+      addRegiLog(
+        {
+          userId: '11111111-1111-1111-1111-111111111111',
+          title: 'Innført av regisjef',
+          description: 'Test',
+          date: new Date('2026-04-21T00:00:00.000Z'),
+          hours: 2,
+          type: 'Regi',
+        },
+        { autoApprove: true } as Parameters<typeof addRegiLog>[1]
+      )
+    ).rejects.toThrow('approvedByUuid is required when auto-approving regi work');
+
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+
   it('stores image paths for manual regi logs', async () => {
     const categoryBuilder = createMaybeSingleBuilder({ id: 7 });
     const workItemBuilder = createInsertSingleBuilder({ id: 44 });
