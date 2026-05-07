@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Edit2, Palette, Plus, Search, Trash2, X } from 'lucide-react';
 import {
   Category,
@@ -206,129 +207,140 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
 
   const isFormOpen = isAddingCategory || !!editingCategory;
 
-  return (
-    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div
-        className="relative bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="category-management-title"
-      >
-        <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-gray-200">
-          <h2 id="category-management-title" className="text-xl font-semibold text-gray-900">
-            Kategorier
-          </h2>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={startAdd}
-              className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Ny kategori
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-md p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              aria-label="Lukk kategorier"
-            >
-              <X className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
 
-        <div className="border-b border-gray-200 px-5 py-3">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Søk i kategorier..."
-            />
-          </div>
-        </div>
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
 
-        <div className="min-h-0 flex-1 overflow-y-auto">
-          {loadingUsage ? (
-            <div className="px-6 py-8 text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
-              <p className="mt-2 text-sm text-gray-500">Laster kategorier...</p>
+  return createPortal(
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/40 p-4">
+      <div className="flex min-h-full items-center justify-center">
+        <div
+          className="relative flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="category-management-title"
+        >
+          <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-5 py-4">
+            <h2 id="category-management-title" className="text-xl font-semibold text-gray-900">
+              Kategorier
+            </h2>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={startAdd}
+                className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Ny kategori
+              </button>
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-md p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Lukk kategorier"
+              >
+                <X className="h-5 w-5" />
+              </button>
             </div>
-          ) : (
-            <ul className="divide-y divide-gray-200">
-              {categories.length === 0 ? (
-                <li className="px-5 py-8 text-center text-sm text-gray-500">
-                  Ingen kategorier opprettet
-                </li>
-              ) : filteredCategories.length === 0 ? (
-                <li className="px-5 py-8 text-center text-sm text-gray-500">
-                  Ingen kategorier matcher søket
-                </li>
-              ) : (
-                filteredCategories.map((category) => {
-                  const usage = usageCounts[category.name] || 0;
+          </div>
 
-                  return (
-                    <li key={category.id} className="px-5 py-2">
-                      <div className="flex min-w-0 items-center justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <div
-                            className="h-4 w-4 shrink-0 rounded-full border border-gray-300"
-                            style={{ backgroundColor: category.color }}
-                            aria-hidden="true"
-                          />
-                          <div className="min-w-0 leading-tight">
-                            <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                              <h3 className="truncate text-sm font-medium text-gray-900">
-                                {category.name}
-                              </h3>
-                              <span className="text-xs text-gray-500">
-                                {usage} oppgave{usage !== 1 ? 'r' : ''}
-                              </span>
+          <div className="border-b border-gray-200 px-5 py-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Søk i kategorier..."
+              />
+            </div>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-y-auto">
+            {loadingUsage ? (
+              <div className="px-6 py-8 text-center">
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+                <p className="mt-2 text-sm text-gray-500">Laster kategorier...</p>
+              </div>
+            ) : (
+              <ul className="divide-y divide-gray-200">
+                {categories.length === 0 ? (
+                  <li className="px-5 py-8 text-center text-sm text-gray-500">
+                    Ingen kategorier opprettet
+                  </li>
+                ) : filteredCategories.length === 0 ? (
+                  <li className="px-5 py-8 text-center text-sm text-gray-500">
+                    Ingen kategorier matcher søket
+                  </li>
+                ) : (
+                  filteredCategories.map((category) => {
+                    const usage = usageCounts[category.name] || 0;
+
+                    return (
+                      <li key={category.id} className="px-5 py-2">
+                        <div className="flex min-w-0 items-center justify-between gap-3">
+                          <div className="flex min-w-0 items-center gap-3">
+                            <div
+                              className="h-4 w-4 shrink-0 rounded-full border border-gray-300"
+                              style={{ backgroundColor: category.color }}
+                              aria-hidden="true"
+                            />
+                            <div className="min-w-0 leading-tight">
+                              <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                                <h3 className="truncate text-sm font-medium text-gray-900">
+                                  {category.name}
+                                </h3>
+                                <span className="text-xs text-gray-500">
+                                  {usage} oppgave{usage !== 1 ? 'r' : ''}
+                                </span>
+                              </div>
+                              {category.description && (
+                                <p className="truncate text-xs text-gray-500">
+                                  {category.description}
+                                </p>
+                              )}
                             </div>
-                            {category.description && (
-                              <p className="truncate text-xs text-gray-500">
-                                {category.description}
-                              </p>
-                            )}
+                          </div>
+
+                          <div className="flex shrink-0 items-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => startEdit(category)}
+                              className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              title="Rediger kategori"
+                              aria-label={`Rediger ${category.name}`}
+                            >
+                              <Edit2 className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(category)}
+                              className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                              title="Slett kategori"
+                              aria-label={`Slett ${category.name}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
                           </div>
                         </div>
-
-                        <div className="flex shrink-0 items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => startEdit(category)}
-                            className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            title="Rediger kategori"
-                            aria-label={`Rediger ${category.name}`}
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(category)}
-                            className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
-                            title="Slett kategori"
-                            aria-label={`Slett ${category.name}`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </li>
-                  );
-                })
-              )}
-            </ul>
-          )}
+                      </li>
+                    );
+                  })
+                )}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
 
       {isFormOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-black/30 p-4">
           <div
             className="w-full max-w-xl rounded-lg bg-white shadow-xl"
             role="dialog"
@@ -451,7 +463,8 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </div>,
+    document.body
   );
 };
 
