@@ -80,6 +80,48 @@ export const useTaskManagementData = () => {
 
   const clearError = useCallback(() => setError(null), []);
 
+  const sortCategories = useCallback(
+    (nextCategories: Category[]): Category[] =>
+      nextCategories.sort((a, b) => a.name.localeCompare(b.name, 'no')),
+    []
+  );
+
+  const addCategoryToState = useCallback(
+    (category: Category): void => {
+      setCategories((current) => sortCategories([...current, category]));
+    },
+    [sortCategories]
+  );
+
+  const updateCategoryInState = useCallback(
+    (categoryId: string, categoryData: Partial<Category>): void => {
+      const previousCategory = categories.find((category) => category.id === categoryId);
+
+      setCategories((current) =>
+        sortCategories(
+          current.map((category) =>
+            category.id === categoryId ? { ...category, ...categoryData } : category
+          )
+        )
+      );
+
+      if (previousCategory?.name && categoryData.name) {
+        setTasks((current) =>
+          current.map((task) =>
+            task.category === previousCategory.name
+              ? { ...task, category: categoryData.name! }
+              : task
+          )
+        );
+      }
+    },
+    [categories, sortCategories]
+  );
+
+  const removeCategoryFromState = useCallback((categoryId: string): void => {
+    setCategories((current) => current.filter((category) => category.id !== categoryId));
+  }, []);
+
   return {
     tasks,
     categories,
@@ -89,5 +131,8 @@ export const useTaskManagementData = () => {
     error,
     clearError,
     loadData,
+    addCategoryToState,
+    updateCategoryInState,
+    removeCategoryFromState,
   };
 };

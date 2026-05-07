@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Edit2, Palette, Plus, Search, Trash2, X } from 'lucide-react';
 import {
@@ -52,10 +52,13 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
   const [usageCounts, setUsageCounts] = useState<{ [key: string]: number }>({});
   const [loadingUsage, setLoadingUsage] = useState<boolean>(true);
   const [query, setQuery] = useState<string>('');
+  const hasLoadedUsageCounts = useRef(false);
 
   useEffect(() => {
+    let isCurrent = true;
+
     const loadAllUsageCounts = async () => {
-      setLoadingUsage(true);
+      setLoadingUsage(!hasLoadedUsageCounts.current);
       const counts: { [key: string]: number } = {};
 
       try {
@@ -69,11 +72,16 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
             }
           })
         );
-        setUsageCounts(counts);
+        if (isCurrent) {
+          setUsageCounts(counts);
+          hasLoadedUsageCounts.current = true;
+        }
       } catch (error) {
         console.error('Error loading category usage counts:', error);
       } finally {
-        setLoadingUsage(false);
+        if (isCurrent) {
+          setLoadingUsage(false);
+        }
       }
     };
 
@@ -81,8 +89,13 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
       void loadAllUsageCounts();
     } else {
       setUsageCounts({});
+      hasLoadedUsageCounts.current = true;
       setLoadingUsage(false);
     }
+
+    return () => {
+      isCurrent = false;
+    };
   }, [categories, getCategoryUsage]);
 
   const filteredCategories = useMemo(() => {
