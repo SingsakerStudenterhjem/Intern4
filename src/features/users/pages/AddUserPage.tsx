@@ -660,8 +660,19 @@ const AddUserPage: React.FC = () => {
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
+        <div
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+          onMouseDown={() => {
+            if (!isDeleting) {
+              setDeleteConfirm(null);
+            }
+          }}
+          role="presentation"
+        >
+          <div
+            className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4"
+            onMouseDown={(event) => event.stopPropagation()}
+          >
             <h3 className="text-lg font-medium text-gray-900 mb-2">Deaktiver bruker</h3>
             <p className="text-sm text-gray-600 mb-4">
               Er du sikker på at du vil deaktivere <strong>{deleteConfirm.name}</strong>? Brukeren

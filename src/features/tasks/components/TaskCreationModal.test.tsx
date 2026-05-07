@@ -163,4 +163,29 @@ describe('TaskCreationModal', () => {
     });
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('closes when clicking the backdrop but not when clicking inside the modal', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+
+    render(
+      <TaskCreationModal
+        isOpen
+        onClose={onClose}
+        onCreateTask={vi.fn()}
+        categories={categories}
+        currentUser={currentUser}
+        contactPeople={contactPeople}
+      />
+    );
+
+    const title = screen.getByRole('heading', { name: 'Opprett ny oppgave' });
+    const dialog = title.parentElement?.parentElement as HTMLElement;
+
+    await user.click(title);
+    expect(onClose).not.toHaveBeenCalled();
+
+    await user.click(dialog.parentElement as HTMLElement);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
 });

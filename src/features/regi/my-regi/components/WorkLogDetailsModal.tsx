@@ -26,11 +26,12 @@ const WorkLogDetailsModal: React.FC<WorkLogDetailsModalProps> = ({ log, onClose 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
-      onClick={onClose}
+      onMouseDown={onClose}
+      role="presentation"
     >
       <div
         className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-lg bg-white shadow-xl"
-        onClick={(event) => event.stopPropagation()}
+        onMouseDown={(event) => event.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-gray-200 p-6">
           <div className="space-y-1">
