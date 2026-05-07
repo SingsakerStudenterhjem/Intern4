@@ -3,12 +3,14 @@ import {
   addRegiLog,
   approveRegiLog,
   deletePendingRegiLog,
+  getPendingRegiApprovals,
   getApprovedRegiHoursByUserSince,
   getRegiLogsByUser,
   isCountableRegiAssignment,
 } from './regiDAO';
 import { supabase } from '../supabaseClient';
 import { deleteImages } from '../storage';
+import { getUser } from './userDAO';
 
 vi.mock('../supabaseClient', () => ({
   supabase: {
@@ -240,6 +242,54 @@ describe('regiDAO', () => {
     const result = await getRegiLogsByUser('11111111-1111-1111-1111-111111111111');
 
     expect(result[0].imagePaths).toEqual(['user/regi/one.png']);
+  });
+
+  it('deduplicates user lookups for pending approvals', async () => {
+    const rows = [
+      {
+        id: 1,
+        user_uuid: '11111111-1111-1111-1111-111111111111',
+        hours_used: 1,
+        created_at: '2026-04-10T10:00:00.000Z',
+        performed_at: '2026-04-09',
+        approved_state: 0,
+        work_items: {
+          title: 'Første',
+          type: 'misc',
+          work_categories: { name: 'Regi' },
+        },
+      },
+      {
+        id: 2,
+        user_uuid: '11111111-1111-1111-1111-111111111111',
+        hours_used: 2,
+        created_at: '2026-04-11T10:00:00.000Z',
+        performed_at: '2026-04-10',
+        approved_state: 0,
+        work_items: {
+          title: 'Andre',
+          type: 'misc',
+          work_categories: { name: 'Regi' },
+        },
+      },
+    ];
+
+    vi.mocked(supabase.from).mockImplementationOnce(() => createOrderedBuilder(rows));
+    vi.mocked(getUser).mockResolvedValue({
+      id: '11111111-1111-1111-1111-111111111111',
+      name: 'Kari Regi',
+      email: 'kari@example.com',
+      role: 'Full Regi',
+      isActive: true,
+    });
+
+    const result = await getPendingRegiApprovals();
+
+    expect(getUser).toHaveBeenCalledTimes(1);
+    expect(getUser).toHaveBeenCalledWith('11111111-1111-1111-1111-111111111111');
+    expect(result).toHaveLength(2);
+    expect(result[0].userName).toBe('Kari Regi');
+    expect(result[1].userEmail).toBe('kari@example.com');
   });
 
   it('stores approver metadata when approving regi work', async () => {

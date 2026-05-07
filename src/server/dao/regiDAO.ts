@@ -63,6 +63,37 @@ async function getCategoryIdByNameOrDefault(categoryName?: string): Promise<numb
   return getOrCreateDefaultCategoryId();
 }
 
+async function getRegiUserMap(
+  userIds: Array<string | null | undefined>
+): Promise<Record<string, RegiUserLookup>> {
+  const uniqueUserIds = Array.from(
+    new Set(userIds.filter((id): id is string => Boolean(id)).map((id) => String(id)))
+  );
+
+  const userRows = await Promise.all(
+    uniqueUserIds.map(async (uid) => {
+      try {
+        const user = await getUser(uid);
+        return {
+          uid,
+          name: user?.name ?? 'Ukjent',
+          email: user?.email ?? '',
+        };
+      } catch {
+        return { uid, name: 'Ukjent', email: '' };
+      }
+    })
+  );
+
+  return userRows.reduce(
+    (acc, user) => {
+      acc[user.uid] = { name: user.name, email: user.email };
+      return acc;
+    },
+    {} as Record<string, RegiUserLookup>
+  );
+}
+
 export async function addRegiLog(
   data: Omit<RegiLog, 'id' | 'createdAt' | 'status'>,
   options?: { autoApprove?: boolean; approvedByUuid?: string }
@@ -206,26 +237,7 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
   const pendingAssignments = ((data ?? []) as RegiAssignmentRow[]).filter(
     isCountableRegiAssignment
   );
-
-  const uniqueUserIds = Array.from(new Set(pendingAssignments.map((row) => String(row.user_uuid))));
-  const userRows = await Promise.all(
-    uniqueUserIds.map(async (uid) => {
-      try {
-        const u = await getUser(uid);
-        return { uid, name: u?.name ?? 'Ukjent', email: u?.email ?? '' };
-      } catch {
-        return { uid, name: 'Ukjent', email: '' };
-      }
-    })
-  );
-
-  const userMap = userRows.reduce(
-    (acc, u) => {
-      acc[u.uid] = u;
-      return acc;
-    },
-    {} as Record<string, RegiUserLookup>
-  );
+  const userMap = await getRegiUserMap(pendingAssignments.map((row) => row.user_uuid));
 
   return pendingAssignments.map((row) => {
     const uid = String(row.user_uuid);
@@ -245,28 +257,8 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
   if (error) throw new Error(error.message);
 
   const rows = ((data ?? []) as RegiAssignmentRow[]).filter(isCountableRegiAssignment);
-  const uniqueUserIds = Array.from(
-    new Set(
-      rows.flatMap((row) =>
-        [row.user_uuid, row.approved_by_uuid]
-          .filter((id): id is string => Boolean(id))
-          .map((id) => String(id))
-      )
-    )
-  );
-
-  const userMap: Record<string, RegiUserLookup> = {};
-  await Promise.all(
-    uniqueUserIds.map(async (uid) => {
-      try {
-        const u = await getUser(uid);
-        if (u) {
-          userMap[uid] = { name: u.name ?? 'Ukjent', email: u.email ?? '' };
-        }
-      } catch {
-        // ignore missing users
-      }
-    })
+  const userMap = await getRegiUserMap(
+    rows.flatMap((row) => [row.user_uuid, row.approved_by_uuid])
   );
 
   return rows.map((row) => {
