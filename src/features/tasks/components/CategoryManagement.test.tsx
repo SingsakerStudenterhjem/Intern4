@@ -98,6 +98,22 @@ describe('CategoryManagement', () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it('closes only the category form when clicking the form backdrop', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    renderCategoryManagement({ onClose });
+
+    await screen.findByText('Dataarbeid');
+    await user.click(screen.getByRole('button', { name: 'Rediger Vask' }));
+
+    const formDialog = screen.getByRole('dialog', { name: 'Rediger kategori' });
+    await user.click(formDialog.parentElement as HTMLElement);
+
+    expect(onClose).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog', { name: 'Rediger kategori' })).not.toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: 'Kategorier', hidden: true })).toBeInTheDocument();
+  });
+
   it('adds a category with trimmed form data', async () => {
     const user = userEvent.setup();
     const onAddCategory = vi.fn().mockResolvedValue(undefined);

@@ -82,7 +82,7 @@ export const useTaskManagementData = () => {
 
   const sortCategories = useCallback(
     (nextCategories: Category[]): Category[] =>
-      nextCategories.sort((a, b) => a.name.localeCompare(b.name, 'no')),
+      [...nextCategories].sort((a, b) => a.name.localeCompare(b.name, 'no')),
     []
   );
 
@@ -95,27 +95,29 @@ export const useTaskManagementData = () => {
 
   const updateCategoryInState = useCallback(
     (categoryId: string, categoryData: Partial<Category>): void => {
-      const previousCategory = categories.find((category) => category.id === categoryId);
-
       setCategories((current) =>
         sortCategories(
-          current.map((category) =>
-            category.id === categoryId ? { ...category, ...categoryData } : category
-          )
+          current.map((category) => {
+            if (category.id !== categoryId) {
+              return category;
+            }
+
+            const nextName = categoryData.name;
+            if (nextName && category.name !== nextName) {
+              const previousName = category.name;
+              setTasks((currentTasks) =>
+                currentTasks.map((task) =>
+                  task.category === previousName ? { ...task, category: nextName } : task
+                )
+              );
+            }
+
+            return { ...category, ...categoryData };
+          })
         )
       );
-
-      if (previousCategory?.name && categoryData.name) {
-        setTasks((current) =>
-          current.map((task) =>
-            task.category === previousCategory.name
-              ? { ...task, category: categoryData.name! }
-              : task
-          )
-        );
-      }
     },
-    [categories, sortCategories]
+    [sortCategories]
   );
 
   const removeCategoryFromState = useCallback((categoryId: string): void => {
