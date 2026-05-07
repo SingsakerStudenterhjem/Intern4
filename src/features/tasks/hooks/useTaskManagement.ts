@@ -42,6 +42,9 @@ export const useTaskManagement = () => {
     error,
     clearError,
     loadData,
+    addCategoryToState,
+    updateCategoryInState,
+    removeCategoryFromState,
   } = useTaskManagementData();
 
   const user = authData?.user ?? null;
@@ -179,8 +182,15 @@ export const useTaskManagement = () => {
 
   const handleAddCategory = async (categoryData: CategoryCreationData): Promise<void> => {
     try {
-      await addCategory(categoryData);
-      await loadData();
+      const categoryId = await addCategory(categoryData);
+      addCategoryToState({
+        id: categoryId,
+        name: categoryData.name,
+        description: categoryData.description,
+        color: categoryData.color,
+        isActive: categoryData.isActive,
+        createdAt: new Date(),
+      });
       showSuccessMessage('Kategori opprettet!');
     } catch (err) {
       console.error('Error adding category:', err);
@@ -194,7 +204,7 @@ export const useTaskManagement = () => {
   ): Promise<void> => {
     try {
       await updateCategory(categoryId, categoryData);
-      await loadData();
+      updateCategoryInState(categoryId, categoryData);
       showSuccessMessage('Kategori oppdatert!');
     } catch (err) {
       console.error('Error updating category:', err);
@@ -205,7 +215,7 @@ export const useTaskManagement = () => {
   const handleDeleteCategory = async (categoryId: string): Promise<void> => {
     try {
       await deleteCategory(categoryId);
-      await loadData();
+      removeCategoryFromState(categoryId);
       showSuccessMessage('Kategori slettet!');
     } catch (err) {
       console.error('Error deleting category:', err);
