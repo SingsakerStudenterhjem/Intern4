@@ -258,6 +258,41 @@ describe('regiDAO', () => {
       work_id: 44,
       hours_used: 2,
       approved_state: 0,
+      approved_by_uuid: null,
+    });
+  });
+
+  it('auto-approves granted regi logs with approver metadata', async () => {
+    const categoryBuilder = createMaybeSingleBuilder({ id: 7 });
+    const workItemBuilder = createInsertSingleBuilder({ id: 44 });
+    const assignmentBuilder = createInsertSingleBuilder({ id: 12 });
+
+    vi.mocked(supabase.from)
+      .mockImplementationOnce(() => categoryBuilder)
+      .mockImplementationOnce(() => workItemBuilder)
+      .mockImplementationOnce(() => assignmentBuilder);
+
+    await addRegiLog(
+      {
+        userId: '11111111-1111-1111-1111-111111111111',
+        title: 'Innført av regisjef',
+        description: 'Test',
+        date: new Date('2026-04-21T00:00:00.000Z'),
+        hours: 2,
+        type: 'Regi',
+      },
+      {
+        autoApprove: true,
+        approvedByUuid: '22222222-2222-2222-2222-222222222222',
+      }
+    );
+
+    expect(assignmentBuilder.insert).toHaveBeenCalledWith({
+      user_uuid: '11111111-1111-1111-1111-111111111111',
+      work_id: 44,
+      hours_used: 2,
+      approved_state: 1,
+      approved_by_uuid: '22222222-2222-2222-2222-222222222222',
     });
   });
 

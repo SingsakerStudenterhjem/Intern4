@@ -63,7 +63,7 @@ async function getCategoryIdByNameOrDefault(categoryName?: string): Promise<numb
 
 export async function addRegiLog(
   data: Omit<RegiLog, 'id' | 'createdAt' | 'status'>,
-  options?: { autoApprove?: boolean }
+  options?: { autoApprove?: boolean; approvedByUuid?: string }
 ) {
   const catId = await getCategoryIdByNameOrDefault(data.type);
 
@@ -86,6 +86,7 @@ export async function addRegiLog(
       work_id: item.id,
       hours_used: data.hours,
       approved_state: options?.autoApprove ? 1 : 0,
+      approved_by_uuid: options?.autoApprove ? (options.approvedByUuid ?? null) : null,
     })
     .select('id')
     .single();
