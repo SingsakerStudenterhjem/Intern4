@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Edit2, Trash2, X, Palette } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Edit2, Palette, Plus, Search, Trash2, X } from 'lucide-react';
 import {
   Category,
   CategoryCreationData,
@@ -14,7 +14,23 @@ type CategoryManagementProps = {
   onUpdateCategory: (categoryId: string, categoryData: Partial<Category>) => Promise<void>;
   onDeleteCategory: (categoryId: string) => Promise<void>;
   getCategoryUsage: (categoryName: string) => Promise<number>;
+  onClose: () => void;
 };
+
+const DEFAULT_COLOR = '#3B82F6';
+
+const predefinedColors: string[] = [
+  '#3B82F6',
+  '#10B981',
+  '#F59E0B',
+  '#EF4444',
+  '#8B5CF6',
+  '#F97316',
+  '#06B6D4',
+  '#84CC16',
+  '#EC4899',
+  '#6B7280',
+];
 
 const CategoryManagement: React.FC<CategoryManagementProps> = ({
   categories,
@@ -22,32 +38,20 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
   onUpdateCategory,
   onDeleteCategory,
   getCategoryUsage,
+  onClose,
 }) => {
   const [isAddingCategory, setIsAddingCategory] = useState<boolean>(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [formData, setFormData] = useState<CategoryFormData>({
     name: '',
     description: '',
-    color: '#3B82F6',
+    color: DEFAULT_COLOR,
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [usageCounts, setUsageCounts] = useState<{ [key: string]: number }>({});
   const [loadingUsage, setLoadingUsage] = useState<boolean>(true);
+  const [query, setQuery] = useState<string>('');
 
-  const predefinedColors: string[] = [
-    '#3B82F6', // Blue
-    '#10B981', // Green
-    '#F59E0B', // Yellow
-    '#EF4444', // Red
-    '#8B5CF6', // Purple
-    '#F97316', // Orange
-    '#06B6D4', // Cyan
-    '#84CC16', // Lime
-    '#EC4899', // Pink
-    '#6B7280', // Gray
-  ];
-
-  // Load usage counts for all categories when component mounts or categories change
   useEffect(() => {
     const loadAllUsageCounts = async () => {
       setLoadingUsage(true);
@@ -75,17 +79,33 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
     if (categories.length > 0) {
       void loadAllUsageCounts();
     } else {
+      setUsageCounts({});
       setLoadingUsage(false);
     }
   }, [categories, getCategoryUsage]);
 
+  const filteredCategories = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
+
+    if (!normalizedQuery) {
+      return categories;
+    }
+
+    return categories.filter(
+      (category) =>
+        category.name.toLowerCase().includes(normalizedQuery) ||
+        (category.description ?? '').toLowerCase().includes(normalizedQuery)
+    );
+  }, [categories, query]);
+
   const resetForm = (): void => {
-    setFormData({ name: '', description: '', color: '#3B82F6' });
+    setFormData({ name: '', description: '', color: DEFAULT_COLOR });
     setErrors({});
   };
 
   const startAdd = (): void => {
     resetForm();
+    setEditingCategory(null);
     setIsAddingCategory(true);
   };
 
@@ -96,6 +116,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
       color: category.color,
     });
     setEditingCategory(category);
+    setIsAddingCategory(false);
     setErrors({});
   };
 
@@ -111,10 +132,10 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
     if (!formData.name.trim()) {
       newErrors.name = 'Kategorinavn er påkrevd';
     } else {
-      // Check for duplicate names (excluding current category when editing)
       const existingCategory = categories.find(
         (cat) =>
-          cat.name.toLowerCase() === formData.name.toLowerCase() && cat.id !== editingCategory?.id
+          cat.name.toLowerCase() === formData.name.trim().toLowerCase() &&
+          cat.id !== editingCategory?.id
       );
       if (existingCategory) {
         newErrors.name = 'En kategori med dette navnet eksisterer allerede';
@@ -177,192 +198,259 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
 
   const handleFormDataChange = (field: keyof CategoryFormData, value: string): void => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }));
+    }
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-lg font-medium text-gray-900">Kategoribehandling</h2>
-          <p className="text-sm text-gray-500">Administrer kategorier for oppgaver</p>
-        </div>
-        <button
-          onClick={startAdd}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Ny kategori
-        </button>
-      </div>
+  const isFormOpen = isAddingCategory || !!editingCategory;
 
-      {/* Add/Edit Form */}
-      {(isAddingCategory || editingCategory) && (
-        <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-medium text-gray-900">
-              {editingCategory ? 'Rediger kategori' : 'Legg til ny kategori'}
-            </h3>
-            <button onClick={cancelEdit} className="text-gray-400 hover:text-gray-600">
-              <X className="w-5 h-5" />
+  return (
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+      <div
+        className="relative bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="category-management-title"
+      >
+        <div className="flex items-center justify-between gap-4 px-5 py-4 border-b border-gray-200">
+          <h2 id="category-management-title" className="text-xl font-semibold text-gray-900">
+            Kategorier
+          </h2>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={startAdd}
+              className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Ny kategori
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="rounded-md p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              aria-label="Lukk kategorier"
+            >
+              <X className="h-5 w-5" />
             </button>
           </div>
+        </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {errors.submit && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-                <p className="text-sm text-red-600">{errors.submit}</p>
-              </div>
-            )}
+        <div className="border-b border-gray-200 px-5 py-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Søk i kategorier..."
+            />
+          </div>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Name */}
-              <div>
-                <label
-                  htmlFor="categoryName"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Kategorinavn *
-                </label>
-                <input
-                  type="text"
-                  id="categoryName"
-                  value={formData.name}
-                  onChange={(e) => handleFormDataChange('name', e.target.value)}
-                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.name ? 'border-red-300' : 'border-gray-300'
-                  }`}
-                  placeholder="Størm 🔌"
-                />
-                {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
-              </div>
-
-              {/* Color */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  <Palette className="w-4 h-4 inline mr-1" />
-                  Farge
-                </label>
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="color"
-                    value={formData.color}
-                    onChange={(e) => handleFormDataChange('color', e.target.value)}
-                    className="w-12 h-10 border border-gray-300 rounded cursor-pointer"
-                  />
-                  <div className="flex flex-wrap gap-1">
-                    {predefinedColors.map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        onClick={() => handleFormDataChange('color', color)}
-                        className={`w-6 h-6 rounded border-2 ${
-                          formData.color === color ? 'border-gray-800' : 'border-gray-300'
-                        }`}
-                        style={{ backgroundColor: color }}
-                        title={color}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
+        <div className="min-h-0 flex-1 overflow-y-auto">
+          {loadingUsage ? (
+            <div className="px-6 py-8 text-center">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
+              <p className="mt-2 text-sm text-gray-500">Laster kategorier...</p>
             </div>
+          ) : (
+            <ul className="divide-y divide-gray-200">
+              {categories.length === 0 ? (
+                <li className="px-5 py-8 text-center text-sm text-gray-500">
+                  Ingen kategorier opprettet
+                </li>
+              ) : filteredCategories.length === 0 ? (
+                <li className="px-5 py-8 text-center text-sm text-gray-500">
+                  Ingen kategorier matcher søket
+                </li>
+              ) : (
+                filteredCategories.map((category) => {
+                  const usage = usageCounts[category.name] || 0;
 
-            {/* Description */}
-            <div>
-              <label
-                htmlFor="categoryDescription"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Beskrivelse
-              </label>
-              <textarea
-                id="categoryDescription"
-                value={formData.description}
-                onChange={(e) => handleFormDataChange('description', e.target.value)}
-                rows={3}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Valgfri beskrivelse av kategorien..."
-              />
-            </div>
+                  return (
+                    <li key={category.id} className="px-5 py-2">
+                      <div className="flex min-w-0 items-center justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div
+                            className="h-4 w-4 shrink-0 rounded-full border border-gray-300"
+                            style={{ backgroundColor: category.color }}
+                            aria-hidden="true"
+                          />
+                          <div className="min-w-0 leading-tight">
+                            <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                              <h3 className="truncate text-sm font-medium text-gray-900">
+                                {category.name}
+                              </h3>
+                              <span className="text-xs text-gray-500">
+                                {usage} oppgave{usage !== 1 ? 'r' : ''}
+                              </span>
+                            </div>
+                            {category.description && (
+                              <p className="truncate text-xs text-gray-500">
+                                {category.description}
+                              </p>
+                            )}
+                          </div>
+                        </div>
 
-            {/* Form Actions */}
-            <div className="flex justify-end space-x-3">
+                        <div className="flex shrink-0 items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => startEdit(category)}
+                            className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            title="Rediger kategori"
+                            aria-label={`Rediger ${category.name}`}
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(category)}
+                            className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                            title="Slett kategori"
+                            aria-label={`Slett ${category.name}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })
+              )}
+            </ul>
+          )}
+        </div>
+      </div>
+
+      {isFormOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 p-4">
+          <div
+            className="w-full max-w-xl rounded-lg bg-white shadow-xl"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="category-form-title"
+          >
+            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+              <h3 id="category-form-title" className="text-lg font-semibold text-gray-900">
+                {editingCategory ? 'Rediger kategori' : 'Ny kategori'}
+              </h3>
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="rounded-md p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                aria-label="Lukk skjema"
               >
-                Avbryt
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
-              >
-                {editingCategory ? 'Oppdater' : 'Legg til'}
+                <X className="h-5 w-5" />
               </button>
             </div>
-          </form>
-        </div>
-      )}
 
-      {/* Categories List */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        {loadingUsage ? (
-          <div className="px-6 py-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="text-gray-500 mt-2">Laster kategorier...</p>
-          </div>
-        ) : (
-          <ul className="divide-y divide-gray-200">
-            {categories.length === 0 ? (
-              <li className="px-6 py-8 text-center">
-                <p className="text-gray-500">Ingen kategorier opprettet</p>
-              </li>
-            ) : (
-              categories.map((category) => (
-                <li key={category.id} className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div
-                        className="w-6 h-6 rounded-full border border-gray-300"
-                        style={{ backgroundColor: category.color }}
-                      />
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-900">{category.name}</h4>
-                        {category.description && (
-                          <p className="text-sm text-gray-500">{category.description}</p>
-                        )}
-                        <p className="text-xs text-gray-400">
-                          Brukes av {usageCounts[category.name] || 0} oppgave
-                          {usageCounts[category.name] !== 1 ? 'r' : ''}
-                        </p>
-                      </div>
-                    </div>
+            <form onSubmit={handleSubmit} className="space-y-4 p-5" noValidate>
+              {errors.submit && (
+                <div className="rounded-md border border-red-200 bg-red-50 p-3" role="alert">
+                  <p className="text-sm text-red-600">{errors.submit}</p>
+                </div>
+              )}
 
-                    <div className="flex items-center space-x-2">
-                      <button
-                        onClick={() => startEdit(category)}
-                        className="p-2 text-gray-400 hover:text-gray-600"
-                        title="Rediger kategori"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(category)}
-                        className="p-2 text-gray-400 hover:text-red-600"
-                        title="Slett kategori"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="categoryName"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Kategorinavn *
+                  </label>
+                  <input
+                    type="text"
+                    id="categoryName"
+                    value={formData.name}
+                    onChange={(e) => handleFormDataChange('name', e.target.value)}
+                    className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.name ? 'border-red-300' : 'border-gray-300'
+                    }`}
+                    placeholder="Strøm"
+                    aria-invalid={!!errors.name}
+                    aria-describedby={errors.name ? 'category-name-error' : undefined}
+                  />
+                  {errors.name && (
+                    <p id="category-name-error" className="mt-1 text-sm text-red-600" role="alert">
+                      {errors.name}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    <Palette className="mr-1 inline h-4 w-4" />
+                    Farge
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={formData.color}
+                      onChange={(e) => handleFormDataChange('color', e.target.value)}
+                      className="h-10 w-12 cursor-pointer rounded border border-gray-300"
+                      aria-label="Velg farge"
+                    />
+                    <div className="flex flex-wrap gap-1">
+                      {predefinedColors.map((color) => (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => handleFormDataChange('color', color)}
+                          className={`h-6 w-6 rounded border-2 ${
+                            formData.color === color ? 'border-gray-800' : 'border-gray-300'
+                          }`}
+                          style={{ backgroundColor: color }}
+                          title={color}
+                          aria-label={`Velg ${color}`}
+                        />
+                      ))}
                     </div>
                   </div>
-                </li>
-              ))
-            )}
-          </ul>
-        )}
-      </div>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="categoryDescription"
+                  className="mb-1 block text-sm font-medium text-gray-700"
+                >
+                  Beskrivelse
+                </label>
+                <textarea
+                  id="categoryDescription"
+                  value={formData.description}
+                  onChange={(e) => handleFormDataChange('description', e.target.value)}
+                  rows={3}
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Valgfri beskrivelse av kategorien..."
+                />
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={cancelEdit}
+                  className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  Avbryt
+                </button>
+                <button
+                  type="submit"
+                  className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                  {editingCategory ? 'Lagre endringer' : 'Legg til'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
