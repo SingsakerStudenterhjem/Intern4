@@ -170,7 +170,7 @@ const RegiLogsPage: React.FC = () => {
                       </div>
                     </td>
                     <td className="p-2">{log.hours.toFixed(2)} t</td>
-                    <td className="p-2">{formatDate(log.createdAt)}</td>
+                    <td className="p-2">{formatDate(log.date)}</td>
                     <td className="p-2">
                       {log.status === 'approved' && (
                         <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">

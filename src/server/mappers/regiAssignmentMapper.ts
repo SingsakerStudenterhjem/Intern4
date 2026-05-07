@@ -34,6 +34,7 @@ export type RegiAssignmentRow = {
   work_id?: number | string | null;
   hours_used?: number | string | null;
   created_at?: Date | string | { seconds: number } | null;
+  performed_at?: Date | string | { seconds: number } | null;
   approved_state?: number | null;
   approval_comment?: string | null;
   approved_by_uuid?: string | null;
@@ -115,6 +116,7 @@ function getBaseProjection(row: RegiAssignmentRow) {
     title: row.work_items?.title ?? '',
     description: row.work_items?.description ?? undefined,
     hours: Number(row.hours_used ?? 0),
+    date: toDate(row.performed_at ?? row.created_at),
     createdAt: toDate(row.created_at),
     imagePaths: getImagePaths(row.work_items),
   };
@@ -127,7 +129,6 @@ export function toRegiLogWithId(row: RegiAssignmentRow, userId: string): RegiLog
     ...base,
     userId,
     workId: row.work_id ? String(row.work_id) : undefined,
-    date: base.createdAt,
     status: getStatus(row),
     type: row.work_items?.work_categories?.name ?? row.work_items?.type ?? 'misc',
     reviewerComment: row.approval_comment ?? undefined,

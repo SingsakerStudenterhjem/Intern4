@@ -3,6 +3,7 @@ import {
   addRegiLog,
   approveRegiLog,
   deletePendingRegiLog,
+  getApprovedRegiHoursByUserSince,
   getRegiLogsByUser,
   isCountableRegiAssignment,
 } from './regiDAO';
@@ -33,6 +34,7 @@ const asSupabaseBuilder = <T extends object>(builder: T): T & SupabaseFromResult
   builder as T & SupabaseFromResult;
 
 function createOrderedBuilder(data: unknown[]) {
+  let orderCalls = 0;
   const builder: {
     select: MockFn;
     eq: MockFn;
@@ -40,7 +42,10 @@ function createOrderedBuilder(data: unknown[]) {
   } = {
     select: mockFn(() => builder),
     eq: mockFn(() => builder),
-    order: mockFn(async () => ({ data, error: null })),
+    order: mockFn(() => {
+      orderCalls += 1;
+      return orderCalls > 1 ? Promise.resolve({ data, error: null }) : builder;
+    }),
   };
 
   return asSupabaseBuilder(builder);
@@ -79,6 +84,20 @@ function createSelectEqBuilder(data: unknown[]) {
   } = {
     select: mockFn(() => builder),
     eq: mockFn(async () => ({ data, error: null })),
+  };
+
+  return asSupabaseBuilder(builder);
+}
+
+function createSelectEqGteBuilder(data: unknown[]) {
+  const builder: {
+    select: MockFn;
+    eq: MockFn;
+    gte: MockFn;
+  } = {
+    select: mockFn(() => builder),
+    eq: mockFn(() => builder),
+    gte: mockFn(async () => ({ data, error: null })),
   };
 
   return asSupabaseBuilder(builder);
@@ -155,6 +174,7 @@ describe('regiDAO', () => {
         id: 1,
         hours_used: null,
         created_at: '2026-04-10T10:00:00.000Z',
+        performed_at: '2026-04-09',
         approved_state: 0,
         work_items: {
           title: 'Ikke sendt inn',
@@ -167,6 +187,7 @@ describe('regiDAO', () => {
         work_id: 22,
         hours_used: 2,
         created_at: '2026-04-10T10:00:00.000Z',
+        performed_at: '2026-04-08',
         approved_state: 0,
         approval_comment: 'Ser bra ut',
         work_items: {
@@ -189,7 +210,7 @@ describe('regiDAO', () => {
     expect(result[0].sourceType).toBe('task');
     expect(result[0].description).toBe('Detaljer');
     expect(result[0].reviewerComment).toBe('Ser bra ut');
-    expect(result[0].date).toBeInstanceOf(Date);
+    expect(result[0].date).toEqual(new Date('2026-04-08'));
     expect(result[0].createdAt).toBeInstanceOf(Date);
   });
 
@@ -200,6 +221,7 @@ describe('regiDAO', () => {
         work_id: 44,
         hours_used: 1,
         created_at: '2026-04-10T10:00:00.000Z',
+        performed_at: '2026-04-09',
         approved_state: 0,
         work_items: {
           title: 'Med bilde',
@@ -257,6 +279,7 @@ describe('regiDAO', () => {
       user_uuid: '11111111-1111-1111-1111-111111111111',
       work_id: 44,
       hours_used: 2,
+      performed_at: '2026-04-21',
       approved_state: 0,
       approved_by_uuid: null,
     });
@@ -291,6 +314,7 @@ describe('regiDAO', () => {
       user_uuid: '11111111-1111-1111-1111-111111111111',
       work_id: 44,
       hours_used: 2,
+      performed_at: '2026-04-21',
       approved_state: 1,
       approved_by_uuid: '22222222-2222-2222-2222-222222222222',
     });
@@ -423,5 +447,28 @@ describe('regiDAO', () => {
     await expect(
       deletePendingRegiLog('12', '11111111-1111-1111-1111-111111111111')
     ).rejects.toThrow('Oppgavebaserte registreringer må håndteres fra oppgaver');
+  });
+
+  it('filters approved regi hours by performed date', async () => {
+    const hoursBuilder = createSelectEqGteBuilder([
+      {
+        user_uuid: '11111111-1111-1111-1111-111111111111',
+        hours_used: 2,
+        performed_at: '2026-08-02',
+        approved_state: 1,
+      },
+    ]);
+
+    vi.mocked(supabase.from).mockImplementationOnce(() => hoursBuilder);
+
+    const result = await getApprovedRegiHoursByUserSince(new Date('2026-08-01T00:00:00.000Z'));
+
+    expect(result).toEqual({
+      '11111111-1111-1111-1111-111111111111': 2,
+    });
+    expect(hoursBuilder.select).toHaveBeenCalledWith(
+      'user_uuid, hours_used, performed_at, approved_state'
+    );
+    expect(hoursBuilder.gte).toHaveBeenCalledWith('performed_at', '2026-08-01');
   });
 });
