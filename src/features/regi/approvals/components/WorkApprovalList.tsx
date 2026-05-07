@@ -189,9 +189,7 @@ const WorkApprovalList: React.FC = () => {
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 align-top whitespace-nowrap">
-                    {formatDate(a.date)}
-                  </td>
+                  <td className="px-4 py-3 align-top whitespace-nowrap">{formatDate(a.date)}</td>
                   <td className="px-4 py-3 align-top whitespace-nowrap">{a.hours.toFixed(2)}</td>
                   <td className="px-4 py-3 align-top min-w-48">{renderActionButtons(a)}</td>
                 </tr>
