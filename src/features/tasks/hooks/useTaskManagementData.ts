@@ -78,6 +78,8 @@ export const useTaskManagementData = () => {
     void loadData();
   }, [loadData]);
 
+  const clearError = useCallback(() => setError(null), []);
+
   return {
     tasks,
     categories,
@@ -85,7 +87,7 @@ export const useTaskManagementData = () => {
     contactPeople,
     loading,
     error,
-    clearError: () => setError(null),
+    clearError,
     loadData,
   };
 };

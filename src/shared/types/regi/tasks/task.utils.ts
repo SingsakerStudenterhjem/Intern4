@@ -31,12 +31,16 @@ export const canUserSubmitTaskCompletion = (task: Task, userId?: string): boolea
   return !!task.hourEstimate && !!participant && canSubmitTaskAssignment(participant.status);
 };
 
-export const canLeaveTaskAssignment = (status: TaskAssignmentStatus): boolean => {
+const canReworkTaskAssignment = (status: TaskAssignmentStatus): boolean => {
   return status === 'joined' || status === 'rejected';
 };
 
+export const canLeaveTaskAssignment = (status: TaskAssignmentStatus): boolean => {
+  return canReworkTaskAssignment(status);
+};
+
 export const canSubmitTaskAssignment = (status: TaskAssignmentStatus): boolean => {
-  return status === 'joined' || status === 'rejected';
+  return canReworkTaskAssignment(status);
 };
 
 export type TaskWorkflowState = {
@@ -51,13 +55,17 @@ export type TaskWorkflowState = {
 export const getTaskWorkflowState = (task: Task, userId?: string): TaskWorkflowState => {
   const currentParticipant = getCurrentUserTaskParticipant(task, userId);
   const participantCount = getTaskParticipantCount(task);
+  const isFull = participantCount >= task.maxParticipants;
 
   return {
     currentParticipant,
     participantCount,
-    isFull: participantCount >= task.maxParticipants,
-    canJoin: canUserJoinTask(task, userId),
-    canLeave: canUserLeaveTask(task, userId),
-    canSubmitCompletion: canUserSubmitTaskCompletion(task, userId),
+    isFull,
+    canJoin: !task.isArchived && !!userId && !isFull && !currentParticipant,
+    canLeave: currentParticipant ? canLeaveTaskAssignment(currentParticipant.status) : false,
+    canSubmitCompletion:
+      !!task.hourEstimate &&
+      !!currentParticipant &&
+      canSubmitTaskAssignment(currentParticipant.status),
   };
 };
