@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -129,16 +129,39 @@ describe('ResidentDirectoryPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Statistikk' })).toBeInTheDocument();
     expect(getResidentDirectoryUsers).toHaveBeenCalledWith(true);
-    expect(await screen.findByRole('heading', { name: 'Fødselsår' })).toBeInTheDocument();
+    const activeResidentsCard = screen
+      .getByRole('heading', { name: 'Aktive beboere' })
+      .closest('section');
+    const averageAgeCard = screen.getByRole('heading', { name: 'Snittalder' }).closest('section');
+    const averageStudyYearCard = screen
+      .getByRole('heading', { name: 'Snitt studieår' })
+      .closest('section');
+    const averageSemestersCard = screen
+      .getByRole('heading', { name: 'Snitt botid' })
+      .closest('section');
+    const mostCommonStudyCard = screen
+      .getByRole('heading', { name: 'Vanligste studie' })
+      .closest('section');
+
+    expect(activeResidentsCard).not.toBeNull();
+    expect(averageAgeCard).not.toBeNull();
+    expect(averageStudyYearCard).not.toBeNull();
+    expect(averageSemestersCard).not.toBeNull();
+    expect(mostCommonStudyCard).not.toBeNull();
+    expect(within(activeResidentsCard!).getByText('2')).toBeInTheDocument();
+    expect(within(averageAgeCard!).getByText(/år$/)).toBeInTheDocument();
+    expect(within(averageStudyYearCard!).getByText('2.5')).toBeInTheDocument();
+    expect(within(averageSemestersCard!).getByText(/semestre$/)).toBeInTheDocument();
+    expect(within(mostCommonStudyCard!).getByText('Bioteknologi')).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Aldersfordeling' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Studieår' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Antall semestre på huset' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Botid' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Studieprogram' })).toBeInTheDocument();
-    expect(screen.getByLabelText('2000: 1')).toBeInTheDocument();
-    expect(screen.getAllByLabelText('1: 1').length).toBeGreaterThan(0);
-    expect(screen.getAllByLabelText('4: 1').length).toBeGreaterThan(0);
-    expect(screen.getByLabelText('Bioteknologi: 1')).toBeInTheDocument();
-    expect(screen.getByLabelText('Fysikk og matematikk: 1')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Maskin: 0')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('26+: 1 (50 %)')).toBeInTheDocument();
+    expect(screen.getAllByLabelText('1: 1 (50 %)').length).toBeGreaterThan(0);
+    expect(screen.getByLabelText('4: 1 (50 %)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Bioteknologi: 1 (50 %)')).toBeInTheDocument();
+    expect(screen.getByLabelText('Fysikk og matematikk: 1 (50 %)')).toBeInTheDocument();
   });
 
   it('shows loading, error, and empty states', async () => {

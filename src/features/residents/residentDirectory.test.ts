@@ -37,17 +37,70 @@ describe('residentDirectory', () => {
   });
 
   it('builds resident statistics from resident fields', () => {
-    const statistics = buildStatistics([
-      resident(),
-      resident({ id: '2', birthDate: null, study: '', seniority: 9, createdAt: null }),
-    ]);
+    const statistics = buildStatistics(
+      [
+        resident(),
+        resident({ id: '2', birthDate: null, study: '', seniority: 9, createdAt: null }),
+      ],
+      new Date('2026-05-24T12:00:00.000Z')
+    );
 
-    expect(statistics.birthYears).toEqual([
-      { label: '2000', value: 1 },
-      { label: 'Ukjent', value: 1 },
+    expect(statistics.summary).toEqual({
+      totalResidents: 2,
+      averageAge: 26,
+      averageStudyYear: 2,
+      averageSemesters: 4,
+      mostCommonStudy: 'Datateknologi',
+    });
+    expect(statistics.ageGroups.find((item) => item.label === '26+')).toEqual({
+      label: '26+',
+      value: 1,
+      percentage: 50,
+    });
+    expect(statistics.ageGroups.find((item) => item.label === 'Ukjent')).toEqual({
+      label: 'Ukjent',
+      value: 1,
+      percentage: 50,
+    });
+    expect(statistics.studyYears.find((item) => item.label === '2')).toEqual({
+      label: '2',
+      value: 1,
+      percentage: 50,
+    });
+    expect(statistics.studyYears.find((item) => item.label === 'Ukjent')).toEqual({
+      label: 'Ukjent',
+      value: 1,
+      percentage: 50,
+    });
+    expect(statistics.semesters.find((item) => item.label === '3-4')).toEqual({
+      label: '3-4',
+      value: 1,
+      percentage: 50,
+    });
+    expect(statistics.courses).toContainEqual({ label: 'Annet', value: 1, percentage: 50 });
+  });
+
+  it('groups small study programs under Annet', () => {
+    const residents = Array.from({ length: 10 }, (_, index) =>
+      resident({
+        id: String(index + 1),
+        study: `Studie ${index + 1}`,
+      })
+    );
+
+    const statistics = buildStatistics(residents, new Date('2026-05-24T12:00:00.000Z'));
+
+    expect(statistics.courses).toHaveLength(9);
+    expect(statistics.courses.slice(0, 8).map((item) => item.label)).toEqual([
+      'Studie 1',
+      'Studie 2',
+      'Studie 3',
+      'Studie 4',
+      'Studie 5',
+      'Studie 6',
+      'Studie 7',
+      'Studie 8',
     ]);
-    expect(statistics.studyYears.find((item) => item.label === '2')?.value).toBe(1);
-    expect(statistics.studyYears.find((item) => item.label === 'Ukjent')?.value).toBe(1);
-    expect(statistics.courses).toContainEqual({ label: 'Annet', value: 1 });
+    expect(statistics.courses.at(-1)).toEqual({ label: 'Annet', value: 2, percentage: 20 });
   });
 });
