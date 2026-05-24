@@ -129,9 +129,9 @@ describe('ResidentDirectoryPage', () => {
 
     expect(await screen.findByRole('heading', { name: 'Statistikk' })).toBeInTheDocument();
     expect(getResidentDirectoryUsers).toHaveBeenCalledWith(true);
-    const activeResidentsCard = screen
-      .getByRole('heading', { name: 'Nåværende beboere' })
-      .closest('section');
+    const activeResidentsCard = (
+      await screen.findByRole('heading', { name: 'Nåværende beboere' })
+    ).closest('section');
     const averageAgeCard = screen.getByRole('heading', { name: 'Snittalder' }).closest('section');
     const averageStudyYearCard = screen
       .getByRole('heading', { name: 'Snitt studieår' })
