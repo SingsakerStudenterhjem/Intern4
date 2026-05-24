@@ -47,7 +47,7 @@ const Registatus: React.FC = () => {
       )}
 
       <div className="p-3 shadow-sm rounded-md bg-gray-50 text-sm text-gray-700">
-        Aktive beboere: <span className="font-semibold">{filtered.length}</span> • Semesterstart:{' '}
+        Nåværende beboere: <span className="font-semibold">{filtered.length}</span> • Semesterstart:{' '}
         <span className="font-semibold">{semesterLabel}</span>
       </div>
 
@@ -116,7 +116,7 @@ const Registatus: React.FC = () => {
             {!loading && filtered.length === 0 && (
               <tr>
                 <td className="p-3 text-gray-600" colSpan={6}>
-                  Ingen aktive beboere funnet.
+                  Ingen nåværende beboere funnet.
                 </td>
               </tr>
             )}

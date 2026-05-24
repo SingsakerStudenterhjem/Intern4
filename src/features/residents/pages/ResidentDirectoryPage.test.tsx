@@ -95,7 +95,7 @@ describe('ResidentDirectoryPage', () => {
     expect(screen.getByText('4. Bioteknologi (NTNU)')).toBeInTheDocument();
   });
 
-  it('filters active residents by search query', async () => {
+  it('filters current residents by search query', async () => {
     const user = userEvent.setup();
     vi.mocked(getResidentDirectoryUsers).mockResolvedValue(activeResidents);
 
@@ -108,7 +108,7 @@ describe('ResidentDirectoryPage', () => {
     expect(screen.getByText('Demo Beboer To')).toBeInTheDocument();
   });
 
-  it('renders old residents from inactive users', async () => {
+  it('renders old residents from former residents', async () => {
     vi.mocked(getResidentDirectoryUsers).mockResolvedValue(oldResidents);
 
     renderPage('/beboere/gamle');
@@ -122,7 +122,7 @@ describe('ResidentDirectoryPage', () => {
     expect(screen.getByText('7999')).toBeInTheDocument();
   });
 
-  it('renders statistics for active residents', async () => {
+  it('renders statistics for current residents', async () => {
     vi.mocked(getResidentDirectoryUsers).mockResolvedValue(activeResidents);
 
     renderPage('/beboere/statistikk');
@@ -130,7 +130,7 @@ describe('ResidentDirectoryPage', () => {
     expect(await screen.findByRole('heading', { name: 'Statistikk' })).toBeInTheDocument();
     expect(getResidentDirectoryUsers).toHaveBeenCalledWith(true);
     const activeResidentsCard = screen
-      .getByRole('heading', { name: 'Aktive beboere' })
+      .getByRole('heading', { name: 'Nåværende beboere' })
       .closest('section');
     const averageAgeCard = screen.getByRole('heading', { name: 'Snittalder' }).closest('section');
     const averageStudyYearCard = screen

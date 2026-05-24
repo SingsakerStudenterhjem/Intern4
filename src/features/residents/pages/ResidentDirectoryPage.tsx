@@ -67,13 +67,14 @@ type SummaryCardProps = {
   title: string;
   value: string;
   detail: string;
+  className?: string;
 };
 
-const SummaryCard = ({ title, value, detail }: SummaryCardProps) => (
-  <section className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-    <h2 className="text-sm font-medium text-gray-600">{title}</h2>
-    <p className="mt-2 text-2xl font-semibold text-gray-950">{value}</p>
-    <p className="mt-1 text-sm text-gray-500">{detail}</p>
+const SummaryCard = ({ title, value, detail, className = '' }: SummaryCardProps) => (
+  <section className={`rounded-lg border border-gray-200 bg-white p-3 shadow-sm ${className}`}>
+    <h2 className="text-xs font-medium text-gray-600">{title}</h2>
+    <p className="mt-1 text-lg font-semibold leading-tight text-gray-950">{value}</p>
+    <p className="mt-1 text-xs leading-snug text-gray-500">{detail}</p>
   </section>
 );
 
@@ -85,19 +86,19 @@ type ChartCardProps = {
 };
 
 const ChartCard = ({ title, description, children, data }: ChartCardProps) => (
-  <section className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
-    <div className="mb-4">
-      <h2 className="text-lg font-semibold text-gray-950">{title}</h2>
-      <p className="mt-1 text-sm text-gray-600">{description}</p>
+  <section className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+    <div className="mb-2">
+      <h2 className="text-base font-semibold text-gray-950">{title}</h2>
+      <p className="mt-0.5 text-xs leading-snug text-gray-600">{description}</p>
     </div>
     {children}
-    <ul className="mt-4 grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
+    <ul className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1 text-xs sm:grid-cols-2">
       {data
         .filter((item) => item.value > 0)
         .map((item) => (
           <li
             key={item.label}
-            className="flex items-center justify-between gap-3 text-gray-600"
+            className="flex min-w-0 items-center justify-between gap-2 text-gray-600"
             aria-label={formatDatum(item)}
           >
             <span className="truncate" title={item.label}>
@@ -124,16 +125,21 @@ const VerticalDistributionChart = ({
   data,
 }: VerticalDistributionChartProps) => (
   <ChartCard title={title} description={description} data={data}>
-    <div className="h-72" aria-label={`${title} diagram`}>
+    <div className="h-40 sm:h-44" aria-label={`${title} diagram`}>
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 16, right: 8, left: -18, bottom: 0 }}>
+        <BarChart data={data} margin={{ top: 14, right: 4, left: -28, bottom: -4 }}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-          <XAxis dataKey="label" tickLine={false} axisLine={false} tick={{ fill: '#4b5563' }} />
+          <XAxis
+            dataKey="label"
+            tickLine={false}
+            axisLine={false}
+            tick={{ fill: '#4b5563', fontSize: 11 }}
+          />
           <YAxis
             allowDecimals={false}
             tickLine={false}
             axisLine={false}
-            tick={{ fill: '#6b7280' }}
+            tick={{ fill: '#6b7280', fontSize: 11 }}
           />
           <Tooltip cursor={{ fill: '#f3f4f6' }} content={<ChartTooltip />} />
           <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#2563eb" aria-label={title}>
@@ -153,7 +159,7 @@ const StudyYearChart = ({ data }: { data: ChartDatum[] }) => {
 
   return (
     <ChartCard title="Studieår" description="Hvor i studieløpet dagens beboere er." data={data}>
-      <div className="h-72" aria-label="Studieår diagram">
+      <div className="h-40 sm:h-44" aria-label="Studieår diagram">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Tooltip content={<ChartTooltip />} />
@@ -163,8 +169,8 @@ const StudyYearChart = ({ data }: { data: ChartDatum[] }) => {
               nameKey="label"
               cx="50%"
               cy="50%"
-              innerRadius={58}
-              outerRadius={96}
+              innerRadius={34}
+              outerRadius={58}
               paddingAngle={2}
             >
               {visibleData.map((item, index) => (
@@ -179,7 +185,7 @@ const StudyYearChart = ({ data }: { data: ChartDatum[] }) => {
 };
 
 const CourseChart = ({ data }: { data: ChartDatum[] }) => {
-  const chartHeight = Math.max(data.length * 44, 260);
+  const chartHeight = Math.min(Math.max(data.length * 28, 150), 240);
 
   return (
     <ChartCard
@@ -189,7 +195,7 @@ const CourseChart = ({ data }: { data: ChartDatum[] }) => {
     >
       <div className="overflow-x-auto">
         <div
-          className="min-w-[560px]"
+          className="min-w-[360px]"
           style={{ height: chartHeight }}
           aria-label="Studieprogram diagram"
         >
@@ -197,17 +203,23 @@ const CourseChart = ({ data }: { data: ChartDatum[] }) => {
             <BarChart
               data={data}
               layout="vertical"
-              margin={{ top: 8, right: 32, left: 24, bottom: 8 }}
+              margin={{ top: 4, right: 24, left: 0, bottom: 0 }}
             >
               <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
-              <XAxis type="number" allowDecimals={false} tickLine={false} axisLine={false} />
+              <XAxis
+                type="number"
+                allowDecimals={false}
+                tickLine={false}
+                axisLine={false}
+                tick={{ fill: '#6b7280', fontSize: 11 }}
+              />
               <YAxis
                 type="category"
                 dataKey="label"
-                width={150}
+                width={112}
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: '#4b5563', fontSize: 12 }}
+                tick={{ fill: '#4b5563', fontSize: 11 }}
               />
               <Tooltip cursor={{ fill: '#f3f4f6' }} content={<ChartTooltip />} />
               <Bar dataKey="value" radius={[0, 6, 6, 0]} fill="#0f766e">
@@ -230,10 +242,10 @@ type StatisticsDashboardProps = {
 
 const StatisticsDashboard = ({ statistics }: StatisticsDashboardProps) => {
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <SummaryCard
-          title="Aktive beboere"
+          title="Nåværende beboere"
           value={String(statistics.summary.totalResidents)}
           detail="Med i dagens beboerliste"
         />
@@ -256,13 +268,14 @@ const StatisticsDashboard = ({ statistics }: StatisticsDashboardProps) => {
           title="Vanligste studie"
           value={statistics.summary.mostCommonStudy ?? '-'}
           detail="Største registrerte studiegruppe"
+          className="col-span-2 lg:col-span-1"
         />
       </div>
 
-      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
         <VerticalDistributionChart
           title="Aldersfordeling"
-          description="Gir et raskt bilde av aldersspennet blant aktive beboere."
+          description="Gir et raskt bilde av aldersspennet blant nåværende beboere."
           data={statistics.ageGroups}
         />
         <StudyYearChart data={statistics.studyYears} />
@@ -346,10 +359,10 @@ const ResidentDirectoryPage: React.FC = () => {
 
   const title = showStatistics ? 'Statistikk' : showOldResidents ? 'Gamle beboere' : 'Beboerliste';
   const description = showStatistics
-    ? 'Fordeling for aktive beboere etter alder, studieår, botid og studieprogram.'
+    ? 'Fordeling for nåværende beboere etter alder, studieår, botid og studieprogram.'
     : showOldResidents
       ? 'Oversikt over tidligere beboere og registrert adresseinformasjon.'
-      : 'Kontaktinformasjon og basisinfo for aktive beboere.';
+      : 'Kontaktinformasjon og basisinfo for nåværende beboere.';
 
   return (
     <PageLayout

@@ -30,7 +30,7 @@ describe('residentDirectory', () => {
     expect(formatStudy(resident({ study: '', studyPlace: '' }))).toBe('-');
   });
 
-  it('filters old residents by address fields and active residents by contact fields', () => {
+  it('filters old residents by address fields and current residents by contact fields', () => {
     expect(filterResidents([resident()], 'trondheim', true)).toHaveLength(1);
     expect(filterResidents([resident()], '40000001', false)).toHaveLength(1);
     expect(filterResidents([resident()], '40000001', true)).toHaveLength(0);
