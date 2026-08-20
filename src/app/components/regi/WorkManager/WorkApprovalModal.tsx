@@ -51,7 +51,7 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-sm shadow-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -66,7 +66,7 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
 
         <div className="p-6 space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 rounded-md p-4">
+            <div className="bg-gray-50 rounded-sm p-4">
               <div className="flex items-center space-x-2 text-sm text-gray-700">
                 <User className="w-4 h-4" />
                 <span className="font-medium">Beboer</span>
@@ -77,7 +77,7 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
               </div>
             </div>
 
-            <div className="bg-gray-50 rounded-md p-4 space-y-2">
+            <div className="bg-gray-50 rounded-sm p-4 space-y-2">
               <div className="flex items-center space-x-2 text-sm text-gray-700">
                 <Clock className="w-4 h-4" />
                 <span className="font-medium">Timer</span>
@@ -109,7 +109,7 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
             <div className="flex justify-between items-center">
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50"
               >
                 Lukk
               </button>
@@ -117,7 +117,7 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
                 <button
                   disabled={isProcessing}
                   onClick={() => setMode('reject')}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-sm hover:bg-red-700 disabled:opacity-50"
                 >
                   <Ban className="w-4 h-4 mr-2" />
                   Avvis
@@ -125,7 +125,7 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
                 <button
                   disabled={isProcessing}
                   onClick={() => setMode('approve')}
-                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-sm hover:bg-green-700 disabled:opacity-50"
                 >
                   <Check className="w-4 h-4 mr-2" />
                   Godkjenn
@@ -146,7 +146,7 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
                   value={approvalComment}
                   onChange={(e) => setApprovalComment(e.target.value)}
                   rows={3}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500"
                   placeholder="F.eks. 'OK, ser bra ut.'"
                 />
               </div>
@@ -154,14 +154,14 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setMode('idle')}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50"
                 >
                   Avbryt
                 </button>
                 <button
                   disabled={isProcessing}
                   onClick={confirmApprove}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-sm hover:bg-green-700 disabled:opacity-50"
                 >
                   Godkjenn
                 </button>
@@ -175,14 +175,14 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setMode('idle')}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50"
                 >
                   Avbryt
                 </button>
                 <button
                   disabled={isProcessing}
                   onClick={confirmReject}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-sm hover:bg-red-700 disabled:opacity-50"
                 >
                   Avvis
                 </button>

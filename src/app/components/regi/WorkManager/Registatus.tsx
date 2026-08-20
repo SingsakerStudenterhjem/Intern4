@@ -97,7 +97,7 @@ const Registatus: React.FC = () => {
   if (authLoading) return null;
   if (!user || !canApproveWork(user.role)) {
     return (
-      <div className="p-4 shadow-sm rounded-md bg-gray-50 text-sm text-gray-700">
+      <div className="p-4 shadow-sm rounded-sm bg-gray-50 text-sm text-gray-700">
         Du har ikke tilgang til registatus.
       </div>
     );
@@ -112,14 +112,14 @@ const Registatus: React.FC = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Søk (navn, e-post, rolle)..."
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
           />
         </div>
 
         <button
           onClick={load}
           disabled={loading}
-          className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+          className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           Oppdater
@@ -127,17 +127,17 @@ const Registatus: React.FC = () => {
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+        <div className="p-3 bg-red-50 border border-red-200 rounded-sm">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
-      <div className="p-3 shadow-sm rounded-md bg-gray-50 text-sm text-gray-700">
+      <div className="p-3 shadow-sm rounded-sm bg-gray-50 text-sm text-gray-700">
         Aktive beboere: <span className="font-semibold">{filtered.length}</span> • Semesterstart:{' '}
         <span className="font-semibold">{semesterLabel}</span>
       </div>
 
-      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border border-gray-200 rounded-xl bg-white shadow-sm">
+      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border border-gray-200 rounded-sm bg-white shadow-sm">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 sticky top-0">
             <tr>

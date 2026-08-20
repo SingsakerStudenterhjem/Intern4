@@ -28,12 +28,11 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
     return { approved, pending, total: approved + pending, remaining: 36 - approved };
   }, [logs]);
 
-  // TODO: uncomment after connecting to the db
-  //if (loading) return <div>Laster...</div>;
+  if (loading) return <div className="text-gray-600">Laster...</div>;
 
   return (
     <div className="space-y-4">
-      <div className="p-4 border border-gray-200 rounded-xl bg-white shadow-sm">
+      <div className="p-4 border border-gray-200 rounded-sm bg-white shadow-sm">
         <div className="font-semibold text-gray-900 mb-1">Oversikt over min regi</div>
         <div className="text-sm text-gray-700">
           Godkjent: <span className="font-semibold">{totals.approved.toFixed(2)}</span> t • Venter:{' '}
@@ -43,7 +42,7 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-xl bg-white shadow-sm">
+      <div className="border border-gray-200 rounded-sm bg-white shadow-sm">
         <div className="p-4 border-b border-gray-200 font-semibold text-gray-900">Regi logg</div>
         <div className="max-h-[480px] overflow-auto">
           <table className="min-w-full text-sm">
@@ -71,7 +70,7 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
                 <tr key={l.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">{l.title}</td>
                   <td className="px-4 py-3">
-                    {new Date(l.date.seconds * 1000).toLocaleDateString('no-NO')}
+                    {new Date(l.date).toLocaleDateString('no-NO')}
                   </td>
                   <td className="px-4 py-3">{l.hours.toFixed(2)}</td>
                   <td className="px-4 py-3 capitalize">{l.type}</td>

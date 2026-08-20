@@ -50,7 +50,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      Generelt: 'bg-blue-100 text-blue-800',
+      Generelt: 'bg-navy-100 text-navy-800',
       Dataarbeid: 'bg-purple-100 text-purple-800',
       Kjøkken: 'bg-green-100 text-green-800',
       Vedlikehold: 'bg-orange-100 text-orange-800',
@@ -61,7 +61,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
 
   return (
     <div className="overflow-x-auto">
-      <table className="min-w-full bg-white rounded-lg overflow-hidden shadow-sm">
+      <table className="min-w-full bg-white rounded-sm overflow-hidden shadow-sm">
         <thead className="bg-gray-50">
           <tr>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -161,7 +161,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
                         e.stopPropagation();
                         onJoinTask(task.id);
                       }}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150"
+                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-sm text-white bg-navy-600 hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 transition-colors duration-150"
                     >
                       Meld deg på
                     </button>

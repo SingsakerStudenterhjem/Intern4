@@ -148,7 +148,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+      <div className="bg-white rounded-sm shadow-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <h2 className="text-xl font-semibold text-gray-900">Opprett ny oppgave</h2>
@@ -164,7 +164,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6" noValidate>
           {errors.submit && (
-            <div className="p-4 bg-red-50 border border-red-200 rounded-md" role="alert">
+            <div className="p-4 bg-red-50 border border-red-200 rounded-sm" role="alert">
               <p className="text-sm text-red-600">{errors.submit}</p>
             </div>
           )}
@@ -179,10 +179,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               id="taskName"
               value={formData.taskName}
               onChange={(e) => handleInputChange('taskName', e.target.value)}
-              className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full border rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 ${
                 errors.taskName
                   ? 'border-red-300 focus:border-red-500'
-                  : 'border-gray-300 focus:border-blue-500'
+                  : 'border-gray-300 focus:border-navy-500'
               }`}
               placeholder="Begå lovbrudd"
               aria-invalid={!!errors.taskName}
@@ -204,10 +204,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               id="category"
               value={formData.category}
               onChange={(e) => handleInputChange('category', e.target.value)}
-              className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full border rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 ${
                 errors.category
                   ? 'border-red-300 focus:border-red-500'
-                  : 'border-gray-300 focus:border-blue-500'
+                  : 'border-gray-300 focus:border-navy-500'
               }`}
               aria-invalid={!!errors.category}
               aria-describedby={errors.category ? 'category-error' : undefined}
@@ -236,7 +236,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               value={formData.description}
               onChange={(e) => handleInputChange('description', e.target.value)}
               rows={4}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
               placeholder="Beskriv oppgaven i detalj..."
             />
           </div>
@@ -254,7 +254,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                 id="deadline"
                 value={formData.deadline}
                 onChange={(e) => handleInputChange('deadline', e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
               />
             </div>
 
@@ -274,10 +274,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                 onChange={(e) => handleInputChange('hourEstimate', e.target.value)}
                 min="0"
                 step="0.5"
-                className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                className={`w-full border rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 ${
                   errors.hourEstimate
                     ? 'border-red-300 focus:border-red-500'
-                    : 'border-gray-300 focus:border-blue-500'
+                    : 'border-gray-300 focus:border-navy-500'
                 }`}
                 placeholder="F.eks. 2.5"
                 aria-invalid={!!errors.hourEstimate}
@@ -306,10 +306,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               value={formData.maxParticipants}
               onChange={(e) => handleInputChange('maxParticipants', e.target.value)}
               min="1"
-              className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              className={`w-full border rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 ${
                 errors.maxParticipants
                   ? 'border-red-300 focus:border-red-500'
-                  : 'border-gray-300 focus:border-blue-500'
+                  : 'border-gray-300 focus:border-navy-500'
               }`}
               placeholder="F.eks. 3"
               aria-invalid={!!errors.maxParticipants}
@@ -326,7 +326,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
           </div>
 
           {/* Contact Person Info */}
-          <div className="bg-gray-50 rounded-md p-4">
+          <div className="bg-gray-50 rounded-sm p-4">
             <div className="flex items-center space-x-2 text-sm text-gray-700">
               <User className="w-4 h-4" />
               <span className="font-medium">Kontaktperson:</span>
@@ -342,14 +342,14 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 transition-colors"
             >
               Avbryt
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-4 py-2 text-sm font-medium text-white bg-navy-600 border border-transparent rounded-sm hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {isSubmitting ? 'Oppretter...' : 'Opprett oppgave'}
             </button>

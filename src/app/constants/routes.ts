@@ -2,6 +2,7 @@ export const ROUTES = {
   LOGIN: '/login',
   DASHBOARD: '/dashboard',
   REGI: '/regi',
+  MY_REGI: '/regi/min-regi',
   TASKS: '/regi/oppgaver',
   REGISJEF: '/regisjef',
   REGIGODKJENNING: '/regisjef/godkjenning',

@@ -98,7 +98,7 @@ const WorkApprovalList: React.FC = () => {
 
   if (!canApproveWork(user.role)) {
     return (
-      <div className="p-4 border rounded-md bg-gray-50 text-sm text-gray-700">
+      <div className="p-4 border rounded-sm bg-gray-50 text-sm text-gray-700">
         Du har ikke tilgang til godkjenning.
       </div>
     );
@@ -113,14 +113,14 @@ const WorkApprovalList: React.FC = () => {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Søk (navn, tittel, beskrivelse, kategori)..."
-            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-navy-500"
           />
         </div>
 
         <button
           onClick={load}
           disabled={loading}
-          className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+          className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-sm text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
         >
           <RefreshCw className="w-4 h-4 mr-2" />
           Oppdater
@@ -128,7 +128,7 @@ const WorkApprovalList: React.FC = () => {
       </div>
 
       {error && (
-        <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+        <div className="p-3 bg-red-50 border border-red-200 rounded-sm">
           <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
@@ -137,7 +137,7 @@ const WorkApprovalList: React.FC = () => {
         Venter: <span className="font-semibold">{filtered.length}</span>
       </div>
 
-      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border border-gray-200 rounded-xl bg-white shadow-sm">
+      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border border-gray-200 rounded-sm bg-white shadow-sm">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 sticky top-0">
             <tr>
@@ -182,7 +182,7 @@ const WorkApprovalList: React.FC = () => {
                   >
                     <td className="px-4 py-3">{a.userName}</td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-blue-50 text-blue-800 text-xs font-medium">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-navy-50 text-navy-800 text-xs font-medium">
                         {a.category}
                       </span>
                     </td>
@@ -197,7 +197,7 @@ const WorkApprovalList: React.FC = () => {
                             e.stopPropagation();
                             handleApprove(a.id);
                           }}
-                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-sm text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
                         >
                           <Check className="w-4 h-4 mr-1" />
                           Godkjenn
@@ -208,7 +208,7 @@ const WorkApprovalList: React.FC = () => {
                             e.stopPropagation();
                             handleReject(a.id);
                           }}
-                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-md text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
+                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-sm text-white bg-red-600 hover:bg-red-700 disabled:opacity-50"
                         >
                           <Ban className="w-4 h-4 mr-1" />
                           Avvis

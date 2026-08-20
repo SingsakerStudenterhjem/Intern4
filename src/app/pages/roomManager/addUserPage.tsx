@@ -259,7 +259,7 @@ const AddUserPage: React.FC = () => {
             </div>
             <button
               onClick={() => setShowAddForm(!showAddForm)}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm text-white bg-navy-600 hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500"
             >
               {showAddForm ? 'Skjul skjema' : 'Legg til bruker'}
             </button>
@@ -268,7 +268,7 @@ const AddUserPage: React.FC = () => {
 
         {message && (
           <div
-            className={`mb-6 p-3 rounded-md text-sm transition-all duration-300 ${
+            className={`mb-6 p-3 rounded-sm text-sm transition-all duration-300 ${
               message.type === 'success'
                 ? 'bg-green-50 text-green-700 border border-green-200'
                 : 'bg-red-50 text-red-800 border border-red-200'
@@ -280,7 +280,7 @@ const AddUserPage: React.FC = () => {
 
         {/* Add User Form */}
         {showAddForm && (
-          <div className="mb-8 bg-white rounded-lg shadow p-6">
+          <div className="mb-8 bg-white rounded-sm shadow p-6">
             <h2 className="text-lg font-medium text-gray-900 mb-4">Ny bruker</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -295,7 +295,7 @@ const AddUserPage: React.FC = () => {
                   required
                   value={userData.name}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                   placeholder="Skriv inn fullt navn"
                 />
               </div>
@@ -311,7 +311,7 @@ const AddUserPage: React.FC = () => {
                   required
                   value={userData.email}
                   onChange={handleInputChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                   placeholder="navn@eksempel.com"
                 />
               </div>
@@ -328,7 +328,7 @@ const AddUserPage: React.FC = () => {
                   value={userData.role}
                   onChange={handleInputChange}
                   disabled={rolesLoading}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                 >
                   {rolesLoading ? (
                     <option>Laster roller...</option>
@@ -356,7 +356,7 @@ const AddUserPage: React.FC = () => {
                   min="0"
                   value={userData.roomNumber}
                   onChange={handleInputChange}
-                  className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 ${
                     validationErrors.roomNumber ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="260"
@@ -371,14 +371,14 @@ const AddUserPage: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowOptionalFields(!showOptionalFields)}
-                className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                className="flex items-center text-navy-600 hover:text-navy-800 text-sm font-medium"
               >
                 {showOptionalFields ? '− Skjul valgfrie felter' : '+ Vis valgfrie felter'}
               </button>
             </div>
 
             {showOptionalFields && (
-              <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+              <div className="bg-gray-50 p-4 rounded-sm border border-gray-200 mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
                     <label
@@ -393,7 +393,7 @@ const AddUserPage: React.FC = () => {
                       name="phone"
                       value={userData.phone}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      className={`w-full px-3 py-2 border rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 ${
                         validationErrors.phone ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="+47 123 45 678"
@@ -416,7 +416,7 @@ const AddUserPage: React.FC = () => {
                       name="birthDate"
                       value={birthDateString}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                     />
                   </div>
                 </div>
@@ -436,7 +436,7 @@ const AddUserPage: React.FC = () => {
                       min="0"
                       value={userData.seniority}
                       onChange={handleInputChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      className={`w-full px-3 py-2 border rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500 ${
                         validationErrors.seniority ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="0"
@@ -454,7 +454,7 @@ const AddUserPage: React.FC = () => {
                         type="checkbox"
                         checked={userData.onLeave}
                         onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
                       />
                       <label htmlFor="onLeave" className="ml-2 text-sm font-medium text-gray-700">
                         Pa permisjon
@@ -467,7 +467,7 @@ const AddUserPage: React.FC = () => {
                         type="checkbox"
                         checked={userData.isActive}
                         onChange={handleInputChange}
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                        className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
                       />
                       <label htmlFor="isActive" className="ml-2 text-sm font-medium text-gray-700">
                         Aktiv bruker
@@ -490,7 +490,7 @@ const AddUserPage: React.FC = () => {
                       name="study"
                       value={userData.study}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                       placeholder="Dataingeniør"
                     />
                   </div>
@@ -508,7 +508,7 @@ const AddUserPage: React.FC = () => {
                       name="studyPlace"
                       value={userData.studyPlace}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                       placeholder="NTNU"
                     />
                   </div>
@@ -524,7 +524,7 @@ const AddUserPage: React.FC = () => {
                         name="address.street"
                         value={userData.address.street}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                         placeholder="Gate"
                       />
                     </div>
@@ -535,7 +535,7 @@ const AddUserPage: React.FC = () => {
                         name="address.postalCode"
                         value={userData.address.postalCode}
                         onChange={handleInputChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                         placeholder="Postnummer"
                       />
                     </div>
@@ -547,7 +547,7 @@ const AddUserPage: React.FC = () => {
                       name="address.city"
                       value={userData.address.city}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                       placeholder="By"
                     />
                   </div>
@@ -559,10 +559,10 @@ const AddUserPage: React.FC = () => {
               <button
                 onClick={handleSubmit}
                 disabled={isSubmitting || !userData.name.trim() || !userData.email.trim()}
-                className={`px-6 py-2 rounded-md font-medium transition-colors ${
+                className={`px-6 py-2 rounded-sm font-medium transition-colors ${
                   isSubmitting || !userData.name.trim() || !userData.email.trim()
                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                    : 'bg-navy-600 text-white hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:ring-offset-2'
                 }`}
               >
                 {isSubmitting ? 'Legger til...' : 'Legg til bruker'}
@@ -572,7 +572,7 @@ const AddUserPage: React.FC = () => {
         )}
 
         {/* Users Table */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-sm shadow">
           <div className="p-6 border-b border-gray-200">
             <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
               <div className="flex-1 relative">
@@ -582,13 +582,13 @@ const AddUserPage: React.FC = () => {
                   placeholder="Søk etter navn eller e-post..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
               <select
                 value={roleFilter}
                 onChange={(e) => setRoleFilter(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="border border-gray-300 rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
               >
                 <option value="all">Alle roller</option>
                 {availableRoles.map((role) => (
@@ -603,7 +603,7 @@ const AddUserPage: React.FC = () => {
           <div className="overflow-x-auto">
             {usersLoading ? (
               <div className="flex justify-center py-12">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-600"></div>
               </div>
             ) : (
               <table className="min-w-full divide-y divide-gray-200">
@@ -642,7 +642,7 @@ const AddUserPage: React.FC = () => {
                           {user.email}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-navy-100 text-navy-800">
                             {user.role ?? 'Ingen rolle'}
                           </span>
                         </td>
@@ -689,7 +689,7 @@ const AddUserPage: React.FC = () => {
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4">
+          <div className="bg-white rounded-sm shadow-sm p-6 max-w-sm mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-2">Slett bruker</h3>
             <p className="text-sm text-gray-600 mb-4">
               Er du sikker pa at du vil slette <strong>{deleteConfirm.name}</strong>? Denne handlingen kan ikke angres.
@@ -698,14 +698,14 @@ const AddUserPage: React.FC = () => {
               <button
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50"
               >
                 Avbryt
               </button>
               <button
                 onClick={() => handleDeleteUser(deleteConfirm)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-sm hover:bg-red-700 disabled:opacity-50"
               >
                 {isDeleting ? 'Sletter...' : 'Slett'}
               </button>

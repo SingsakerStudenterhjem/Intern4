@@ -80,7 +80,7 @@ const LoginForm = () => {
         </div>
 
         <div className="mb-6 text-right">
-          <Link to={ROUTES.FORGOT_PASSWORD} className="text-sm text-blue-600 hover:underline">
+          <Link to={ROUTES.FORGOT_PASSWORD} className="text-sm text-navy-600 hover:underline">
             Glemt passord?
           </Link>
         </div>
@@ -88,7 +88,7 @@ const LoginForm = () => {
         <button
           type="submit"
           disabled={loading || !email || !password}
-          className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+          className="w-full py-2 rounded bg-navy-600 text-white disabled:opacity-50"
         >
           {loading ? 'Laster...' : 'Logg inn'}
         </button>

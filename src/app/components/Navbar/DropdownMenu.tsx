@@ -4,14 +4,25 @@ import { useAuth } from '../../hooks/useAuth';
 import { USER_ROLES } from '../../constants/userRoles';
 import { LucideChevronDown } from 'lucide-react';
 
-const DropdownMenu = ({ label, items }) => {
+type DropdownItem = {
+  label: string;
+  to: string;
+  roles?: string[];
+};
+
+type DropdownMenuProps = {
+  label: string;
+  items: DropdownItem[];
+};
+
+const DropdownMenu = ({ label, items }: DropdownMenuProps) => {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (ref.current && !ref.current.contains(e.target)) {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
@@ -23,7 +34,7 @@ const DropdownMenu = ({ label, items }) => {
   const visible = items.filter((item) => {
     if (!item.roles) return true;
     if (!user) return false;
-    return item.roles.includes(user.role) || item.roles.includes(USER_ROLES.DATA);
+    return item.roles.includes(user.role ?? '') || item.roles.includes(USER_ROLES.DATA);
   });
 
   if (visible.length === 0) return null;
@@ -33,13 +44,13 @@ const DropdownMenu = ({ label, items }) => {
       <button
         aria-expanded={open}
         onClick={() => setOpen((open) => !open)}
-        className="flex items-center hover:text-blue-500"
+        className="flex items-center font-medium hover:text-white"
       >
         {label}
         <LucideChevronDown className="w-6 h-6" strokeWidth={1.5} />
       </button>
       {open && (
-        <ul className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded shadow-lg z-10">
+        <ul className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-sm shadow-sm z-10 text-navy-900">
           {visible.map(({ label, to }) => (
             <li key={to}>
               <Link

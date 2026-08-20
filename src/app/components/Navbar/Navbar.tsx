@@ -7,14 +7,29 @@ import DropdownMenu from './DropdownMenu';
 import { ChevronDown, Menu, UserCircle, X } from 'lucide-react';
 import { logOut } from '../../../server/dao/authentication';
 
+type NavChild = {
+  label: string;
+  to: string;
+  roles?: string[];
+};
+
+type NavItem = {
+  key: string;
+  label: string;
+  to?: string;
+  roles?: string[];
+  children?: NavChild[];
+};
+
 const Navbar = () => {
   const { user } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [openSections, setOpenSections] = useState({});
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userMenuRef = useRef(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const toggleSection = (key) => setOpenSections((s) => ({ ...s, [key]: !s[key] }));
+  const toggleSection = (key: string) =>
+    setOpenSections((s) => ({ ...s, [key]: !s[key] }));
 
   const handleLogout = async () => {
     await logOut();
@@ -23,8 +38,8 @@ const Navbar = () => {
   };
 
   useEffect(() => {
-    const handler = (e) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target)) {
+    const handler = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
       }
     };
@@ -32,16 +47,22 @@ const Navbar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const menuItems = [
+  const menuItems: NavItem[] = [
     { key: 'dash', label: 'Dashboard', to: ROUTES.DASHBOARD },
     {
       key: 'regi',
       label: 'Regi',
       children: [
+        { label: 'Min regi', to: ROUTES.MY_REGI },
         { label: 'Oppgaver', to: ROUTES.TASKS },
         {
           label: 'Regisjef',
           to: ROUTES.REGISJEF,
+          roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
+        },
+        {
+          label: 'Godkjenninger',
+          to: ROUTES.REGIGODKJENNING,
           roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
         },
         {
@@ -71,10 +92,10 @@ const Navbar = () => {
     },
   ];
 
-  const canAccess = (roles) => {
+  const canAccess = (roles?: string[]) => {
     if (!roles) return true;
     if (!user) return false;
-    return roles.includes(user.role);
+    return roles.includes(user.role ?? '');
   };
 
   const visibleItems = menuItems
@@ -86,32 +107,32 @@ const Navbar = () => {
       }
       return canAccess(item.roles) ? item : null;
     })
-    .filter(Boolean);
+    .filter((item): item is NavItem => item !== null);
 
   return (
-    <nav className="bg-white shadow px-8 py-2 flex justify-between items-center relative">
-      <div className="text-xl font-semibold">
+    <nav className="bg-navy-900 border-b-4 border-navy-500 px-8 py-3 flex justify-between items-center relative">
+      <div className="text-xl font-bold text-white tracking-tight uppercase">
         <Link to="/">Internsiden</Link>
       </div>
 
       {user && (
         <button
           onClick={() => setMobileOpen((o) => !o)}
-          className="md:hidden p-2"
+          className="md:hidden p-2 text-white"
           aria-label="Toggle menu"
         >
           {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       )}
 
-      <div className="hidden md:flex items-center space-x-6">
+      <div className="hidden md:flex items-center space-x-6 text-navy-100">
         {user ? (
           <>
             {visibleItems.map((item) =>
               item.children ? (
                 <DropdownMenu key={item.key} label={item.label} items={item.children} />
               ) : (
-                <Link key={item.key} to={item.to} className="hover:text-blue-500">
+                <Link key={item.key} to={item.to ?? '/'} className="font-medium hover:text-white">
                   {item.label}
                 </Link>
               )
@@ -120,21 +141,21 @@ const Navbar = () => {
             <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setUserMenuOpen((o) => !o)}
-                className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-gray-100"
+                className="flex items-center gap-2 px-3 py-2 rounded-sm hover:bg-navy-800"
               >
                 <div className="flex items-center gap-2 text-left">
-                  <UserCircle className="w-6 h-6 text-gray-600" />
+                  <UserCircle className="w-6 h-6" />
                   <div className="text-sm leading-tight">
-                    <div className="font-semibold text-gray-900 truncate max-w-[140px]">
+                    <div className="font-semibold text-white truncate max-w-[140px]">
                       {user.name || 'Bruker'}
                     </div>
                   </div>
                 </div>
-                <ChevronDown className="w-4 h-4 text-gray-600" />
+                <ChevronDown className="w-4 h-4" />
               </button>
 
               {userMenuOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-sm shadow-sm z-20 text-navy-900">
                   <Link
                     to={ROUTES.ABOUTME}
                     onClick={() => setUserMenuOpen(false)}
@@ -153,14 +174,14 @@ const Navbar = () => {
             </div>
           </>
         ) : (
-          <Link to={ROUTES.LOGIN} className="hover:text-blue-500">
+          <Link to={ROUTES.LOGIN} className="font-medium hover:text-white">
             Logg inn
           </Link>
         )}
       </div>
 
       {user && mobileOpen && (
-        <div className="absolute top-full inset-x-0 bg-white shadow-md p-4 md:hidden">
+        <div className="absolute top-full inset-x-0 bg-white border-t-4 border-navy-500 shadow-sm p-4 md:hidden">
           <ul className="space-y-2">
             {visibleItems.map((item) => (
               <li key={item.key}>
@@ -194,7 +215,7 @@ const Navbar = () => {
                     )}
                   </>
                 ) : (
-                  <Link to={item.to} onClick={() => setMobileOpen(false)} className="block py-2">
+                  <Link to={item.to ?? '/'} onClick={() => setMobileOpen(false)} className="block py-2">
                     {item.label}
                   </Link>
                 )}
@@ -216,7 +237,7 @@ const Navbar = () => {
               <Link
                 to={ROUTES.ABOUTME}
                 onClick={() => setMobileOpen(false)}
-                className="text-blue-600"
+                className="text-navy-600"
               >
                 Profil
               </Link>

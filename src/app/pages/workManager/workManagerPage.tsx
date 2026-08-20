@@ -12,7 +12,7 @@ const WorkManagerPage: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 space-y-6">
         <header className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">Regisjef</p>
+            <p className="text-xs font-semibold tracking-wide text-navy-600 uppercase">Regisjef</p>
             <h1 className="font-bold text-3xl text-gray-900">Arbeidsflyt og regioversikt</h1>
             <p className="text-gray-600 mt-1">
               Godkjenn innsendte timer, gi regi til beboere og følg status for hele huset.
@@ -21,7 +21,7 @@ const WorkManagerPage: React.FC = () => {
         </header>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="lg:col-span-1 bg-white border border-gray-200 rounded-xl shadow-sm p-5 flex flex-col min-h-[60vh]">
+          <section className="lg:col-span-1 bg-white border border-gray-200 rounded-sm shadow-sm p-5 flex flex-col min-h-[60vh]">
             <div className="mb-4">
               <h2 className="text-xl font-semibold text-gray-900">Godkjenningsliste</h2>
               <p className="text-sm text-gray-600">
@@ -34,11 +34,11 @@ const WorkManagerPage: React.FC = () => {
           </section>
 
           <div className="space-y-6">
-            <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+            <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-5">
               <GrantRegiForm />
             </section>
 
-            <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+            <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-5">
               <div className="mb-4">
                 <h2 className="text-xl font-semibold text-gray-900">Registatus</h2>
                 <p className="text-sm text-gray-600">
@@ -50,7 +50,7 @@ const WorkManagerPage: React.FC = () => {
               </div>
             </section>
 
-            <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-4">
+            <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-4">
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <h3 className="font-semibold text-gray-900">Full regilogger</h3>
@@ -60,7 +60,7 @@ const WorkManagerPage: React.FC = () => {
                 </div>
                 <Link
                   to={ROUTES.REGILOGS}
-                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-blue-600 hover:text-blue-700"
+                  className="inline-flex items-center px-3 py-2 text-sm font-medium text-navy-600 hover:text-navy-700"
                 >
                   Åpne logg
                   <ArrowRight className="w-4 h-4 ml-1" />

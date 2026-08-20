@@ -17,7 +17,7 @@ const WorkPage = () => {
         <header className="space-y-3">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="space-y-1">
-              <p className="text-xs font-semibold tracking-wide text-blue-600 uppercase">Regi</p>
+              <p className="text-xs font-semibold tracking-wide text-navy-600 uppercase">Regi</p>
               <h1 className="text-3xl font-bold text-gray-900">Min regi</h1>
               <p className="text-gray-600">
                 Registrer egne regitimer og følg med på innsendte registreringer.
@@ -27,7 +27,7 @@ const WorkPage = () => {
             <div className="flex items-center gap-2">
               <Link
                 to={ROUTES.TASKS}
-                className="inline-flex items-center px-4 py-2 rounded-lg border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                className="inline-flex items-center px-4 py-2 rounded-sm border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50"
               >
                 Se oppgaver
               </Link>
@@ -38,12 +38,12 @@ const WorkPage = () => {
         <div className="grid gap-6 lg:grid-cols-2">
           <section
             id="regi-form"
-            className="lg:col-span-1 bg-white border border-gray-200 rounded-xl shadow-sm p-5"
+            className="lg:col-span-1 bg-white border border-gray-200 rounded-sm shadow-sm p-5"
           >
             <WorkLogForm onCreated={() => setRefreshKey((k) => k + 1)} />
           </section>
 
-          <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+          <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-5">
             <h2 className="text-lg font-semibold text-gray-900 mb-2">Mine registreringer</h2>
             <p className="text-sm text-gray-600 mb-3">
               Nyeste først. Godkjenning skjer av regisjef.

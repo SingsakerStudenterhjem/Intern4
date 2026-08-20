@@ -95,7 +95,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   const getCategoryColor = (category: string) => {
     const colors: { [key: string]: string } = {
-      Generelt: 'bg-blue-100 text-blue-800 border-blue-200',
+      Generelt: 'bg-navy-100 text-navy-800 border-navy-200',
       Dataarbeid: 'bg-purple-100 text-purple-800 border-purple-200',
       Kjøkken: 'bg-green-100 text-green-800 border-green-200',
       Vedlikehold: 'bg-orange-100 text-orange-800 border-orange-200',
@@ -110,7 +110,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto"
+        className="bg-white rounded-sm shadow-sm w-full max-w-2xl max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -168,16 +168,16 @@ const TaskModal: React.FC<TaskModalProps> = ({
                         {task.participants.map((participantId) => (
                           <div
                             key={participantId}
-                            className="flex items-center space-x-2 p-2 bg-gray-50 rounded-md"
+                            className="flex items-center space-x-2 p-2 bg-gray-50 rounded-sm"
                           >
-                            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                              <User className="w-4 h-4 text-blue-600" />
+                            <div className="w-8 h-8 bg-navy-100 rounded-full flex items-center justify-center">
+                              <User className="w-4 h-4 text-navy-600" />
                             </div>
                             <span className="text-sm font-medium text-gray-900">
                               {participantNames[participantId] || 'Ukjent bruker'}
                             </span>
                             {participantId === currentUserId && (
-                              <span className="text-xs text-blue-600">(deg)</span>
+                              <span className="text-xs text-navy-600">(deg)</span>
                             )}
                           </div>
                         ))}
@@ -187,7 +187,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                     )}
                   </div>
                 ) : (
-                  <div className="p-3 bg-gray-50 rounded-md">
+                  <div className="p-3 bg-gray-50 rounded-sm">
                     <p className="text-sm text-gray-600">
                       {task.participants.length} person{task.participants.length !== 1 ? 'er' : ''}{' '}
                       påmeldt av {task.maxParticipants} plasser
@@ -199,7 +199,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
             {/* Sidebar */}
             <div className="space-y-4">
-              <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+              <div className="bg-gray-50 rounded-sm p-4 space-y-3">
                 <div className="flex items-center space-x-2 text-sm">
                   <User className="w-4 h-4 text-gray-500" />
                   <span className="font-medium text-gray-700">Kontaktperson:</span>
@@ -230,23 +230,23 @@ const TaskModal: React.FC<TaskModalProps> = ({
               {/* Status indicators */}
               <div className="space-y-2">
                 {task.completed && (
-                  <div className="flex items-center space-x-2 p-2 bg-green-50 border border-green-200 rounded-md">
+                  <div className="flex items-center space-x-2 p-2 bg-green-50 border border-green-200 rounded-sm">
                     <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                     <span className="text-sm font-medium text-green-800">Fullført</span>
                   </div>
                 )}
 
                 {isFull && !task.completed && (
-                  <div className="flex items-center space-x-2 p-2 bg-red-50 border border-red-200 rounded-md">
+                  <div className="flex items-center space-x-2 p-2 bg-red-50 border border-red-200 rounded-sm">
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                     <span className="text-sm font-medium text-red-800">Full</span>
                   </div>
                 )}
 
                 {isUserJoined && !task.completed && (
-                  <div className="flex items-center space-x-2 p-2 bg-blue-50 border border-blue-200 rounded-md">
-                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-blue-800">Du er påmeldt</span>
+                  <div className="flex items-center space-x-2 p-2 bg-navy-50 border border-navy-200 rounded-sm">
+                    <div className="w-2 h-2 bg-navy-500 rounded-full"></div>
+                    <span className="text-sm font-medium text-navy-800">Du er påmeldt</span>
                   </div>
                 )}
               </div>
@@ -266,13 +266,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={cancelComplete}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 transition-colors"
                 >
                   Avbryt
                 </button>
                 <button
                   onClick={confirmComplete}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                 >
                   Marker som fullført
                 </button>
@@ -292,13 +292,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={cancelDelete}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 transition-colors"
                 >
                   Avbryt
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                 >
                   Slett oppgave
                 </button>
@@ -308,7 +308,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
             <div className="flex justify-between items-center">
               <button
                 onClick={onClose}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 transition-colors"
               >
                 Lukk
               </button>
@@ -317,7 +317,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 {canJoin && onJoinTask && (
                   <button
                     onClick={handleJoin}
-                    className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                    className="px-4 py-2 text-sm font-medium text-white bg-navy-600 border border-transparent rounded-sm hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500 transition-colors"
                   >
                     Meld deg på
                   </button>
@@ -327,13 +327,13 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   <>
                     <button
                       onClick={startComplete}
-                      className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                      className="px-4 py-2 text-sm font-medium text-white bg-green-600 border border-transparent rounded-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                     >
                       Marker fullført
                     </button>
                     <button
                       onClick={handleLeave}
-                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                      className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
                     >
                       Meld deg av
                     </button>

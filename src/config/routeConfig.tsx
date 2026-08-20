@@ -14,6 +14,7 @@ import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
 import RegiLogsPage from '../app/pages/workManager/regiLogsPage';
 import ForgotPasswordPage from '../app/pages/forgotPasswordPage';
 import ResetPasswordPage from '../app/pages/resetPasswordPage';
+import AdminPage from '../app/pages/admin/adminPage';
 
 // Public routes (no authentication required)
 export const publicRoutes = [
@@ -92,6 +93,14 @@ export const protectedRoutes = [
     ),
   },
   {
+    path: ROUTES.MY_REGI,
+    element: (
+      <ProtectedRoute>
+        <WorkPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: ROUTES.ABOUTME,
     element: (
       <ProtectedRoute>
@@ -106,7 +115,9 @@ export const adminRoutes = [
   {
     path: ROUTES.ADMIN,
     element: (
-      <ProtectedRoute></ProtectedRoute>
+      <ProtectedRoute allowedRoles={[USER_ROLES.DATA]}>
+        <AdminPage />
+      </ProtectedRoute>
     ),
   },
 ];

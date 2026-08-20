@@ -56,7 +56,7 @@ const ResetPasswordForm = () => {
         <p className="text-red-500 mb-4">
           {error || 'Lenken er ugyldig eller utløpt. Vennligst be om en ny tilbakestillingslenke.'}
         </p>
-        <Link to={ROUTES.FORGOT_PASSWORD} className="text-sm text-blue-600 hover:underline">
+        <Link to={ROUTES.FORGOT_PASSWORD} className="text-sm text-navy-600 hover:underline">
           Be om ny lenke
         </Link>
       </div>
@@ -142,7 +142,7 @@ const ResetPasswordForm = () => {
       <button
         type="submit"
         disabled={loading || !password || !confirmPassword}
-        className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+        className="w-full py-2 rounded bg-navy-600 text-white disabled:opacity-50"
       >
         {loading ? 'Oppdaterer...' : 'Oppdater passord'}
       </button>

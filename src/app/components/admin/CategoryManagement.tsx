@@ -180,7 +180,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
         </div>
         <button
           onClick={startAdd}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm text-white bg-navy-600 hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500"
         >
           <Plus className="w-4 h-4 mr-2" />
           Ny kategori
@@ -189,7 +189,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
 
       {/* Add/Edit Form */}
       {(isAddingCategory || editingCategory) && (
-        <div className="border border-gray-200 rounded-lg p-6 bg-gray-50">
+        <div className="border border-gray-200 rounded-sm p-6 bg-gray-50">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-medium text-gray-900">
               {editingCategory ? 'Rediger kategori' : 'Legg til ny kategori'}
@@ -201,7 +201,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
 
           <form onSubmit={handleSubmit} className="space-y-4">
             {errors.submit && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-sm">
                 <p className="text-sm text-red-600">{errors.submit}</p>
               </div>
             )}
@@ -220,7 +220,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                   id="categoryName"
                   value={formData.name}
                   onChange={(e) => handleFormDataChange('name', e.target.value)}
-                  className={`w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full border rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 ${
                     errors.name ? 'border-red-300' : 'border-gray-300'
                   }`}
                   placeholder="Størm 🔌"
@@ -272,7 +272,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                 value={formData.description}
                 onChange={(e) => handleFormDataChange('description', e.target.value)}
                 rows={3}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500"
                 placeholder="Valgfri beskrivelse av kategorien..."
               />
             </div>
@@ -282,13 +282,13 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50"
               >
                 Avbryt
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
+                className="px-4 py-2 text-sm font-medium text-white bg-navy-600 border border-transparent rounded-sm hover:bg-navy-700"
               >
                 {editingCategory ? 'Oppdater' : 'Legg til'}
               </button>
@@ -298,10 +298,10 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
       )}
 
       {/* Categories List */}
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
+      <div className="bg-white shadow overflow-hidden sm:rounded-sm">
         {loadingUsage ? (
           <div className="px-6 py-8 text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-600 mx-auto"></div>
             <p className="text-gray-500 mt-2">Laster kategorier...</p>
           </div>
         ) : (

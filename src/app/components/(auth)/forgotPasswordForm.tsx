@@ -70,14 +70,14 @@ const ForgotPasswordForm = () => {
         {error && <div className="text-red-500 mb-4 text-sm">{error}</div>}
 
         <div className="flex items-center justify-between">
-          <Link to={ROUTES.LOGIN} className="text-sm text-blue-600 hover:underline">
+          <Link to={ROUTES.LOGIN} className="text-sm text-navy-600 hover:underline">
             Tilbake til innlogging
           </Link>
           <button
             type="button"
             onClick={handleResend}
             disabled={countdown > 0 || loading}
-            className="text-sm text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
+            className="text-sm text-navy-600 hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
           >
             {countdown > 0 ? `Send på nytt (${countdown}s)` : 'Send på nytt'}
           </button>
@@ -105,13 +105,13 @@ const ForgotPasswordForm = () => {
       <button
         type="submit"
         disabled={loading || !email}
-        className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+        className="w-full py-2 rounded bg-navy-600 text-white disabled:opacity-50"
       >
         {loading ? 'Sender...' : 'Send tilbakestillingslenke'}
       </button>
 
       <div className="mt-4 text-center">
-        <Link to={ROUTES.LOGIN} className="text-sm text-blue-600 hover:underline">
+        <Link to={ROUTES.LOGIN} className="text-sm text-navy-600 hover:underline">
           Tilbake til innlogging
         </Link>
       </div>

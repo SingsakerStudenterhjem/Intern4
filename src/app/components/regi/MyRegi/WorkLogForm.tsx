@@ -120,7 +120,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         <input
           value={form.title}
           onChange={(e) => setField('title', e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
           placeholder="Arbeidet oppsummert"
         />
         {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title}</p>}
@@ -131,7 +131,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         <select
           value={form.type}
           onChange={(e) => setField('type', e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-sm border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
         >
           <option value="">Velg type</option>
           {categories.map((category) => (
@@ -147,7 +147,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         <textarea
           value={form.description}
           onChange={(e) => setField('description', e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
           rows={4}
           placeholder="Forklaring av arbeidet"
         />
@@ -161,7 +161,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
             type="date"
             value={form.date}
             onChange={(e) => setField('date', e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
           />
           {errors.date && <p className="text-red-600 text-sm mt-1">{errors.date}</p>}
         </div>
@@ -172,7 +172,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
             step="0.25"
             value={form.hours}
             onChange={(e) => setField('hours', e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
             placeholder="1.5"
           />
           {errors.hours && <p className="text-red-600 text-sm mt-1">{errors.hours}</p>}
@@ -192,7 +192,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       <button
         type="submit"
         disabled={submitting}
-        className="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+        className="px-3 py-2 rounded bg-navy-600 text-white disabled:opacity-50"
       >
         {submitting ? 'Lagrer...' : 'Registrer'}
       </button>

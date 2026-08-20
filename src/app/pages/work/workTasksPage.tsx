@@ -244,7 +244,7 @@ const WorkTasksPage: React.FC = () => {
   if (loading || authLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-navy-600"></div>
       </div>
     );
   }
@@ -265,7 +265,7 @@ const WorkTasksPage: React.FC = () => {
               {canManageCategoriesCheck && (
                 <button
                   onClick={() => setShowCategoryManagement(!showCategoryManagement)}
-                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500"
                 >
                   <Settings className="w-4 h-4 mr-2" />
                   Administrer kategorier
@@ -274,7 +274,7 @@ const WorkTasksPage: React.FC = () => {
               {canCreateTasksCheck && (
                 <button
                   onClick={() => setIsCreateModalOpen(true)}
-                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-sm text-white bg-navy-600 hover:bg-navy-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-navy-500"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Ny oppgave
@@ -286,7 +286,7 @@ const WorkTasksPage: React.FC = () => {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-sm">
             <p className="text-sm text-red-600">{error}</p>
           </div>
         )}
@@ -305,7 +305,7 @@ const WorkTasksPage: React.FC = () => {
         )}
 
         {/* Tasks Section */}
-        <div className="bg-white rounded-lg shadow">
+        <div className="bg-white rounded-sm shadow">
           {/* Filter Bar */}
           <div className="p-6 border-b border-gray-200">
             <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
@@ -317,7 +317,7 @@ const WorkTasksPage: React.FC = () => {
                   placeholder="Søk etter oppgaver..."
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
                 />
               </div>
 
@@ -325,7 +325,7 @@ const WorkTasksPage: React.FC = () => {
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="border border-gray-300 rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
               >
                 <option value="all">Alle kategorier</option>
                 {availableCategories
@@ -347,7 +347,7 @@ const WorkTasksPage: React.FC = () => {
                     value="available"
                     checked={filter === 'available'}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300"
                   />
                   <label htmlFor="available" className="ml-2 text-sm text-gray-700">
                     Ledige
@@ -361,7 +361,7 @@ const WorkTasksPage: React.FC = () => {
                     value="myTasks"
                     checked={filter === 'myTasks'}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300"
                   />
                   <label htmlFor="myTasks" className="ml-2 text-sm text-gray-700">
                     Mine
@@ -375,7 +375,7 @@ const WorkTasksPage: React.FC = () => {
                     value="all"
                     checked={filter === 'all'}
                     onChange={(e) => setFilter(e.target.value)}
-                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300"
                   />
                   <label htmlFor="all" className="ml-2 text-sm text-gray-700">
                     Alle
@@ -407,7 +407,7 @@ const WorkTasksPage: React.FC = () => {
                   <button
                     onClick={prevPage}
                     disabled={currentPage === 1}
-                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Forrige
                   </button>
@@ -417,7 +417,7 @@ const WorkTasksPage: React.FC = () => {
                   <button
                     onClick={nextPage}
                     disabled={currentPage === totalPages}
-                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-sm hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     Neste
                   </button>

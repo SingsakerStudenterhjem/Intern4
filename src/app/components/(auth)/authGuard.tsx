@@ -2,7 +2,19 @@ import React from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { USER_ROLES } from '../../constants/userRoles';
 
-const AuthGuard = ({ children, allowedRoles = [], fallback = null, redirectTo = '/login' }) => {
+type AuthGuardProps = {
+  children: React.ReactNode;
+  allowedRoles?: string[];
+  fallback?: React.ReactNode;
+  redirectTo?: string;
+};
+
+const AuthGuard = ({
+  children,
+  allowedRoles = [],
+  fallback = null,
+  redirectTo = '/login',
+}: AuthGuardProps) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -18,7 +30,7 @@ const AuthGuard = ({ children, allowedRoles = [], fallback = null, redirectTo = 
     return null;
   }
 
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role ?? '')) {
     return (
       fallback || (
         <div>
@@ -34,8 +46,11 @@ const AuthGuard = ({ children, allowedRoles = [], fallback = null, redirectTo = 
   return children;
 };
 
-export const withAuth = (Component, allowedRoles = []) => {
-  const Wrapped = (props) => (
+export const withAuth = <P extends object>(
+  Component: React.ComponentType<P>,
+  allowedRoles: string[] = []
+) => {
+  const Wrapped = (props: P) => (
     <AuthGuard allowedRoles={allowedRoles}>
       <Component {...props} />
     </AuthGuard>
@@ -44,15 +59,20 @@ export const withAuth = (Component, allowedRoles = []) => {
   return Wrapped;
 };
 
+type RoleGuardProps = {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+};
+
 // Guard for data åpmand role
-export const DataGuard = ({ children, fallback }) => (
+export const DataGuard = ({ children, fallback }: RoleGuardProps) => (
   <AuthGuard allowedRoles={[USER_ROLES.DATA]} fallback={fallback}>
     {children}
   </AuthGuard>
 );
 
 // Guard for regisjef role
-export const RegisjefGuard = ({ children, fallback }) => (
+export const RegisjefGuard = ({ children, fallback }: RoleGuardProps) => (
   <AuthGuard
     allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
     fallback={fallback}
@@ -62,7 +82,7 @@ export const RegisjefGuard = ({ children, fallback }) => (
 );
 
 // Guard for commonors (aka peasants)
-export const UserGuard = ({ children, fallback }) => (
+export const UserGuard = ({ children, fallback }: RoleGuardProps) => (
   <AuthGuard
     allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER, USER_ROLES.USER]}
     fallback={fallback}
