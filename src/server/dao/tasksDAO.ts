@@ -16,18 +16,24 @@ function toAppTask(row: any): Task {
 export async function addTask(data: TaskCreationData): Promise<string> {
   // find category
   const { data: cat, error: e1 } = await supabase
-    .from('work_categories').select('id').eq('name', data.category).maybeSingle();
+    .from('work_categories')
+    .select('id')
+    .eq('name', data.category)
+    .maybeSingle();
   if (e1) throw new Error(`Could not add task: ${e1.message}`);
   if (!cat) throw new Error(`Category '${data.category}' not found`);
 
   // create item then task in a single RPC or two calls:
   const { data: item, error: e2 } = await supabase
-    .from('work_items').insert({
+    .from('work_items')
+    .insert({
       title: data.title,
       description: data.description,
       type: 'task',
       work_category_id: cat.id,
-    }).select('id').single();
+    })
+    .select('id')
+    .single();
   if (e2) throw new Error(`Could not add task: ${e2.message}`);
 
   const { error: e3 } = await supabase.from('work_tasks').insert({
@@ -43,7 +49,8 @@ export async function addTask(data: TaskCreationData): Promise<string> {
 export async function getTask(taskId: string): Promise<Task | undefined> {
   const { data, error } = await supabase
     .from('work_tasks')
-    .select(`
+    .select(
+      `
     id,
     created_at,
     deadline,
@@ -64,7 +71,8 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
         user_uuid
       )
     )
-  `)
+  `
+    )
     .order('deadline', { ascending: true });
 
   if (error) throw new Error(`Could not get task: ${error.message}`);
@@ -74,7 +82,8 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
 export async function getTasks(): Promise<Task[]> {
   const { data, error } = await supabase
     .from('work_tasks')
-    .select(`
+    .select(
+      `
       id,
       created_at,
       deadline,
@@ -87,7 +96,8 @@ export async function getTasks(): Promise<Task[]> {
         work_categories ( name ),
         participants:work_assignments ( user_uuid )
       )
-    `)
+    `
+    )
     .order('deadline', { ascending: true });
 
   if (error) {
@@ -112,8 +122,10 @@ export async function getTasks(): Promise<Task[]> {
   }));
 }
 
-
-export async function updateTask(taskId: string, data: Partial<Omit<Task, 'id' | 'createdAt'>>): Promise<void> {
+export async function updateTask(
+  taskId: string,
+  data: Partial<Omit<Task, 'id' | 'createdAt'>>
+): Promise<void> {
   // update work_items if title/description
   const patchItem: any = { title: data.title, description: data.description };
   Object.keys(patchItem).forEach((k) => patchItem[k] === undefined && delete patchItem[k]);
@@ -154,8 +166,10 @@ export async function joinTask(taskId: string, userId: string): Promise<boolean>
 
 export async function leaveTask(taskId: string, userId: string): Promise<boolean> {
   const { error } = await supabase
-    .from('work_assignments').delete()
-    .eq('work_id', Number(taskId)).eq('user_uuid', userId);
+    .from('work_assignments')
+    .delete()
+    .eq('work_id', Number(taskId))
+    .eq('user_uuid', userId);
   if (error) throw new Error(`Could not leave task: ${error.message}`);
   return true;
 }
@@ -190,9 +204,15 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
     grouped.set(p.work_id, arr);
   });
 
-  return rows.map((row: any) => toAppTask({
-    ...row,
-    participants: (grouped.get(row.id) ?? []).map((u) => ({ user_uuid: u })),
-    work_items: row.work_items ?? { title: row.title, description: row.description, work_categories: row.work_categories }
-  }));
+  return rows.map((row: any) =>
+    toAppTask({
+      ...row,
+      participants: (grouped.get(row.id) ?? []).map((u) => ({ user_uuid: u })),
+      work_items: row.work_items ?? {
+        title: row.title,
+        description: row.description,
+        work_categories: row.work_categories,
+      },
+    })
+  );
 }

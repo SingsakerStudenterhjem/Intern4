@@ -1,18 +1,24 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { RegiLogWithId } from '../../../../shared/types/regi';
 import { getRegiLogsByUser } from '../../../../server/dao/regiDAO';
+import { getUser } from '../../../../server/dao/userDAO';
+import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
 
 const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId, refreshKey }) => {
   const [logs, setLogs] = useState<RegiLogWithId[]>([]);
+  const [requiredHours, setRequiredHours] = useState(0);
+  const [regiPreapproved, setRegiPreapproved] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
     (async () => {
       setLoading(true);
-      const data = await getRegiLogsByUser(userId);
+      const [data, profile] = await Promise.all([getRegiLogsByUser(userId), getUser(userId)]);
       if (mounted) {
         setLogs(data);
+        setRequiredHours(getRequiredRegiHoursForRole(profile?.role));
+        setRegiPreapproved(profile?.regiPreapproved ?? false);
         setLoading(false);
       }
     })();
@@ -24,9 +30,9 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
   const totals = useMemo(() => {
     const approved = logs.filter((l) => l.status === 'approved').reduce((s, l) => s + l.hours, 0);
     const pending = logs.filter((l) => l.status === 'pending').reduce((s, l) => s + l.hours, 0);
-    // TODO: calculate remaining from users total regitimer (full-regi, halv-halv, full-vakt)
-    return { approved, pending, total: approved + pending, remaining: 36 - approved };
-  }, [logs]);
+    const remaining = regiPreapproved ? 0 : Math.max(requiredHours - approved, 0);
+    return { approved, pending, total: approved + pending, remaining };
+  }, [logs, requiredHours, regiPreapproved]);
 
   if (loading) return <div className="text-gray-600">Laster...</div>;
 
@@ -38,7 +44,12 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
           Godkjent: <span className="font-semibold">{totals.approved.toFixed(2)}</span> t • Venter:{' '}
           <span className="font-semibold">{totals.pending.toFixed(2)}</span> t • Totalt registrert:{' '}
           <span className="font-semibold">{totals.total.toFixed(2)}</span> t • Gjenstående timer:{' '}
-          <span className="font-semibold">{totals.remaining}</span> t
+          <span className="font-semibold">{totals.remaining.toFixed(2)}</span> t
+          {regiPreapproved && (
+            <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full bg-navy-100 text-navy-800 text-xs font-semibold">
+              Forhåndsgodkjent
+            </span>
+          )}
         </div>
       </div>
 
@@ -69,9 +80,7 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
               {logs.map((l) => (
                 <tr key={l.id} className="hover:bg-gray-50 transition-colors">
                   <td className="px-4 py-3">{l.title}</td>
-                  <td className="px-4 py-3">
-                    {new Date(l.date).toLocaleDateString('no-NO')}
-                  </td>
+                  <td className="px-4 py-3">{new Date(l.date).toLocaleDateString('no-NO')}</td>
                   <td className="px-4 py-3">{l.hours.toFixed(2)}</td>
                   <td className="px-4 py-3 capitalize">{l.type}</td>
                   <td className="px-4 py-3 capitalize">

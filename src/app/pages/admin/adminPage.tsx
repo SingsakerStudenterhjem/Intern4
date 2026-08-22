@@ -69,7 +69,9 @@ const AdminPage: React.FC = () => {
         <header>
           <p className="text-xs font-semibold tracking-wide text-navy-600 uppercase">Admin</p>
           <h1 className="text-3xl font-bold text-gray-900">Administrasjon</h1>
-          <p className="text-gray-600 mt-1">Administrer kategorier som brukes på oppgaver og regi.</p>
+          <p className="text-gray-600 mt-1">
+            Administrer kategorier som brukes på oppgaver og regi.
+          </p>
         </header>
 
         {error && (

@@ -75,34 +75,36 @@ export const useAuth = () => {
         .select('name, email, roles(name)')
         .eq('id', session.user.id)
         .maybeSingle()
-        .then(({ data, error }) => {
-          if (!isMounted) return;
+        .then(
+          ({ data, error }) => {
+            if (!isMounted) return;
 
-          if (error) {
+            if (error) {
+              setError('Kunne ikke laste brukerprofil');
+              setUser({
+                id: session.user.id,
+                email: session.user.email ?? undefined,
+              });
+            } else {
+              const roleName = (data as any)?.roles?.name as string | undefined;
+
+              setUser({
+                id: session.user.id,
+                name: data?.name ?? undefined,
+                email: data?.email ?? undefined,
+                role: roleName,
+              });
+            }
+          },
+          () => {
+            if (!isMounted) return;
             setError('Kunne ikke laste brukerprofil');
             setUser({
               id: session.user.id,
               email: session.user.email ?? undefined,
             });
-          } else {
-            const roleName = (data as any)?.roles?.name as string | undefined;
-
-            setUser({
-              id: session.user.id,
-              name: data?.name ?? undefined,
-              email: data?.email ?? undefined,
-              role: roleName,
-            });
           }
-        })
-        .catch(() => {
-          if (!isMounted) return;
-          setError('Kunne ikke laste brukerprofil');
-          setUser({
-            id: session.user.id,
-            email: session.user.email ?? undefined,
-          });
-        });
+        );
     });
 
     return () => {
@@ -125,3 +127,5 @@ export const useAuth = () => {
     isAdmin: user?.role === 'Data' || user?.role === 'Daglig leder',
   };
 };
+
+export type UseAuthReturn = ReturnType<typeof useAuth>;

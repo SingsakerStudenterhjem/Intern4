@@ -1,5 +1,10 @@
 import { supabase } from '../supabaseClient';
-import { RegiLog, RegiLogWithId } from '../../shared/types/regi';
+import {
+  RegiLog,
+  RegiLogWithId,
+  RegiPenaltyWithId,
+  RegiTransferWithId,
+} from '../../shared/types/regi';
 import { getUser } from './userDAO';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
@@ -251,24 +256,116 @@ export async function getApprovedRegiHoursByUserSince(
     .select('user_uuid, hours_used, created_at, approved_state')
     .eq('approved_state', 1);
 
+  let transfersQuery = supabase
+    .from('regi_transfers')
+    .select('from_user_uuid, to_user_uuid, hours, created_at');
+
   if (startDate) {
     query = query.gte('created_at', startDate.toISOString());
+    transfersQuery = transfersQuery.gte('created_at', startDate.toISOString());
   }
 
-  const { data, error } = await query;
+  const [{ data, error }, { data: transfers, error: transferError }] = await Promise.all([
+    query,
+    transfersQuery,
+  ]);
   if (error) throw new Error(error.message);
+  if (transferError) throw new Error(transferError.message);
 
-  return (data ?? []).reduce(
-    (acc, row) => {
+  const acc = (data ?? []).reduce(
+    (map, row) => {
       const uid = row.user_uuid ? String(row.user_uuid) : '';
-      if (!uid) return acc;
+      if (!uid) return map;
 
       const hours = Number(row.hours_used) || 0;
-      acc[uid] = (acc[uid] ?? 0) + hours;
-      return acc;
+      map[uid] = (map[uid] ?? 0) + hours;
+      return map;
     },
     {} as Record<string, number>
   );
+
+  (transfers ?? []).forEach((row: any) => {
+    const hours = Number(row.hours) || 0;
+    const fromUid = row.from_user_uuid ? String(row.from_user_uuid) : '';
+    const toUid = row.to_user_uuid ? String(row.to_user_uuid) : '';
+    if (fromUid) acc[fromUid] = (acc[fromUid] ?? 0) - hours;
+    if (toUid) acc[toUid] = (acc[toUid] ?? 0) + hours;
+  });
+
+  return acc;
+}
+
+export async function getNetAvailableHours(userId: string): Promise<number> {
+  const hoursMap = await getApprovedRegiHoursByUserSince();
+  return hoursMap[userId] ?? 0;
+}
+
+export async function giveAwayRegiHours(
+  fromUserId: string,
+  toUserId: string,
+  hours: number
+): Promise<string> {
+  const { data, error } = await supabase
+    .from('regi_transfers')
+    .insert({ from_user_uuid: fromUserId, to_user_uuid: toUserId, hours })
+    .select('id')
+    .single();
+
+  if (error) throw new Error(error.message);
+  return String(data.id);
+}
+
+export type RegiTransferWithCounterparty = RegiTransferWithId & {
+  direction: 'given' | 'received';
+  counterpartyName: string;
+};
+
+export async function getTransfersByUser(userId: string): Promise<RegiTransferWithCounterparty[]> {
+  const { data, error } = await supabase
+    .from('regi_transfers')
+    .select('id, from_user_uuid, to_user_uuid, hours, created_at')
+    .or(`from_user_uuid.eq.${userId},to_user_uuid.eq.${userId}`)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  const rows = data ?? [];
+  const uniqueCounterpartyIds = Array.from(
+    new Set(
+      rows.map((r: any) =>
+        String(r.from_user_uuid) === userId ? String(r.to_user_uuid) : String(r.from_user_uuid)
+      )
+    )
+  );
+
+  const nameMap: Record<string, string> = {};
+  await Promise.all(
+    uniqueCounterpartyIds.map(async (uid) => {
+      try {
+        const u = await getUser(uid);
+        nameMap[uid] = u?.name ?? 'Ukjent';
+      } catch {
+        // ignore missing users
+      }
+    })
+  );
+
+  return rows.map((row: any) => {
+    const fromUid = String(row.from_user_uuid);
+    const toUid = String(row.to_user_uuid);
+    const direction: 'given' | 'received' = fromUid === userId ? 'given' : 'received';
+    const counterpartyId = direction === 'given' ? toUid : fromUid;
+
+    return {
+      id: String(row.id),
+      fromUserId: fromUid,
+      toUserId: toUid,
+      hours: Number(row.hours),
+      createdAt: row.created_at,
+      direction,
+      counterpartyName: nameMap[counterpartyId] ?? 'Ukjent',
+    };
+  });
 }
 
 async function setApprovalState(assignmentId: string, approvedState: 1 | 2): Promise<void> {
@@ -299,4 +396,108 @@ export async function approveRegiLog(
 
 export async function rejectRegiLog(assignmentId: string): Promise<void> {
   await setApprovalState(assignmentId, 2);
+}
+
+export async function addRegiPenalty(
+  data: { userId: string; hours: number; reason: string },
+  assignedByUuid: string
+): Promise<string> {
+  const { data: created, error } = await supabase
+    .from('regi_penalties')
+    .insert({
+      user_uuid: data.userId,
+      hours: data.hours,
+      reason: data.reason,
+      assigned_by_uuid: assignedByUuid,
+    })
+    .select('id')
+    .single();
+
+  if (error) throw new Error(error.message);
+  return String(created.id);
+}
+
+export async function getPenaltiesByUser(userId: string): Promise<RegiPenaltyWithId[]> {
+  const { data, error } = await supabase
+    .from('regi_penalties')
+    .select('id, user_uuid, hours, reason, assigned_by_uuid, created_at')
+    .eq('user_uuid', userId)
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).map((row: any) => ({
+    id: String(row.id),
+    userId: String(row.user_uuid),
+    hours: Number(row.hours),
+    reason: row.reason,
+    assignedByUuid: String(row.assigned_by_uuid),
+    createdAt: row.created_at,
+  }));
+}
+
+export type RegiPenaltyWithNames = RegiPenaltyWithId & {
+  userName: string;
+  assignedByName: string;
+};
+
+export async function getAllPenalties(): Promise<RegiPenaltyWithNames[]> {
+  const { data, error } = await supabase
+    .from('regi_penalties')
+    .select('id, user_uuid, hours, reason, assigned_by_uuid, created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  const rows = data ?? [];
+  const uniqueUserIds = Array.from(
+    new Set(
+      rows.flatMap((r: any) =>
+        [r.user_uuid, r.assigned_by_uuid].filter(Boolean).map((id: any) => String(id))
+      )
+    )
+  );
+
+  const userMap: Record<string, string> = {};
+  await Promise.all(
+    uniqueUserIds.map(async (uid) => {
+      try {
+        const u = await getUser(uid);
+        userMap[uid] = u?.name ?? 'Ukjent';
+      } catch {
+        // ignore missing users
+      }
+    })
+  );
+
+  return rows.map((row: any) => ({
+    id: String(row.id),
+    userId: String(row.user_uuid),
+    hours: Number(row.hours),
+    reason: row.reason,
+    assignedByUuid: String(row.assigned_by_uuid),
+    createdAt: row.created_at,
+    userName: userMap[String(row.user_uuid)] ?? 'Ukjent',
+    assignedByName: userMap[String(row.assigned_by_uuid)] ?? 'Ukjent',
+  }));
+}
+
+export async function getTotalPenaltyHoursByUser(): Promise<Record<string, number>> {
+  const { data, error } = await supabase.from('regi_penalties').select('user_uuid, hours');
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).reduce(
+    (acc, row) => {
+      const uid = row.user_uuid ? String(row.user_uuid) : '';
+      if (!uid) return acc;
+      acc[uid] = (acc[uid] ?? 0) + (Number(row.hours) || 0);
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+}
+
+export async function deleteRegiPenalty(id: string): Promise<void> {
+  const { error } = await supabase.from('regi_penalties').delete().eq('id', id);
+  if (error) throw new Error(error.message);
 }

@@ -24,3 +24,22 @@ export type RegiLog = z.infer<typeof RegiLogSchema>;
 
 // Helper for database reads that add the document id
 export type RegiLogWithId = RegiLog & { id: string };
+
+export const RegiPenaltySchema = z.object({
+  userId: z.string(),
+  hours: z.number().positive(),
+  reason: z.string().min(1, 'Årsak er påkrevd'),
+  assignedByUuid: z.string(),
+  createdAt: z.date(),
+});
+export type RegiPenalty = z.infer<typeof RegiPenaltySchema>;
+export type RegiPenaltyWithId = RegiPenalty & { id: string };
+
+export const RegiTransferSchema = z.object({
+  fromUserId: z.string(),
+  toUserId: z.string(),
+  hours: z.number().positive(),
+  createdAt: z.date(),
+});
+export type RegiTransfer = z.infer<typeof RegiTransferSchema>;
+export type RegiTransferWithId = RegiTransfer & { id: string };

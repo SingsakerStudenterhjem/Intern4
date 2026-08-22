@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import WorkLogForm from '../../components/regi/MyRegi/WorkLogForm';
 import WorkLogList from '../../components/regi/MyRegi/WorkLogList';
+import GiveAwayRegiForm from '../../components/regi/MyRegi/GiveAwayRegiForm';
+import RegiTransferHistory from '../../components/regi/MyRegi/RegiTransferHistory';
 import { useAuth } from '../../hooks/useAuth';
 import { ROUTES } from '../../constants/routes';
 
@@ -36,20 +38,33 @@ const WorkPage = () => {
         </header>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <section
-            id="regi-form"
-            className="lg:col-span-1 bg-white border border-gray-200 rounded-sm shadow-sm p-5"
-          >
-            <WorkLogForm onCreated={() => setRefreshKey((k) => k + 1)} />
-          </section>
+          <div className="space-y-6">
+            <section
+              id="regi-form"
+              className="bg-white border border-gray-200 rounded-sm shadow-sm p-5"
+            >
+              <WorkLogForm onCreated={() => setRefreshKey((k) => k + 1)} />
+            </section>
 
-          <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-5">
-            <h2 className="text-lg font-semibold text-gray-900 mb-2">Mine registreringer</h2>
-            <p className="text-sm text-gray-600 mb-3">
-              Nyeste først. Godkjenning skjer av regisjef.
-            </p>
-            <WorkLogList userId={user.id} refreshKey={refreshKey} />
-          </section>
+            <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-5">
+              <GiveAwayRegiForm
+                userId={user.id}
+                onTransferred={() => setRefreshKey((k) => k + 1)}
+              />
+            </section>
+          </div>
+
+          <div className="space-y-6">
+            <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-5">
+              <h2 className="text-lg font-semibold text-gray-900 mb-2">Mine registreringer</h2>
+              <p className="text-sm text-gray-600 mb-3">
+                Nyeste først. Godkjenning skjer av regisjef.
+              </p>
+              <WorkLogList userId={user.id} refreshKey={refreshKey} />
+            </section>
+
+            <RegiTransferHistory userId={user.id} refreshKey={refreshKey} />
+          </div>
         </div>
       </div>
     </div>

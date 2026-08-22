@@ -1,9 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import WorkApprovalList from '../../components/regi/WorkManager/WorkApprovalList.tsx';
+import WorkApprovalList from '../../components/regi/WorkManager/WorkApprovalList';
 import Registatus from '../../components/regi/WorkManager/Registatus';
 import GrantRegiForm from '../../components/regi/WorkManager/GrantRegiForm';
+import GrantPenaltyForm from '../../components/regi/WorkManager/GrantPenaltyForm';
 import { ROUTES } from '../../constants/routes';
 
 const WorkManagerPage: React.FC = () => {
@@ -36,6 +37,10 @@ const WorkManagerPage: React.FC = () => {
           <div className="space-y-6">
             <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-5">
               <GrantRegiForm />
+            </section>
+
+            <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-5">
+              <GrantPenaltyForm />
             </section>
 
             <section className="bg-white border border-gray-200 rounded-sm shadow-sm p-5">

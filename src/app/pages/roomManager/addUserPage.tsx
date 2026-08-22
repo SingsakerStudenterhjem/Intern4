@@ -1,14 +1,21 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Trash2 } from 'lucide-react';
-import { NewUserInput } from '../../../shared/types/user';
+import { Search, Trash2, Pencil } from 'lucide-react';
+import { NewUserInput, User } from '../../../shared/types/user';
 import {
   createUser,
   deleteUser,
   getRoles,
+  getUser,
+  updateUser,
   getAllUsersWithRole,
   Role,
   BasicUserWithRole,
 } from '../../../server/dao/userDAO';
+
+type EditUserData = Pick<
+  User,
+  'role' | 'roomNumber' | 'onLeave' | 'isActive' | 'phone' | 'study' | 'studyPlace' | 'seniority'
+>;
 
 const AddUserPage: React.FC = () => {
   const [userData, setUserData] = useState<NewUserInput>({
@@ -29,6 +36,7 @@ const AddUserPage: React.FC = () => {
     role: 'Halv/Halv',
     onLeave: false,
     isActive: true,
+    regiPreapproved: false,
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +56,28 @@ const AddUserPage: React.FC = () => {
   const [deleteConfirm, setDeleteConfirm] = useState<BasicUserWithRole | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
+  // Edit user state
+  const [editingUser, setEditingUser] = useState<BasicUserWithRole | null>(null);
+  const [editData, setEditData] = useState<EditUserData | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [isSubmittingEdit, setIsSubmittingEdit] = useState(false);
+  const [editMessage, setEditMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+
+  const loadUsers = async () => {
+    try {
+      setUsersLoading(true);
+      const data = await getAllUsersWithRole();
+      setUsers(data);
+    } catch (err) {
+      console.error('Failed to load users:', err);
+    } finally {
+      setUsersLoading(false);
+    }
+  };
+
   const handleDeleteUser = async (user: BasicUserWithRole) => {
     setIsDeleting(true);
     try {
@@ -63,6 +93,69 @@ const AddUserPage: React.FC = () => {
     }
   };
 
+  const handleEditClick = async (user: BasicUserWithRole) => {
+    setEditingUser(user);
+    setEditData(null);
+    setEditMessage(null);
+    setEditLoading(true);
+    try {
+      const fullUser = await getUser(user.id);
+      if (fullUser) {
+        setEditData({
+          role: fullUser.role,
+          roomNumber: fullUser.roomNumber,
+          onLeave: fullUser.onLeave,
+          isActive: fullUser.isActive,
+          phone: fullUser.phone,
+          study: fullUser.study,
+          studyPlace: fullUser.studyPlace,
+          seniority: fullUser.seniority,
+        });
+      }
+    } catch (err) {
+      console.error('Failed to load user for edit:', err);
+      setEditMessage({ type: 'error', text: 'Kunne ikke laste brukerdata' });
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  const handleEditInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+    setEditData((prev) => {
+      if (!prev) return prev;
+      let processedValue: any = value;
+      if (type === 'checkbox') {
+        processedValue = (e.target as HTMLInputElement).checked;
+      } else if (type === 'number') {
+        processedValue = value === '' ? 0 : parseInt(value);
+      }
+      return { ...prev, [name]: processedValue };
+    });
+  };
+
+  const handleEditSubmit = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!editingUser || !editData) return;
+
+    setIsSubmittingEdit(true);
+    setEditMessage(null);
+    try {
+      await updateUser(editingUser.id, editData);
+      setMessage({ type: 'success', text: `${editingUser.name} ble oppdatert` });
+      setEditingUser(null);
+      setEditData(null);
+      await loadUsers();
+      setTimeout(() => setMessage(null), 4000);
+    } catch (err: any) {
+      setEditMessage({ type: 'error', text: err?.message ?? 'Kunne ikke oppdatere bruker' });
+    } finally {
+      setIsSubmittingEdit(false);
+    }
+  };
+
   useEffect(() => {
     getRoles()
       .then((data) => setRoles(data))
@@ -70,18 +163,6 @@ const AddUserPage: React.FC = () => {
       .finally(() => setRolesLoading(false));
     loadUsers();
   }, []);
-
-  const loadUsers = async () => {
-    try {
-      setUsersLoading(true);
-      const data = await getAllUsersWithRole();
-      setUsers(data);
-    } catch (err) {
-      console.error('Failed to load users:', err);
-    } finally {
-      setUsersLoading(false);
-    }
-  };
 
   const availableRoles = Array.from(new Set(users.map((u) => u.role).filter(Boolean))).sort();
 
@@ -227,6 +308,7 @@ const AddUserPage: React.FC = () => {
         role: 'Halv/Halv',
         onLeave: false,
         isActive: true,
+        regiPreapproved: false,
       });
       setBirthDateString('');
       setValidationErrors({});
@@ -381,10 +463,7 @@ const AddUserPage: React.FC = () => {
               <div className="bg-gray-50 p-4 rounded-sm border border-gray-200 mb-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
+                    <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
                       Telefon
                     </label>
                     <input
@@ -478,10 +557,7 @@ const AddUserPage: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label
-                      htmlFor="study"
-                      className="block text-sm font-medium text-gray-700 mb-1"
-                    >
+                    <label htmlFor="study" className="block text-sm font-medium text-gray-700 mb-1">
                       Studieprogram
                     </label>
                     <input
@@ -621,8 +697,7 @@ const AddUserPage: React.FC = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    </th>
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -662,15 +737,24 @@ const AddUserPage: React.FC = () => {
                           )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                          {user.role !== 'Admin' ? (
+                          <div className="flex items-center justify-end gap-3">
                             <button
-                              onClick={() => setDeleteConfirm(user)}
-                              className="text-gray-400 hover:text-red-600 transition-colors"
-                              title="Slett bruker"
+                              onClick={() => handleEditClick(user)}
+                              className="text-gray-400 hover:text-navy-600 transition-colors"
+                              title="Rediger bruker"
                             >
-                              <Trash2 className="w-4 h-4" />
+                              <Pencil className="w-4 h-4" />
                             </button>
-                          ) : null}
+                            {user.role !== 'Admin' ? (
+                              <button
+                                onClick={() => setDeleteConfirm(user)}
+                                className="text-gray-400 hover:text-red-600 transition-colors"
+                                title="Slett bruker"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            ) : null}
+                          </div>
                         </td>
                       </tr>
                     ))
@@ -686,13 +770,218 @@ const AddUserPage: React.FC = () => {
         </div>
       </div>
 
+      {/* Edit User Modal */}
+      {editingUser && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-sm shadow-sm p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">Rediger {editingUser.name}</h3>
+
+            {editMessage && (
+              <div
+                className={`mb-4 p-3 rounded-sm text-sm ${
+                  editMessage.type === 'success'
+                    ? 'bg-green-50 text-green-700 border border-green-200'
+                    : 'bg-red-50 text-red-800 border border-red-200'
+                }`}
+              >
+                {editMessage.text}
+              </div>
+            )}
+
+            {editLoading || !editData ? (
+              <div className="flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-navy-600"></div>
+              </div>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label
+                      htmlFor="edit-role"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Rolle
+                    </label>
+                    <select
+                      id="edit-role"
+                      name="role"
+                      value={editData.role}
+                      onChange={handleEditInputChange}
+                      disabled={rolesLoading}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+                    >
+                      {rolesLoading ? (
+                        <option>Laster roller...</option>
+                      ) : (
+                        roles.map((r) => (
+                          <option key={r.id} value={r.name}>
+                            {r.name}
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="edit-roomNumber"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Romnummer
+                    </label>
+                    <input
+                      type="number"
+                      id="edit-roomNumber"
+                      name="roomNumber"
+                      min="0"
+                      value={editData.roomNumber}
+                      onChange={handleEditInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label
+                      htmlFor="edit-phone"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Telefon
+                    </label>
+                    <input
+                      type="tel"
+                      id="edit-phone"
+                      name="phone"
+                      value={editData.phone}
+                      onChange={handleEditInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="edit-seniority"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Ansiennitet (år)
+                    </label>
+                    <input
+                      type="number"
+                      id="edit-seniority"
+                      name="seniority"
+                      min="0"
+                      value={editData.seniority}
+                      onChange={handleEditInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label
+                      htmlFor="edit-study"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Studieprogram
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-study"
+                      name="study"
+                      value={editData.study}
+                      onChange={handleEditInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="edit-studyPlace"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
+                      Studiested
+                    </label>
+                    <input
+                      type="text"
+                      id="edit-studyPlace"
+                      name="studyPlace"
+                      value={editData.studyPlace}
+                      onChange={handleEditInputChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6 mb-6">
+                  <div className="flex items-center">
+                    <input
+                      id="edit-onLeave"
+                      name="onLeave"
+                      type="checkbox"
+                      checked={editData.onLeave}
+                      onChange={handleEditInputChange}
+                      className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor="edit-onLeave"
+                      className="ml-2 text-sm font-medium text-gray-700"
+                    >
+                      På permisjon
+                    </label>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      id="edit-isActive"
+                      name="isActive"
+                      type="checkbox"
+                      checked={editData.isActive}
+                      onChange={handleEditInputChange}
+                      className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
+                    />
+                    <label
+                      htmlFor="edit-isActive"
+                      className="ml-2 text-sm font-medium text-gray-700"
+                    >
+                      Aktiv bruker
+                    </label>
+                  </div>
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                  <button
+                    onClick={() => {
+                      setEditingUser(null);
+                      setEditData(null);
+                    }}
+                    disabled={isSubmittingEdit}
+                    className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-sm hover:bg-gray-50"
+                  >
+                    Avbryt
+                  </button>
+                  <button
+                    onClick={handleEditSubmit}
+                    disabled={isSubmittingEdit}
+                    className="px-4 py-2 text-sm font-medium text-white bg-navy-600 rounded-sm hover:bg-navy-700 disabled:opacity-50"
+                  >
+                    {isSubmittingEdit ? 'Lagrer...' : 'Lagre'}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-sm shadow-sm p-6 max-w-sm mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-2">Slett bruker</h3>
             <p className="text-sm text-gray-600 mb-4">
-              Er du sikker pa at du vil slette <strong>{deleteConfirm.name}</strong>? Denne handlingen kan ikke angres.
+              Er du sikker pa at du vil slette <strong>{deleteConfirm.name}</strong>? Denne
+              handlingen kan ikke angres.
             </p>
             <div className="flex justify-end space-x-3">
               <button

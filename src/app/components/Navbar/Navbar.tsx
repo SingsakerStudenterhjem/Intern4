@@ -28,8 +28,7 @@ const Navbar = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const toggleSection = (key: string) =>
-    setOpenSections((s) => ({ ...s, [key]: !s[key] }));
+  const toggleSection = (key: string) => setOpenSections((s) => ({ ...s, [key]: !s[key] }));
 
   const handleLogout = async () => {
     await logOut();
@@ -55,21 +54,16 @@ const Navbar = () => {
       children: [
         { label: 'Min regi', to: ROUTES.MY_REGI },
         { label: 'Oppgaver', to: ROUTES.TASKS },
-        {
-          label: 'Regisjef',
-          to: ROUTES.REGISJEF,
-          roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
-        },
-        {
-          label: 'Godkjenninger',
-          to: ROUTES.REGIGODKJENNING,
-          roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
-        },
-        {
-          label: 'Regilogger',
-          to: ROUTES.REGILOGS,
-          roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
-        },
+      ],
+    },
+    {
+      key: 'regisjef',
+      label: 'Regisjef',
+      roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
+      children: [
+        { label: 'Oversikt', to: ROUTES.REGISJEF },
+        { label: 'Godkjenninger', to: ROUTES.REGIGODKJENNING },
+        { label: 'Regilogger', to: ROUTES.REGILOGS },
       ],
     },
     {
@@ -80,6 +74,11 @@ const Navbar = () => {
         {
           label: 'Administrer brukere',
           to: ROUTES.LEGG_TIL_BEBOER,
+          roles: [USER_ROLES.ADMIN, USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
+        },
+        {
+          label: 'Importer brukere',
+          to: ROUTES.IMPORTER_BRUKERE,
           roles: [USER_ROLES.ADMIN, USER_ROLES.ROOMMANAGER, USER_ROLES.DATA],
         },
       ],
@@ -215,7 +214,11 @@ const Navbar = () => {
                     )}
                   </>
                 ) : (
-                  <Link to={item.to ?? '/'} onClick={() => setMobileOpen(false)} className="block py-2">
+                  <Link
+                    to={item.to ?? '/'}
+                    onClick={() => setMobileOpen(false)}
+                    className="block py-2"
+                  >
                     {item.label}
                   </Link>
                 )}

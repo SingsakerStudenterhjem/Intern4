@@ -3,8 +3,11 @@ import { RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { canApproveWork } from '../../../constants/userRoles';
 import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
-import { getApprovedRegiHoursByUserSince } from '../../../../server/dao/regiDAO';
-import { getActiveUsersWithRole } from '../../../../server/dao/userDAO';
+import {
+  getApprovedRegiHoursByUserSince,
+  getTotalPenaltyHoursByUser,
+} from '../../../../server/dao/regiDAO';
+import { getActiveUsersWithRole, setRegiPreapproved } from '../../../../server/dao/userDAO';
 
 type RegistatusRow = {
   id: string;
@@ -12,9 +15,11 @@ type RegistatusRow = {
   email: string;
   role?: string;
   requiredHours: number;
+  penaltyHours: number;
   approvedHours: number;
   remainingHours: number;
   onLeave: boolean;
+  regiPreapproved: boolean;
 };
 
 const getSemesterStart = (): Date => {
@@ -38,15 +43,17 @@ const Registatus: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const [activeUsers, hoursMap] = await Promise.all([
+      const [activeUsers, hoursMap, penaltyMap] = await Promise.all([
         getActiveUsersWithRole(),
         getApprovedRegiHoursByUserSince(semesterStart),
+        getTotalPenaltyHoursByUser(),
       ]);
 
       const nextRows = activeUsers.map((u) => {
-        const requiredHours = getRequiredRegiHoursForRole(u.role);
+        const penaltyHours = penaltyMap[u.id] ?? 0;
+        const requiredHours = getRequiredRegiHoursForRole(u.role) + penaltyHours;
         const approvedHours = hoursMap[u.id] ?? 0;
-        const remainingHours = Math.max(requiredHours - approvedHours, 0);
+        const remainingHours = u.regiPreapproved ? 0 : Math.max(requiredHours - approvedHours, 0);
 
         return {
           id: u.id,
@@ -54,9 +61,11 @@ const Registatus: React.FC = () => {
           email: u.email,
           role: u.role ?? 'Halv/Halv',
           requiredHours,
+          penaltyHours,
           approvedHours,
           remainingHours,
           onLeave: u.onLeave,
+          regiPreapproved: u.regiPreapproved,
         };
       });
 
@@ -81,6 +90,28 @@ const Registatus: React.FC = () => {
     if (!canApproveWork(user.role)) return;
     load();
   }, [authLoading, user?.id, user?.role]);
+
+  const handleTogglePreapproved = async (row: RegistatusRow) => {
+    const nextValue = !row.regiPreapproved;
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              regiPreapproved: nextValue,
+              remainingHours: nextValue ? 0 : Math.max(r.requiredHours - r.approvedHours, 0),
+            }
+          : r
+      )
+    );
+    try {
+      await setRegiPreapproved(row.id, nextValue);
+    } catch (e) {
+      console.error(e);
+      setError('Kunne ikke oppdatere forhåndsgodkjenning.');
+      load();
+    }
+  };
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -159,12 +190,15 @@ const Registatus: React.FC = () => {
               <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                 Status
               </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Forhåndsgodkjent
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
             {loading && (
               <tr>
-                <td className="p-3 text-gray-600" colSpan={6}>
+                <td className="p-3 text-gray-600" colSpan={7}>
                   Laster...
                 </td>
               </tr>
@@ -179,12 +213,26 @@ const Registatus: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">{row.role ?? 'Uten rolle'}</td>
                   <td className="px-4 py-3">{row.approvedHours.toFixed(2)} t</td>
-                  <td className="px-4 py-3">{row.requiredHours.toFixed(0)} t</td>
+                  <td className="px-4 py-3">
+                    {row.requiredHours.toFixed(0)} t
+                    {row.penaltyHours > 0 && (
+                      <span
+                        className="ml-1 text-xs font-semibold text-red-600"
+                        title={`Inkluderer ${row.penaltyHours.toFixed(2)} t strafferegi`}
+                      >
+                        (+{row.penaltyHours.toFixed(0)} straff)
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{row.remainingHours.toFixed(2)} t</td>
                   <td className="px-4 py-3">
                     {row.onLeave ? (
                       <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
                         Permisjon
+                      </span>
+                    ) : row.regiPreapproved ? (
+                      <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-navy-100 text-navy-800">
+                        Forhåndsgodkjent
                       </span>
                     ) : row.remainingHours > 0 ? (
                       <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
@@ -196,12 +244,21 @@ const Registatus: React.FC = () => {
                       </span>
                     )}
                   </td>
+                  <td className="px-4 py-3">
+                    <input
+                      type="checkbox"
+                      checked={row.regiPreapproved}
+                      onChange={() => handleTogglePreapproved(row)}
+                      className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
+                      title="Sett full regi som forhåndsgodkjent"
+                    />
+                  </td>
                 </tr>
               ))}
 
             {!loading && filtered.length === 0 && (
               <tr>
-                <td className="p-3 text-gray-600" colSpan={6}>
+                <td className="p-3 text-gray-600" colSpan={7}>
                   Ingen aktive beboere funnet.
                 </td>
               </tr>

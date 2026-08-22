@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Ban, Check, RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import {
@@ -7,13 +8,13 @@ import {
   PendingRegiApproval,
   rejectRegiLog,
 } from '../../../../server/dao/regiDAO';
-import WorkApprovalModal from './WorkApprovalModal';
-import { canApproveWork } from '../../../constants/userRoles.ts';
+import { canApproveWork } from '../../../constants/userRoles';
+import { ROUTES } from '../../../constants/routes';
 
 const WorkApprovalList: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const [approvals, setApprovals] = useState<PendingRegiApproval[]>([]);
-  const [selected, setSelected] = useState<PendingRegiApproval | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -62,7 +63,6 @@ const WorkApprovalList: React.FC = () => {
       await approveRegiLog(assignmentId, user.id, approvalComment);
 
       setApprovals((prev) => prev.filter((a) => a.id !== assignmentId));
-      if (selected?.id === assignmentId) setSelected(null);
     } catch (e) {
       console.error(e);
       setError('Kunne ikke godkjenne.');
@@ -76,7 +76,6 @@ const WorkApprovalList: React.FC = () => {
       setActionLoadingId(assignmentId);
       await rejectRegiLog(assignmentId);
       setApprovals((prev) => prev.filter((a) => a.id !== assignmentId));
-      if (selected?.id === assignmentId) setSelected(null);
     } catch (e) {
       console.error(e);
       setError('Kunne ikke avvise.');
@@ -178,7 +177,7 @@ const WorkApprovalList: React.FC = () => {
                   <tr
                     key={a.id}
                     className="hover:bg-gray-50 cursor-pointer transition-colors"
-                    onClick={() => setSelected(a)}
+                    onClick={() => navigate(ROUTES.REGIGODKJENNING_REVIEW.replace(':id', a.id))}
                   >
                     <td className="px-4 py-3">{a.userName}</td>
                     <td className="px-4 py-3">
@@ -229,16 +228,6 @@ const WorkApprovalList: React.FC = () => {
           </tbody>
         </table>
       </div>
-
-      {selected && (
-        <WorkApprovalModal
-          approval={selected}
-          onClose={() => setSelected(null)}
-          onApprove={handleApprove}
-          onReject={handleReject}
-          isProcessing={actionLoadingId === selected.id}
-        />
-      )}
     </div>
   );
 };

@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate } from 'react-router-dom';
 import LoginPage from '../app/pages/loginPage';
 import AddUserPage from '../app/pages/roomManager/addUserPage';
+import ImportUsersPage from '../app/pages/roomManager/importUsersPage';
 import WorkTasksPage from '../app/pages/work/workTasksPage';
 import WorkPage from '../app/pages/work/workPage';
 import WorkManagerPage from '../app/pages/workManager/workManagerPage';
@@ -11,6 +12,7 @@ import { ROUTES } from '../app/constants/routes';
 import { USER_ROLES } from '../app/constants/userRoles';
 import AboutMePage from '../app/pages/tmpAboutMe';
 import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
+import WorkApprovalReviewPage from '../app/pages/workManager/workApprovalReviewPage';
 import RegiLogsPage from '../app/pages/workManager/regiLogsPage';
 import ForgotPasswordPage from '../app/pages/forgotPasswordPage';
 import ResetPasswordPage from '../app/pages/resetPasswordPage';
@@ -49,9 +51,7 @@ export const protectedRoutes = [
   {
     path: ROUTES.REGISJEF,
     element: (
-      <ProtectedRoute
-        allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
-      >
+      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
         <WorkManagerPage />
       </ProtectedRoute>
     ),
@@ -59,19 +59,23 @@ export const protectedRoutes = [
   {
     path: ROUTES.REGIGODKJENNING,
     element: (
-      <ProtectedRoute
-        allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
-      >
+      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
         <WorkApprovalsPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: ROUTES.REGIGODKJENNING_REVIEW,
+    element: (
+      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
+        <WorkApprovalReviewPage />
       </ProtectedRoute>
     ),
   },
   {
     path: ROUTES.REGILOGS,
     element: (
-      <ProtectedRoute
-        allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}
-      >
+      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
         <RegiLogsPage />
       </ProtectedRoute>
     ),
@@ -81,6 +85,14 @@ export const protectedRoutes = [
     element: (
       <ProtectedRoute>
         <AddUserPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: ROUTES.IMPORTER_BRUKERE,
+    element: (
+      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.ROOMMANAGER]}>
+        <ImportUsersPage />
       </ProtectedRoute>
     ),
   },

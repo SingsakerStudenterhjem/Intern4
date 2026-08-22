@@ -156,10 +156,10 @@ Deno.serve(async (req) => {
     return new Response(profileErr.message, { status: 400, headers: corsHeaders });
   }
 
-  return new Response(
-    JSON.stringify({ user: created.user, initialPassword: password }),
-    { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-  );
+  return new Response(JSON.stringify({ user: created.user, initialPassword: password }), {
+    status: 200,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 });
 
 /* To invoke locally:

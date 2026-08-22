@@ -35,7 +35,7 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     type: '',
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [categories, setCategories] = useState<{ id: number; name: string }[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
   const [users, setUsers] = useState<BasicUserWithRole[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);

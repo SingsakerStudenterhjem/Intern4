@@ -56,7 +56,10 @@ export async function updateCategory(categoryId: string, data: Partial<Category>
   };
   Object.keys(payload).forEach((k) => payload[k] === undefined && delete payload[k]);
 
-  const { error } = await supabase.from('work_categories').update(payload).eq('id', Number(categoryId));
+  const { error } = await supabase
+    .from('work_categories')
+    .update(payload)
+    .eq('id', Number(categoryId));
   if (error) throw new Error(`Could not update category: ${error.message}`);
 }
 

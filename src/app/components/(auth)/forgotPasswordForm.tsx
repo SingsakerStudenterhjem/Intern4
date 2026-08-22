@@ -38,7 +38,7 @@ const ForgotPasswordForm = () => {
       setSent(true);
       setCountdown(COOLDOWN_SECONDS);
     },
-    [email],
+    [email]
   );
 
   const handleResend = async () => {

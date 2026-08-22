@@ -19,6 +19,7 @@ const UserSchema = z.object({
   role: z.string(),
   onLeave: z.boolean(),
   isActive: z.boolean(),
+  regiPreapproved: z.boolean().default(false),
   createdAt: z.date(),
 });
 
