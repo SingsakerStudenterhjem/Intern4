@@ -2,12 +2,18 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import { canApproveWork } from '../../../constants/userRoles';
-import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
+import { getRequiredRegiHours } from '../../../constants/regiRequirements';
 import {
   getApprovedRegiHoursByUserSince,
   getTotalPenaltyHoursByUser,
 } from '../../../../server/dao/regiDAO';
-import { getActiveUsersWithRole, setRegiPreapproved } from '../../../../server/dao/userDAO';
+import {
+  getActiveUsersWithRole,
+  setRegiPreapproved,
+  setUserRegiCategory,
+} from '../../../../server/dao/userDAO';
+import { getRegiCategories } from '../../../../server/dao/regiCategoriesDAO';
+import { RegiCategoryWithId } from '../../../../shared/types/regiCategory';
 
 type RegistatusRow = {
   id: string;
@@ -20,6 +26,7 @@ type RegistatusRow = {
   remainingHours: number;
   onLeave: boolean;
   regiPreapproved: boolean;
+  regiCategoryId?: string;
 };
 
 const getSemesterStart = (): Date => {
@@ -34,6 +41,7 @@ const semesterLabel = semesterStart.toLocaleDateString('no-NO');
 const Registatus: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const [rows, setRows] = useState<RegistatusRow[]>([]);
+  const [categories, setCategories] = useState<RegiCategoryWithId[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
@@ -43,15 +51,18 @@ const Registatus: React.FC = () => {
       setLoading(true);
       setError(null);
 
-      const [activeUsers, hoursMap, penaltyMap] = await Promise.all([
+      const [activeUsers, hoursMap, penaltyMap, regiCategories] = await Promise.all([
         getActiveUsersWithRole(),
         getApprovedRegiHoursByUserSince(semesterStart),
         getTotalPenaltyHoursByUser(),
+        getRegiCategories(),
       ]);
+
+      setCategories(regiCategories);
 
       const nextRows = activeUsers.map((u) => {
         const penaltyHours = penaltyMap[u.id] ?? 0;
-        const requiredHours = getRequiredRegiHoursForRole(u.role) + penaltyHours;
+        const requiredHours = getRequiredRegiHours(u) + penaltyHours;
         const approvedHours = hoursMap[u.id] ?? 0;
         const remainingHours = u.regiPreapproved ? 0 : Math.max(requiredHours - approvedHours, 0);
 
@@ -66,6 +77,7 @@ const Registatus: React.FC = () => {
           remainingHours,
           onLeave: u.onLeave,
           regiPreapproved: u.regiPreapproved,
+          regiCategoryId: u.regiCategoryId,
         };
       });
 
@@ -109,6 +121,35 @@ const Registatus: React.FC = () => {
     } catch (e) {
       console.error(e);
       setError('Kunne ikke oppdatere forhåndsgodkjenning.');
+      load();
+    }
+  };
+
+  const handleCategoryChange = async (row: RegistatusRow, categoryId: string): Promise<void> => {
+    const category = categories.find((c) => c.id === categoryId);
+    const requiredBase = category
+      ? category.requiredHours
+      : getRequiredRegiHours({ role: row.role });
+    const requiredHours = requiredBase + row.penaltyHours;
+
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              regiCategoryId: categoryId || undefined,
+              requiredHours,
+              remainingHours: r.regiPreapproved ? 0 : Math.max(requiredHours - r.approvedHours, 0),
+            }
+          : r
+      )
+    );
+
+    try {
+      await setUserRegiCategory(row.id, categoryId || null);
+    } catch (e) {
+      console.error(e);
+      setError('Kunne ikke oppdatere kategori.');
       load();
     }
   };
@@ -179,6 +220,9 @@ const Registatus: React.FC = () => {
                 Rolle
               </th>
               <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                Kategori
+              </th>
+              <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                 Godkjent
               </th>
               <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
@@ -198,7 +242,7 @@ const Registatus: React.FC = () => {
           <tbody className="divide-y divide-gray-200">
             {loading && (
               <tr>
-                <td className="p-3 text-gray-600" colSpan={7}>
+                <td className="p-3 text-gray-600" colSpan={8}>
                   Laster...
                 </td>
               </tr>
@@ -212,6 +256,20 @@ const Registatus: React.FC = () => {
                     <div className="text-xs text-gray-500">{row.email}</div>
                   </td>
                   <td className="px-4 py-3">{row.role ?? 'Uten rolle'}</td>
+                  <td className="px-4 py-3">
+                    <select
+                      value={row.regiCategoryId ?? ''}
+                      onChange={(e) => handleCategoryChange(row, e.target.value)}
+                      className="rounded-sm border border-gray-300 px-2 py-1 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-navy-500"
+                    >
+                      <option value="">Basert på rolle</option>
+                      {categories.map((c) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} ({c.requiredHours} t)
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="px-4 py-3">{row.approvedHours.toFixed(2)} t</td>
                   <td className="px-4 py-3">
                     {row.requiredHours.toFixed(0)} t
@@ -258,7 +316,7 @@ const Registatus: React.FC = () => {
 
             {!loading && filtered.length === 0 && (
               <tr>
-                <td className="p-3 text-gray-600" colSpan={7}>
+                <td className="p-3 text-gray-600" colSpan={8}>
                   Ingen aktive beboere funnet.
                 </td>
               </tr>

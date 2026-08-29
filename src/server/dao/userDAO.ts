@@ -22,6 +22,11 @@ function toAppUser(row: any): User {
     onLeave: row.on_leave ?? false,
     isActive: row.is_active ?? true,
     regiPreapproved: row.regi_preapproved ?? false,
+    regiCategoryId: row.regi_category_id != null ? String(row.regi_category_id) : null,
+    regiCategoryHours:
+      row.regi_categories?.required_hours != null
+        ? Number(row.regi_categories.required_hours)
+        : undefined,
     createdAt: row.created_at,
     role: row.roles?.name ?? 'Halv/Halv',
   };
@@ -30,7 +35,7 @@ function toAppUser(row: any): User {
 export async function getUser(uid: string): Promise<User | undefined> {
   const { data, error } = await supabase
     .from('users')
-    .select('*, roles(name)')
+    .select('*, roles(name), regi_categories(required_hours)')
     .eq('id', uid)
     .maybeSingle();
   if (error) throw new Error(error.message);
@@ -79,6 +84,17 @@ export async function setRegiPreapproved(userId: string, value: boolean): Promis
     .update({ regi_preapproved: value })
     .eq('id', userId);
   if (error) throw new Error('Kunne ikke oppdatere forhåndsgodkjenning');
+}
+
+export async function setUserRegiCategory(
+  userId: string,
+  categoryId: string | null
+): Promise<void> {
+  const { error } = await supabase
+    .from('users')
+    .update({ regi_category_id: categoryId ? Number(categoryId) : null })
+    .eq('id', userId);
+  if (error) throw new Error('Kunne ikke oppdatere kategori for bruker');
 }
 
 export async function createUser(
@@ -165,45 +181,51 @@ export type BasicUserWithRole = {
   onLeave: boolean;
   isActive: boolean;
   regiPreapproved: boolean;
+  regiCategoryId?: string;
+  regiCategoryHours?: number;
 };
+
+const BASIC_USER_WITH_ROLE_SELECT =
+  'id, name, email, is_active, on_leave, regi_preapproved, regi_category_id, regi_categories(required_hours), roles(name)';
+
+function toBasicUserWithRole(row: any): BasicUserWithRole {
+  return {
+    id: row.id,
+    name: row.name ?? 'Ukjent',
+    email: row.email ?? '',
+    role: row.roles?.name ?? undefined,
+    onLeave: row.on_leave ?? false,
+    isActive: row.is_active ?? false,
+    regiPreapproved: row.regi_preapproved ?? false,
+    regiCategoryId: row.regi_category_id != null ? String(row.regi_category_id) : undefined,
+    regiCategoryHours:
+      row.regi_categories?.required_hours != null
+        ? Number(row.regi_categories.required_hours)
+        : undefined,
+  };
+}
 
 export async function getActiveUsersWithRole(): Promise<BasicUserWithRole[]> {
   const { data, error } = await supabase
     .from('users')
-    .select('id, name, email, is_active, on_leave, regi_preapproved, roles(name)')
+    .select(BASIC_USER_WITH_ROLE_SELECT)
     .eq('is_active', true)
     .order('name', { ascending: true });
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    name: row.name ?? 'Ukjent',
-    email: row.email ?? '',
-    role: row.roles?.name ?? undefined,
-    onLeave: row.on_leave ?? false,
-    isActive: row.is_active ?? false,
-    regiPreapproved: row.regi_preapproved ?? false,
-  }));
+  return (data ?? []).map(toBasicUserWithRole);
 }
 
 export async function getAllUsersWithRole(): Promise<BasicUserWithRole[]> {
   const { data, error } = await supabase
     .from('users')
-    .select('id, name, email, is_active, on_leave, regi_preapproved, roles(name)')
+    .select(BASIC_USER_WITH_ROLE_SELECT)
     .order('name', { ascending: true });
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((row: any) => ({
-    id: row.id,
-    name: row.name ?? 'Ukjent',
-    email: row.email ?? '',
-    role: row.roles?.name ?? undefined,
-    onLeave: row.on_leave ?? false,
-    isActive: row.is_active ?? false,
-    regiPreapproved: row.regi_preapproved ?? false,
-  }));
+  return (data ?? []).map(toBasicUserWithRole);
 }
 
 export type Role = {

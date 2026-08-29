@@ -12,10 +12,13 @@ const RegiTransferHistory: React.FC<{ userId: string; refreshKey?: number }> = (
     let mounted = true;
     (async () => {
       setLoading(true);
-      const data = await getTransfersByUser(userId);
-      if (mounted) {
-        setTransfers(data);
-        setLoading(false);
+      try {
+        const data = await getTransfersByUser(userId);
+        if (mounted) setTransfers(data);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
     return () => {
@@ -46,6 +49,23 @@ const RegiTransferHistory: React.FC<{ userId: string; refreshKey?: number }> = (
                     <span>
                       Mottok <span className="font-semibold">{t.hours.toFixed(2)}</span> t fra{' '}
                       {t.counterpartyName}
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  {t.status === 'pending' && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">
+                      venter godkjenning
+                    </span>
+                  )}
+                  {t.status === 'approved' && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">
+                      godkjent
+                    </span>
+                  )}
+                  {t.status === 'rejected' && (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">
+                      avvist
                     </span>
                   )}
                 </td>

@@ -393,6 +393,7 @@ const WorkTasksPage: React.FC = () => {
               onJoinTask={handleJoinTask}
               currentUserId={user?.id}
               userRole={user?.role}
+              participantNames={participantNames}
             />
 
             {/* Pagination */}

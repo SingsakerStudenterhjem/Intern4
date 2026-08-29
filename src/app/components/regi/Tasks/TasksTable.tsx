@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, Clock, Calendar, User } from 'lucide-react';
-import { Task } from '../../../../shared/types/regi/tasks/task.types';
+import { Task } from '../../../../shared/types/regi/tasks';
 
 interface TasksTableProps {
   tasks: Task[];
@@ -8,6 +8,7 @@ interface TasksTableProps {
   onJoinTask?: (taskId: string) => void;
   currentUserId?: string;
   userRole?: string;
+  participantNames?: { [userId: string]: string };
 }
 
 const TasksTable: React.FC<TasksTableProps> = ({
@@ -16,6 +17,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
   onJoinTask,
   currentUserId,
   userRole,
+  participantNames = {},
 }) => {
   const formatDeadline = (deadline: any) => {
     if (!deadline) return 'Ingen frist';
@@ -38,13 +40,12 @@ const TasksTable: React.FC<TasksTableProps> = ({
     const max = task.maxParticipants || 0;
     const isUserJoined = currentUserId && task.participants.includes(currentUserId);
 
-    // maxParticipants should always be defined and > 0 now
-    const isFull = count >= max;
+    const isFull = max > 0 && count >= max;
     return {
-      text: `${count}/${max}`,
+      text: max > 0 ? `${count}/${max}` : `${count}`,
       isFull,
       isUserJoined,
-      canJoin: !isFull && !isUserJoined && !task.completed,
+      canJoin: !isFull && !isUserJoined,
     };
   };
 
@@ -111,7 +112,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
               >
                 <td className="px-4 py-4">
                   <div className="flex flex-col">
-                    <div className="font-medium text-gray-900">{task.taskName}</div>
+                    <div className="font-medium text-gray-900">{task.title}</div>
                     {task.description && (
                       <div className="text-sm text-gray-500 truncate max-w-xs">
                         {task.description.length > 50
@@ -128,7 +129,9 @@ const TasksTable: React.FC<TasksTableProps> = ({
                     {task.category}
                   </span>
                 </td>
-                <td className="px-4 py-4 text-sm text-gray-900">{task.contactPerson}</td>
+                <td className="px-4 py-4 text-sm text-gray-900">
+                  {(task.contactPersonId && participantNames[task.contactPersonId]) || '-'}
+                </td>
                 <td className="px-4 py-4 text-sm text-gray-900">{formatDeadline(task.deadline)}</td>
                 <td className="px-4 py-4 text-sm text-gray-900">
                   {task.hourEstimate ? `${task.hourEstimate}t` : '-'}
@@ -168,11 +171,6 @@ const TasksTable: React.FC<TasksTableProps> = ({
                   )}
                   {participantStatus.isUserJoined && (
                     <span className="text-xs text-green-600 font-medium">Du er påmeldt</span>
-                  )}
-                  {task.completed && (
-                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                      Fullført
-                    </span>
                   )}
                 </td>
               </tr>

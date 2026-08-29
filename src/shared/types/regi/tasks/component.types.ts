@@ -1,11 +1,12 @@
 import { Task, TaskCreationData } from './task.types';
 import { Category, CategoryCreationData } from './category.types';
 
+// Mirrors the AuthUser shape produced by src/app/hooks/useAuth.ts (Supabase-backed).
 export interface AuthUser {
-  uid: string;
-  email: string;
-  name: string;
-  role: string;
+  id: string;
+  name?: string;
+  email?: string;
+  role?: string;
 }
 
 export interface FormErrors {
@@ -23,6 +24,7 @@ export interface TasksTableProps {
   onJoinTask?: (taskId: string) => void;
   currentUserId?: string;
   userRole?: string;
+  participantNames?: ParticipantNames;
 }
 
 export interface TaskModalProps {
@@ -78,11 +80,5 @@ export interface ModalState {
 }
 
 export const isAuthUser = (user: unknown): user is AuthUser => {
-  return (
-    typeof user === 'object' &&
-    user !== null &&
-    typeof (user as any).uid === 'string' &&
-    typeof (user as any).name === 'string' &&
-    typeof (user as any).role === 'string'
-  );
+  return typeof user === 'object' && user !== null && typeof (user as any).id === 'string';
 };

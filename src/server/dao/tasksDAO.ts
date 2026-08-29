@@ -1,14 +1,42 @@
 import { supabase } from '../supabaseClient';
 import { Task, TaskCreationData } from '../../shared/types/regi/tasks';
 
+type SupabaseJoin<T> = T | T[] | null | undefined;
+
+function getJoinedValue<T>(value: SupabaseJoin<T>): T | undefined {
+  return Array.isArray(value) ? value[0] : (value ?? undefined);
+}
+
+// Selects the columns/relations needed to build a Task via toAppTask().
+const TASK_SELECT = `
+  id,
+  created_at,
+  deadline,
+  time_estimate,
+  contact_person_uuid,
+  max_participants,
+  work_items (
+    title,
+    description,
+    work_categories ( name ),
+    participants:work_assignments ( user_uuid )
+  )
+`;
+
 function toAppTask(row: any): Task {
+  const workItem = getJoinedValue(row.work_items);
+  const workCategory = getJoinedValue(workItem?.work_categories);
+
   return {
     id: String(row.id),
-    title: row.work_items?.title ?? '',
-    description: row.work_items?.description ?? '',
-    category: row.work_items?.work_categories?.name ?? '',
-    deadline: row.deadline ?? null,
-    participants: (row.participants ?? []).map((p: any) => p.user_uuid),
+    title: workItem?.title ?? '',
+    description: workItem?.description ?? undefined,
+    category: workCategory?.name ?? '',
+    contactPersonId: row.contact_person_uuid ?? undefined,
+    deadline: row.deadline ?? undefined,
+    hourEstimate: row.time_estimate ?? undefined,
+    maxParticipants: row.max_participants ?? undefined,
+    participants: (workItem?.participants ?? []).map((p: any) => String(p.user_uuid)),
     createdAt: row.created_at,
   };
 }
@@ -40,6 +68,8 @@ export async function addTask(data: TaskCreationData): Promise<string> {
     id: item.id,
     deadline: data.deadline ?? null,
     time_estimate: data.hourEstimate ?? null,
+    contact_person_uuid: data.contactPersonId ?? null,
+    max_participants: data.maxParticipants ?? undefined,
   });
   if (e3) throw new Error(`Could not add task: ${e3.message}`);
 
@@ -49,31 +79,9 @@ export async function addTask(data: TaskCreationData): Promise<string> {
 export async function getTask(taskId: string): Promise<Task | undefined> {
   const { data, error } = await supabase
     .from('work_tasks')
-    .select(
-      `
-    id,
-    created_at,
-    deadline,
-    time_estimate,
-    contact_person_uuid,
-    max_participants,  
-    work_items (
-      id,
-      title,
-      description,
-      work_categories (
-        id,
-        name,
-        description,
-        color
-      ),
-      participants:work_assignments (
-        user_uuid
-      )
-    )
-  `
-    )
-    .order('deadline', { ascending: true });
+    .select(TASK_SELECT)
+    .eq('id', Number(taskId))
+    .maybeSingle();
 
   if (error) throw new Error(`Could not get task: ${error.message}`);
   return data ? toAppTask(data) : undefined;
@@ -82,44 +90,14 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
 export async function getTasks(): Promise<Task[]> {
   const { data, error } = await supabase
     .from('work_tasks')
-    .select(
-      `
-      id,
-      created_at,
-      deadline,
-      time_estimate,
-      contact_person_uuid,
-      max_participants, 
-      work_items (
-        title,
-        description,
-        work_categories ( name ),
-        participants:work_assignments ( user_uuid )
-      )
-    `
-    )
+    .select(TASK_SELECT)
     .order('deadline', { ascending: true });
 
   if (error) {
     throw new Error(`Could not get tasks: ${error.message}`);
   }
 
-  return (data ?? []).map((row) => ({
-    id: String(row.id),
-    taskName: row.work_items.title,
-    description: row.work_items.description ?? '',
-    category: row.work_items.work_categories.name,
-    contactPerson: '', // evt. hentes via userDAO på contact_person_uuid
-    contactPersonId: row.contact_person_uuid ?? null,
-    deadline: row.deadline ?? null,
-    hourEstimate: row.time_estimate ?? null,
-    maxParticipants: row.max_participants ?? null,
-    participants: (row.work_items.participants ?? []).map((p: any) => p.user_uuid),
-    completed: false,
-    isApproved: false,
-    createdBy: row.contact_person_uuid ?? null,
-    isActive: true,
-  }));
+  return (data ?? []).map((row: any) => toAppTask(row));
 }
 
 export async function updateTask(
@@ -134,8 +112,13 @@ export async function updateTask(
     if (error) throw new Error(`Could not update task: ${error.message}`);
   }
 
-  // update work_tasks if deadline or estimate
-  const patchTask: any = { deadline: data.deadline ?? undefined };
+  // update work_tasks if deadline, estimate, contact person or capacity changed
+  const patchTask: any = {
+    deadline: data.deadline ?? undefined,
+    time_estimate: data.hourEstimate ?? undefined,
+    contact_person_uuid: data.contactPersonId ?? undefined,
+    max_participants: data.maxParticipants ?? undefined,
+  };
   Object.keys(patchTask).forEach((k) => patchTask[k] === undefined && delete patchTask[k]);
   if (Object.keys(patchTask).length) {
     const { error } = await supabase.from('work_tasks').update(patchTask).eq('id', Number(taskId));
@@ -175,44 +158,30 @@ export async function leaveTask(taskId: string, userId: string): Promise<boolean
 }
 
 export async function getTasksByUser(userId: string): Promise<Task[]> {
-  const { data, error } = await supabase
+  const { data: assignmentRows, error: assignmentError } = await supabase
     .from('work_assignments')
-    .select('work_items(*, work_categories(*), work_tasks(*))')
+    .select('work_id')
     .eq('user_uuid', userId);
-  if (error) throw new Error(`Could not get user tasks: ${error.message}`);
 
-  const rows = (data ?? [])
-    .map((a: any) => a.work_items)
-    .filter(Boolean)
-    .map((wi: any) => ({
-      ...wi.work_tasks,
-      work_items: { ...wi, work_categories: wi.work_categories },
-      participants: [], // fetch separately if needed
-    }));
+  if (assignmentError) {
+    throw new Error(`Could not get user tasks: ${assignmentError.message}`);
+  }
 
-  // enrich with participants
-  const ids = rows.map((r: any) => r.id);
-  if (ids.length === 0) return [];
-  const { data: parts } = await supabase
-    .from('work_assignments')
-    .select('work_id, user_uuid')
-    .in('work_id', ids);
-  const grouped = new Map<number, string[]>();
-  (parts ?? []).forEach((p: any) => {
-    const arr = grouped.get(p.work_id) ?? [];
-    arr.push(p.user_uuid);
-    grouped.set(p.work_id, arr);
-  });
-
-  return rows.map((row: any) =>
-    toAppTask({
-      ...row,
-      participants: (grouped.get(row.id) ?? []).map((u) => ({ user_uuid: u })),
-      work_items: row.work_items ?? {
-        title: row.title,
-        description: row.description,
-        work_categories: row.work_categories,
-      },
-    })
+  const taskIds = Array.from(
+    new Set((assignmentRows ?? []).map((row: any) => row.work_id).filter((id: any) => id != null))
   );
+
+  if (taskIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('work_tasks')
+    .select(TASK_SELECT)
+    .in('id', taskIds)
+    .order('deadline', { ascending: true });
+
+  if (error) {
+    throw new Error(`Could not get user tasks: ${error.message}`);
+  }
+
+  return (data ?? []).map((row: any) => toAppTask(row));
 }

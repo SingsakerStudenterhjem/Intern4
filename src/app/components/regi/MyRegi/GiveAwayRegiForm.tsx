@@ -63,32 +63,30 @@ const GiveAwayRegiForm: React.FC<{ userId: string; onTransferred?: () => void }>
       return;
     }
 
-    if (parsed.data.hours > available) {
-      setErrors({ hours: `Du har kun ${available.toFixed(2)} godkjente timer tilgjengelig` });
-      return;
-    }
-
     try {
       setSubmitting(true);
       await giveAwayRegiHours(userId, parsed.data.toUserId, parsed.data.hours);
-      setMessage('Timer overført.');
+      setMessage('Overføring sendt til godkjenning hos Regisjef.');
       setToUserId('');
       setHours('');
       await load();
       onTransferred?.();
     } catch (err: any) {
       console.error(err);
-      setMessage(err?.message ?? 'Kunne ikke overføre timer.');
+      setMessage(err?.message ?? 'Kunne ikke sende overføring.');
     } finally {
       setSubmitting(false);
     }
   };
 
+  const wouldGoIntoDebt = Number(hours) > available;
+
   return (
     <div className="space-y-1">
       <h2 className="font-medium text-xl mb-2">Gi bort regi</h2>
       <p className="text-sm text-gray-600 mb-4">
-        Overfør av dine godkjente timer til en annen beboer. Tilgjengelig:{' '}
+        Overfør av dine godkjente timer til en annen beboer. Overføringen må godkjennes av Regisjef
+        før timene flyttes. Tilgjengelig:{' '}
         <span className="font-semibold">{available.toFixed(2)}</span> t
       </p>
       <form onSubmit={handleSubmit} className="space-y-3">
@@ -118,7 +116,6 @@ const GiveAwayRegiForm: React.FC<{ userId: string; onTransferred?: () => void }>
           <input
             type="number"
             step="0.25"
-            max={available}
             value={hours}
             onChange={(e) => {
               setHours(e.target.value);
@@ -128,16 +125,22 @@ const GiveAwayRegiForm: React.FC<{ userId: string; onTransferred?: () => void }>
             placeholder="1.5"
           />
           {errors.hours && <p className="text-red-600 text-sm mt-1">{errors.hours}</p>}
+          {!errors.hours && wouldGoIntoDebt && (
+            <p className="text-amber-600 text-sm mt-1">
+              Dette vil sette deg i regi-gjeld dersom overføringen godkjennes (
+              {(Number(hours) - available).toFixed(2)} t over det du har tilgjengelig).
+            </p>
+          )}
         </div>
 
         {message && <p className="text-sm text-gray-700">{message}</p>}
 
         <button
           type="submit"
-          disabled={submitting || loading || available <= 0}
+          disabled={submitting || loading}
           className="px-3 py-2 rounded bg-navy-600 text-white disabled:opacity-50"
         >
-          {submitting ? 'Overfører...' : 'Gi bort timer'}
+          {submitting ? 'Sender...' : 'Send overføringsforespørsel'}
         </button>
       </form>
     </div>

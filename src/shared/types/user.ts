@@ -20,6 +20,8 @@ const UserSchema = z.object({
   onLeave: z.boolean(),
   isActive: z.boolean(),
   regiPreapproved: z.boolean().default(false),
+  regiCategoryId: z.string().nullable().optional(),
+  regiCategoryHours: z.number().optional(),
   createdAt: z.date(),
 });
 

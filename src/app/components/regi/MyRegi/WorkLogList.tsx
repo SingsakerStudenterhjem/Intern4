@@ -1,11 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { RegiLogWithId } from '../../../../shared/types/regi';
-import { getRegiLogsByUser } from '../../../../server/dao/regiDAO';
+import {
+  getRegiLogsByUser,
+  getTransfersByUser,
+  RegiTransferWithCounterparty,
+} from '../../../../server/dao/regiDAO';
 import { getUser } from '../../../../server/dao/userDAO';
-import { getRequiredRegiHoursForRole } from '../../../constants/regiRequirements';
+import { getRequiredRegiHours } from '../../../constants/regiRequirements';
 
 const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId, refreshKey }) => {
   const [logs, setLogs] = useState<RegiLogWithId[]>([]);
+  const [transfers, setTransfers] = useState<RegiTransferWithCounterparty[]>([]);
   const [requiredHours, setRequiredHours] = useState(0);
   const [regiPreapproved, setRegiPreapproved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -14,12 +19,22 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
     let mounted = true;
     (async () => {
       setLoading(true);
-      const [data, profile] = await Promise.all([getRegiLogsByUser(userId), getUser(userId)]);
-      if (mounted) {
-        setLogs(data);
-        setRequiredHours(getRequiredRegiHoursForRole(profile?.role));
-        setRegiPreapproved(profile?.regiPreapproved ?? false);
-        setLoading(false);
+      try {
+        const [data, profile, transfersData] = await Promise.all([
+          getRegiLogsByUser(userId),
+          getUser(userId),
+          getTransfersByUser(userId),
+        ]);
+        if (mounted) {
+          setLogs(data);
+          setTransfers(transfersData);
+          setRequiredHours(getRequiredRegiHours(profile));
+          setRegiPreapproved(profile?.regiPreapproved ?? false);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        if (mounted) setLoading(false);
       }
     })();
     return () => {
@@ -30,9 +45,30 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
   const totals = useMemo(() => {
     const approved = logs.filter((l) => l.status === 'approved').reduce((s, l) => s + l.hours, 0);
     const pending = logs.filter((l) => l.status === 'pending').reduce((s, l) => s + l.hours, 0);
-    const remaining = regiPreapproved ? 0 : Math.max(requiredHours - approved, 0);
-    return { approved, pending, total: approved + pending, remaining };
-  }, [logs, requiredHours, regiPreapproved]);
+
+    const transferNet = transfers
+      .filter((t) => t.status === 'approved')
+      .reduce((s, t) => s + (t.direction === 'received' ? t.hours : -t.hours), 0);
+    const pendingGivenAway = transfers
+      .filter((t) => t.status === 'pending' && t.direction === 'given')
+      .reduce((s, t) => s + t.hours, 0);
+    const pendingReceived = transfers
+      .filter((t) => t.status === 'pending' && t.direction === 'received')
+      .reduce((s, t) => s + t.hours, 0);
+
+    const netApproved = approved + transferNet;
+    const remaining = regiPreapproved ? 0 : Math.max(requiredHours - netApproved, 0);
+
+    return {
+      approved,
+      pending,
+      total: approved + pending,
+      transferNet,
+      pendingGivenAway,
+      pendingReceived,
+      remaining,
+    };
+  }, [logs, transfers, requiredHours, regiPreapproved]);
 
   if (loading) return <div className="text-gray-600">Laster...</div>;
 
@@ -43,14 +79,41 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
         <div className="text-sm text-gray-700">
           Godkjent: <span className="font-semibold">{totals.approved.toFixed(2)}</span> t • Venter:{' '}
           <span className="font-semibold">{totals.pending.toFixed(2)}</span> t • Totalt registrert:{' '}
-          <span className="font-semibold">{totals.total.toFixed(2)}</span> t • Gjenstående timer:{' '}
-          <span className="font-semibold">{totals.remaining.toFixed(2)}</span> t
+          <span className="font-semibold">{totals.total.toFixed(2)}</span> t
+          {totals.transferNet !== 0 && (
+            <>
+              {' '}
+              • Overført netto:{' '}
+              <span
+                className={`font-semibold ${totals.transferNet < 0 ? 'text-red-700' : 'text-green-700'}`}
+              >
+                {totals.transferNet > 0 ? '+' : ''}
+                {totals.transferNet.toFixed(2)}
+              </span>{' '}
+              t
+            </>
+          )}{' '}
+          • Gjenstående timer: <span className="font-semibold">{totals.remaining.toFixed(2)}</span>{' '}
+          t
           {regiPreapproved && (
             <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full bg-navy-100 text-navy-800 text-xs font-semibold">
               Forhåndsgodkjent
             </span>
           )}
         </div>
+        {(totals.pendingGivenAway > 0 || totals.pendingReceived > 0) && (
+          <div className="text-xs text-gray-500 mt-1">
+            Venter på godkjenning fra Regisjef:{' '}
+            {totals.pendingGivenAway > 0 && (
+              <span>gir bort {totals.pendingGivenAway.toFixed(2)} t</span>
+            )}
+            {totals.pendingGivenAway > 0 && totals.pendingReceived > 0 && ', '}
+            {totals.pendingReceived > 0 && (
+              <span>mottar {totals.pendingReceived.toFixed(2)} t</span>
+            )}{' '}
+            (ikke trukket fra/lagt til ennå)
+          </div>
+        )}
       </div>
 
       <div className="border border-gray-200 rounded-sm bg-white shadow-sm">

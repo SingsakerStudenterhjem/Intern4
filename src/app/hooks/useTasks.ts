@@ -17,14 +17,11 @@ export const useTasks = (
     let filtered = tasks;
 
     if (filter === 'available') {
-      // Updated filter logic for the new Task structure
       filtered = filtered.filter(
-        (t) => !t.completed && (!t.maxParticipants || t.participants.length < t.maxParticipants)
+        (t) => !t.maxParticipants || t.participants.length < t.maxParticipants
       );
     } else if (filter === 'myTasks') {
-      filtered = filtered.filter(
-        (t) => t.participants.includes(currentUser) || t.createdBy === currentUser
-      );
+      filtered = filtered.filter((t) => t.participants.includes(currentUser));
     }
 
     if (category !== 'all') {
@@ -35,10 +32,9 @@ export const useTasks = (
       const lowerCaseQuery = query.toLowerCase();
       filtered = filtered.filter(
         (t) =>
-          t.taskName.toLowerCase().includes(lowerCaseQuery) ||
+          t.title.toLowerCase().includes(lowerCaseQuery) ||
           t.category.toLowerCase().includes(lowerCaseQuery) ||
-          t.description?.toLowerCase().includes(lowerCaseQuery) ||
-          t.contactPerson.toLowerCase().includes(lowerCaseQuery)
+          t.description?.toLowerCase().includes(lowerCaseQuery)
       );
     }
 

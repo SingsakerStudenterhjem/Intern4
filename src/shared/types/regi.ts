@@ -35,10 +35,16 @@ export const RegiPenaltySchema = z.object({
 export type RegiPenalty = z.infer<typeof RegiPenaltySchema>;
 export type RegiPenaltyWithId = RegiPenalty & { id: string };
 
+export const RegiTransferStatusSchema = z
+  .string()
+  .refine((value) => ['pending', 'approved', 'rejected'].includes(value));
+export type RegiTransferStatus = z.infer<typeof RegiTransferStatusSchema>;
+
 export const RegiTransferSchema = z.object({
   fromUserId: z.string(),
   toUserId: z.string(),
   hours: z.number().positive(),
+  status: RegiTransferStatusSchema.default('pending'),
   createdAt: z.date(),
 });
 export type RegiTransfer = z.infer<typeof RegiTransferSchema>;

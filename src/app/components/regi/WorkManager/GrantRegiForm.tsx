@@ -136,7 +136,7 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     <div className="space-y-1">
       <h2 className="font-medium text-xl mb-2">Gi regitimer</h2>
       <p className="text-sm text-gray-600 mb-4">
-        Registrer regi på vegne av aktive brukere. Registreringer må fortsatt godkjennes.
+        Registrer regi på vegne av aktive brukere. Timene godkjennes automatisk med det samme.
       </p>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>

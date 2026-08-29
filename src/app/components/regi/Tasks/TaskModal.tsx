@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Clock, Trash2, User, Users, X } from 'lucide-react';
-import { Task } from '../../../../shared/types/regi/tasks/index.ts';
-import { canManageTasks, canViewAllParticipants } from '../../../constants/userRoles.ts';
+import { Task } from '../../../../shared/types/regi/tasks';
+import { canManageTasks, canViewAllParticipants } from '../../../constants/userRoles';
 
 interface TaskModalProps {
   task: Task | null;
@@ -46,8 +46,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
   };
 
   const isUserJoined = currentUserId && task.participants.includes(currentUserId);
-  const isFull = task.maxParticipants && task.participants.length >= task.maxParticipants;
-  const canJoin = !isFull && !isUserJoined && !task.completed;
+  const isFull = !!task.maxParticipants && task.participants.length >= task.maxParticipants;
+  const canJoin = !isFull && !isUserJoined;
 
   const handleJoin = () => {
     if (onJoinTask && task.id) {
@@ -116,7 +116,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center space-x-3">
-            <h2 className="text-xl font-semibold text-gray-900">{task.taskName}</h2>
+            <h2 className="text-xl font-semibold text-gray-900">{task.title}</h2>
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${getCategoryColor(task.category)}`}
             >
@@ -204,7 +204,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   <User className="w-4 h-4 text-gray-500" />
                   <span className="font-medium text-gray-700">Kontaktperson:</span>
                 </div>
-                <p className="text-sm text-gray-900 ml-6">{task.contactPerson}</p>
+                <p className="text-sm text-gray-900 ml-6">
+                  {(task.contactPersonId && participantNames[task.contactPersonId]) ||
+                    'Ikke satt'}
+                </p>
 
                 <div className="flex items-center space-x-2 text-sm">
                   <Calendar className="w-4 h-4 text-gray-500" />
@@ -229,21 +232,14 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
               {/* Status indicators */}
               <div className="space-y-2">
-                {task.completed && (
-                  <div className="flex items-center space-x-2 p-2 bg-green-50 border border-green-200 rounded-sm">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-green-800">Fullført</span>
-                  </div>
-                )}
-
-                {isFull && !task.completed && (
+                {isFull && (
                   <div className="flex items-center space-x-2 p-2 bg-red-50 border border-red-200 rounded-sm">
                     <div className="w-2 h-2 bg-red-500 rounded-full"></div>
                     <span className="text-sm font-medium text-red-800">Full</span>
                   </div>
                 )}
 
-                {isUserJoined && !task.completed && (
+                {isUserJoined && (
                   <div className="flex items-center space-x-2 p-2 bg-navy-50 border border-navy-200 rounded-sm">
                     <div className="w-2 h-2 bg-navy-500 rounded-full"></div>
                     <span className="text-sm font-medium text-navy-800">Du er påmeldt</span>
@@ -323,7 +319,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   </button>
                 )}
 
-                {isUserJoined && !task.completed && (
+                {isUserJoined && (
                   <>
                     <button
                       onClick={startComplete}

@@ -258,7 +258,8 @@ export async function getApprovedRegiHoursByUserSince(
 
   let transfersQuery = supabase
     .from('regi_transfers')
-    .select('from_user_uuid, to_user_uuid, hours, created_at');
+    .select('from_user_uuid, to_user_uuid, hours, created_at')
+    .eq('status', 'approved');
 
   if (startDate) {
     query = query.gte('created_at', startDate.toISOString());
@@ -323,7 +324,7 @@ export type RegiTransferWithCounterparty = RegiTransferWithId & {
 export async function getTransfersByUser(userId: string): Promise<RegiTransferWithCounterparty[]> {
   const { data, error } = await supabase
     .from('regi_transfers')
-    .select('id, from_user_uuid, to_user_uuid, hours, created_at')
+    .select('id, from_user_uuid, to_user_uuid, hours, status, created_at')
     .or(`from_user_uuid.eq.${userId},to_user_uuid.eq.${userId}`)
     .order('created_at', { ascending: false });
 
@@ -361,11 +362,81 @@ export async function getTransfersByUser(userId: string): Promise<RegiTransferWi
       fromUserId: fromUid,
       toUserId: toUid,
       hours: Number(row.hours),
+      status: row.status ?? 'pending',
       createdAt: row.created_at,
       direction,
       counterpartyName: nameMap[counterpartyId] ?? 'Ukjent',
     };
   });
+}
+
+export type PendingRegiTransfer = RegiTransferWithId & {
+  fromUserName: string;
+  toUserName: string;
+};
+
+export async function getPendingTransfers(): Promise<PendingRegiTransfer[]> {
+  const { data, error } = await supabase
+    .from('regi_transfers')
+    .select('id, from_user_uuid, to_user_uuid, hours, status, created_at')
+    .eq('status', 'pending')
+    .order('created_at', { ascending: false });
+
+  if (error) throw new Error(error.message);
+
+  const rows = data ?? [];
+  const uniqueUserIds = Array.from(
+    new Set(rows.flatMap((r: any) => [String(r.from_user_uuid), String(r.to_user_uuid)]))
+  );
+
+  const nameMap: Record<string, string> = {};
+  await Promise.all(
+    uniqueUserIds.map(async (uid) => {
+      try {
+        const u = await getUser(uid);
+        nameMap[uid] = u?.name ?? 'Ukjent';
+      } catch {
+        // ignore missing users
+      }
+    })
+  );
+
+  return rows.map((row: any) => ({
+    id: String(row.id),
+    fromUserId: String(row.from_user_uuid),
+    toUserId: String(row.to_user_uuid),
+    hours: Number(row.hours),
+    status: row.status ?? 'pending',
+    createdAt: row.created_at,
+    fromUserName: nameMap[String(row.from_user_uuid)] ?? 'Ukjent',
+    toUserName: nameMap[String(row.to_user_uuid)] ?? 'Ukjent',
+  }));
+}
+
+export async function approveRegiTransfer(id: string, approvedByUuid: string): Promise<void> {
+  const { error } = await supabase
+    .from('regi_transfers')
+    .update({
+      status: 'approved',
+      approved_by_uuid: approvedByUuid,
+      approved_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+
+  if (error) throw new Error(error.message);
+}
+
+export async function rejectRegiTransfer(id: string, approvedByUuid: string): Promise<void> {
+  const { error } = await supabase
+    .from('regi_transfers')
+    .update({
+      status: 'rejected',
+      approved_by_uuid: approvedByUuid,
+      approved_at: new Date().toISOString(),
+    })
+    .eq('id', id);
+
+  if (error) throw new Error(error.message);
 }
 
 async function setApprovalState(assignmentId: string, approvedState: 1 | 2): Promise<void> {

@@ -9,6 +9,7 @@ export const TaskSchema = z.object({
   contactPersonId: z.string().uuid().optional(),
   deadline: z.date().optional(),
   hourEstimate: z.number().positive().optional(), // Represents time_estimate
+  maxParticipants: z.number().int().positive().optional(), // Represents max_participants
   participants: z.array(z.string().uuid()).default([]),
   createdAt: z.date(),
 });
@@ -20,6 +21,7 @@ export const TaskFormDataSchema = z.object({
   description: z.string().default(''),
   deadline: z.string().default(''), // datetime-local input gives string
   hourEstimate: z.string().default(''), // number input as string
+  maxParticipants: z.string().default('1'), // number input as string
 });
 
 // Task Creation Data Schema (processed form data for API)
@@ -30,6 +32,7 @@ export const TaskCreationDataSchema = z.object({
   contactPersonId: z.string().uuid().optional(),
   deadline: z.date().optional(),
   hourEstimate: z.number().positive().optional(),
+  maxParticipants: z.number().int().positive().optional(),
 });
 
 // Task Update Schema (for partial updates)

@@ -18,3 +18,15 @@ export const getRequiredRegiHoursForRole = (role?: string): number => {
   if (!role) return DEFAULT_REGI_HOURS;
   return ROLE_REGI_REQUIREMENTS[role] ?? DEFAULT_REGI_HOURS;
 };
+
+// A user's assigned regi category (set by a Regisjef) overrides the
+// role-based requirement above. Users without a category keep falling
+// back to the role table, so existing users are unaffected until a
+// Regisjef assigns them one.
+export const getRequiredRegiHours = (user?: {
+  role?: string;
+  regiCategoryHours?: number | null;
+}): number => {
+  if (user?.regiCategoryHours != null) return user.regiCategoryHours;
+  return getRequiredRegiHoursForRole(user?.role);
+};
