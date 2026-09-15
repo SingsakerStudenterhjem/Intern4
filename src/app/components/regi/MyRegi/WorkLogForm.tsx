@@ -15,11 +15,6 @@ const FormSchema = z.object({
   images: z.array(z.instanceof(File)).optional(),
 });
 
-async function uploadRegiImages(uid: any, files: File[]) {
-  // TODO: move and implement with supabase
-  return [];
-}
-
 const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
@@ -41,7 +36,6 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       try {
         const data = await getCategories();
         if (!mounted) return;
-
         setCategories(data);
 
         if (data.length > 0) {
@@ -77,7 +71,6 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
 
     try {
       setSubmitting(true);
-      // const imageUrls = files.length ? await uploadRegiImages(user.id, files) : [];
 
       const payload = RegiLogSchema.parse({
         userId: user.id,
@@ -122,7 +115,6 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
           value={form.title}
           onChange={(e) => setField('title', e.target.value)}
           className="w-full rounded-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
-          placeholder="Arbeidet oppsummert"
         />
         {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title}</p>}
       </div>
@@ -134,7 +126,6 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
           onChange={(e) => setField('type', e.target.value)}
           className="w-full rounded-sm border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
         >
-          <option value="">Velg type</option>
           {categories.map((category) => (
             <option key={category.id} value={category.name}>
               {category.name}
@@ -150,7 +141,6 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
           onChange={(e) => setField('description', e.target.value)}
           className="w-full rounded-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
           rows={4}
-          placeholder="Forklaring av arbeidet"
         />
         {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
       </div>
@@ -174,20 +164,10 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
             value={form.hours}
             onChange={(e) => setField('hours', e.target.value)}
             className="w-full rounded-sm border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
-            placeholder="1.5"
+            placeholder="0"
           />
           {errors.hours && <p className="text-red-600 text-sm mt-1">{errors.hours}</p>}
         </div>
-      </div>
-
-      <div className="mb-4">
-        <label className="block mb-1 text-sm font-medium text-gray-700">Bilder (valgfritt)</label>
-        <input
-          type="file"
-          multiple
-          accept="image/*"
-          onChange={(e) => setFiles(Array.from(e.target.files || []))}
-        />
       </div>
 
       <button
