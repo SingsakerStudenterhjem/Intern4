@@ -83,7 +83,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, hours_used, created_at, approved_state, work_items(title, type, work_categories(name))'
+      'id, hours_used, created_at, approved_state, comment, work_items(title, type, work_categories(name))'
     )
     .eq('user_uuid', userId)
     .order('created_at', { ascending: false });
@@ -105,6 +105,7 @@ export async function getRegiLogsByUser(userId: string): Promise<RegiLogWithId[]
     type: d.work_items?.work_categories?.name ?? d.work_items?.type ?? 'misc',
     userId,
     createdAt: d.created_at,
+    comment: d.comment,
   }));
 }
 
@@ -183,14 +184,14 @@ export type RegiLogWithUser = {
   status: 'pending' | 'approved' | 'rejected';
   createdAt: any;
   approvedByName?: string;
-  approvalComment?: string | null;
+  comment?: string | null;
 };
 
 export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, user_uuid, hours_used, created_at, approved_state, approval_comment, approved_by_uuid, work_items(title, description, type, work_categories(name))'
+      'id, user_uuid, hours_used, created_at, approved_state, comment, approved_by_uuid, work_items(title, description, type, work_categories(name))'
     )
     .order('created_at', { ascending: false });
 
@@ -243,7 +244,7 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
       status: statusMap[row.approved_state] ?? 'pending',
       createdAt: row.created_at,
       approvedByName: approver?.name,
-      approvalComment: row.approval_comment ?? null,
+      comment: row.comment ?? null,
     };
   });
 }
@@ -448,18 +449,22 @@ async function setApprovalState(assignmentId: string, approvedState: 1 | 2): Pro
   if (error) throw new Error(error.message);
 }
 
-export async function approveRegiLog(
-  assignmentId: string,
-  approvedByUuid: string,
-  approvalComment?: string
-): Promise<void> {
+export async function approveRegiLog(assignmentId: string, approvedByUuid: string): Promise<void> {
   const { error } = await supabase
     .from('work_assignments')
     .update({
       approved_state: 1,
       approved_by_uuid: approvedByUuid,
-      approval_comment: approvalComment?.trim() ? approvalComment.trim() : null,
     })
+    .eq('id', assignmentId);
+
+  if (error) throw error;
+}
+
+export async function commentRegiLog(assignmentId: string, comment: string): Promise<void> {
+  const { error } = await supabase
+    .from('work_assignments')
+    .update({ comment: comment.trim() })
     .eq('id', assignmentId);
 
   if (error) throw error;

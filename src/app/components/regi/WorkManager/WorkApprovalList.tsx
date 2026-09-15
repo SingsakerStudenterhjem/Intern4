@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Ban, Check, RefreshCw, Search } from 'lucide-react';
+import { Ban, Check, RefreshCw, Search, MessageCircle } from 'lucide-react';
 import { useAuth } from '../../../hooks/useAuth';
 import {
   approveRegiLog,
@@ -55,12 +55,12 @@ const WorkApprovalList: React.FC = () => {
     });
   }, [approvals, query]);
 
-  const handleApprove = async (assignmentId: string, approvalComment?: string): Promise<void> => {
+  const handleApprove = async (assignmentId: string): Promise<void> => {
     try {
       if (!user) return;
 
       setActionLoadingId(assignmentId);
-      await approveRegiLog(assignmentId, user.id, approvalComment);
+      await approveRegiLog(assignmentId, user.id);
 
       setApprovals((prev) => prev.filter((a) => a.id !== assignmentId));
     } catch (e) {
@@ -211,6 +211,17 @@ const WorkApprovalList: React.FC = () => {
                         >
                           <Ban className="w-4 h-4 mr-1" />
                           Avvis
+                        </button>
+                        <button
+                          disabled={busy}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(ROUTES.REGIGODKJENNING_REVIEW.replace(':id', a.id));
+                          }}
+                          className="inline-flex items-center px-2.5 py-1.5 text-xs font-medium rounded-sm text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+                        >
+                          <MessageCircle className="w-4 h-4 mr-1" />
+                          Kommenter
                         </button>
                       </div>
                     </td>

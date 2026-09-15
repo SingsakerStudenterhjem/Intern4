@@ -18,7 +18,7 @@ export const RegiLogSchema = z.object({
   status: WorkStatusSchema.default('pending'),
   createdAt: z.date(),
   reviewedBy: z.string().optional(),
-  reviewerComment: z.string().optional(),
+  comment: z.string().optional(),
 });
 export type RegiLog = z.infer<typeof RegiLogSchema>;
 

@@ -6,6 +6,7 @@ import { ROUTES } from '../../constants/routes';
 import RegiApprovalDetailCard from '../../components/regi/WorkManager/RegiApprovalDetailCard';
 import {
   approveRegiLog,
+  commentRegiLog,
   getPendingRegiApprovals,
   PendingRegiApproval,
   rejectRegiLog,
@@ -53,15 +54,15 @@ const WorkApprovalReviewPage: React.FC = () => {
     if (next) {
       navigate(ROUTES.REGIGODKJENNING_REVIEW.replace(':id', next.id), { replace: true });
     } else {
-      navigate(ROUTES.REGIGODKJENNING);
+      navigate(ROUTES.REGISJEF);
     }
   };
 
-  const handleApprove = async (assignmentId: string, approvalComment?: string) => {
+  const handleApprove = async (assignmentId: string) => {
     if (!user) return;
     try {
       setProcessingId(assignmentId);
-      await approveRegiLog(assignmentId, user.id, approvalComment);
+      await approveRegiLog(assignmentId, user.id);
       const remaining = queue.filter((a) => a.id !== assignmentId);
       setQueue(remaining);
       goToIndex(currentIndex >= remaining.length ? remaining.length - 1 : currentIndex);
@@ -88,6 +89,18 @@ const WorkApprovalReviewPage: React.FC = () => {
     }
   };
 
+  const handleComment = async (assignmentId: string, comment: string): Promise<void> => {
+    try {
+      setProcessingId(assignmentId);
+      await commentRegiLog(assignmentId, comment);
+    } catch (e) {
+      console.log(e);
+      setError('Kunne ikke kommentere.');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-3xl mx-auto px-4 space-y-4">
@@ -95,7 +108,7 @@ const WorkApprovalReviewPage: React.FC = () => {
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold tracking-wide text-navy-600 uppercase">Regisjef</p>
             <Link
-              to={ROUTES.REGIGODKJENNING}
+              to={ROUTES.REGISJEF}
               className="inline-flex items-center text-sm font-medium text-navy-600 hover:text-navy-700"
             >
               <ArrowLeft className="w-4 h-4 mr-1" />
@@ -124,7 +137,7 @@ const WorkApprovalReviewPage: React.FC = () => {
               Ferdig — ingen flere ventende registreringer.
             </p>
             <Link
-              to={ROUTES.REGIGODKJENNING}
+              to={ROUTES.REGISJEF}
               className="inline-flex items-center mt-3 text-sm font-medium text-navy-600 hover:text-navy-700"
             >
               Tilbake til liste
@@ -137,6 +150,7 @@ const WorkApprovalReviewPage: React.FC = () => {
             approval={current}
             onApprove={handleApprove}
             onReject={handleReject}
+            onComment={handleComment}
             isProcessing={processingId === current.id}
           />
         )}

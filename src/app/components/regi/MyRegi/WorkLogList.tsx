@@ -79,22 +79,8 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
         <div className="text-sm text-gray-700">
           Godkjent: <span className="font-semibold">{totals.approved.toFixed(2)}</span> t • Venter:{' '}
           <span className="font-semibold">{totals.pending.toFixed(2)}</span> t • Totalt registrert:{' '}
-          <span className="font-semibold">{totals.total.toFixed(2)}</span> t
-          {totals.transferNet !== 0 && (
-            <>
-              {' '}
-              • Overført netto:{' '}
-              <span
-                className={`font-semibold ${totals.transferNet < 0 ? 'text-red-700' : 'text-green-700'}`}
-              >
-                {totals.transferNet > 0 ? '+' : ''}
-                {totals.transferNet.toFixed(2)}
-              </span>{' '}
-              t
-            </>
-          )}{' '}
-          • Gjenstående timer: <span className="font-semibold">{totals.remaining.toFixed(2)}</span>{' '}
-          t
+          <span className="font-semibold">{totals.total.toFixed(2)}</span> t • Gjenstående timer:{' '}
+          <span className="font-semibold">{totals.remaining.toFixed(2)}</span> t
           {regiPreapproved && (
             <span className="ml-2 inline-flex items-center px-2 py-1 rounded-full bg-navy-100 text-navy-800 text-xs font-semibold">
               Forhåndsgodkjent
@@ -122,31 +108,34 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
           <table className="min-w-full text-sm">
             <thead className="bg-gray-50 sticky top-0">
               <tr>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left pl-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                   Tittel
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-2 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                   Dato
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-2 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                   Timer
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-2 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                   Type
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-2 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
                   Status
+                </th>
+                <th className="text-left px-1 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                  Kommentar
                 </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
               {logs.map((l) => (
                 <tr key={l.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3">{l.title}</td>
-                  <td className="px-4 py-3">{new Date(l.date).toLocaleDateString('no-NO')}</td>
-                  <td className="px-4 py-3">{l.hours.toFixed(2)}</td>
-                  <td className="px-4 py-3 capitalize">{l.type}</td>
-                  <td className="px-4 py-3 capitalize">
+                  <td className="pl-4 py-3">{l.title}</td>
+                  <td className="px-2 py-3">{new Date(l.date).toLocaleDateString('no-NO')}</td>
+                  <td className="px-2 py-3">{l.hours.toFixed(2)}</td>
+                  <td className="px-2 py-3 capitalize">{l.type}</td>
+                  <td className="px-2 py-3 capitalize">
                     {l.status === 'pending' && (
                       <span className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">
                         venter
@@ -163,6 +152,7 @@ const WorkLogList: React.FC<{ userId: string; refreshKey?: number }> = ({ userId
                       </span>
                     )}
                   </td>
+                  <td className="px-1 py-1 capitalize">{l.comment}</td>
                 </tr>
               ))}
               {logs.length === 0 && (

@@ -11,9 +11,7 @@ import ProtectedRoute from '../app/components/common/protectedRoute';
 import { ROUTES } from '../app/constants/routes';
 import { USER_ROLES } from '../app/constants/userRoles';
 import AboutMePage from '../app/pages/tmpAboutMe';
-import WorkApprovalsPage from '../app/pages/workManager/workApprovalsPage';
 import WorkApprovalReviewPage from '../app/pages/workManager/workApprovalReviewPage';
-import RegiLogsPage from '../app/pages/workManager/regiLogsPage';
 import ForgotPasswordPage from '../app/pages/forgotPasswordPage';
 import ResetPasswordPage from '../app/pages/resetPasswordPage';
 import AdminPage from '../app/pages/admin/adminPage';
@@ -57,26 +55,10 @@ export const protectedRoutes = [
     ),
   },
   {
-    path: ROUTES.REGIGODKJENNING,
-    element: (
-      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
-        <WorkApprovalsPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
     path: ROUTES.REGIGODKJENNING_REVIEW,
     element: (
       <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
         <WorkApprovalReviewPage />
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: ROUTES.REGILOGS,
-    element: (
-      <ProtectedRoute allowedRoles={[USER_ROLES.ADMIN, USER_ROLES.DATA, USER_ROLES.WORKMANAGER]}>
-        <RegiLogsPage />
       </ProtectedRoute>
     ),
   },

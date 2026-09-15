@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { RegiLogSchema, WorkTypeSchema } from '../../../../shared/types/regi';
 import { addRegiLog } from '../../../../server/dao/regiDAO';
 import { useAuth } from '../../../hooks/useAuth';
-import { Category } from '../../../../shared/types/regi/tasks/index';
+import { Category } from '../../../../shared/types/regi/tasks';
 import { getCategories } from '../../../../server/dao/categoriesDAO';
 
 const FormSchema = z.object({
@@ -107,6 +107,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         type: categories[0]?.name ?? '',
       });
       setFiles([]);
+      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
       onCreated && onCreated();
     } finally {
       setSubmitting(false);

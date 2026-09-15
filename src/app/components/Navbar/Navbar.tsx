@@ -60,11 +60,7 @@ const Navbar = () => {
       key: 'regisjef',
       label: 'Regisjef',
       roles: [USER_ROLES.ADMIN, USER_ROLES.WORKMANAGER, USER_ROLES.DATA],
-      children: [
-        { label: 'Oversikt', to: ROUTES.REGISJEF },
-        { label: 'Godkjenninger', to: ROUTES.REGIGODKJENNING },
-        { label: 'Regilogger', to: ROUTES.REGILOGS },
-      ],
+      to: ROUTES.REGISJEF,
     },
     {
       key: 'rom',
