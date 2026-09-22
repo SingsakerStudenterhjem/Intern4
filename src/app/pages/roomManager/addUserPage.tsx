@@ -118,6 +118,7 @@ const AddUserPage: React.FC = () => {
     setEditLoading(true);
     try {
       const fullUser = await getUser(user.id);
+      console.log(fullUser.id)
       const studyPlace = await getSchoolById(fullUser?.schoolId);
       const study = await getStudyById(fullUser?.studyId);
       if (fullUser) {

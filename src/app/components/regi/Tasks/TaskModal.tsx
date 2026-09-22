@@ -204,10 +204,10 @@ const TaskModal: React.FC<TaskModalProps> = ({
               <div className="bg-gray-50 rounded-sm p-4 space-y-3">
                 <div className="flex items-center space-x-2 text-sm">
                   <User className="w-4 h-4 text-gray-500" />
-                  <span className="font-medium text-gray-700">Kontaktperson:</span>
+                  <span className="font-medium text-gray-700">Ansvarsvakt:</span>
                 </div>
                 <p className="text-sm text-gray-900 ml-6">
-                  {(task.responsibleUser && participantNames[task.responsibleUser]) || 'Ikke satt'}
+                  {(task.responsibleUserId && participantNames[task.responsibleUserId]) || 'Ikke satt'}
                 </p>
 
                 <div className="flex items-center space-x-2 text-sm">

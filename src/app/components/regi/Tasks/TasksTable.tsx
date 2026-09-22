@@ -129,7 +129,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
                   </span>
                 </td>
                 <td className="px-4 py-4 text-sm text-gray-900">
-                  {(task.responsibleUser && participantNames[task.responsibleUser]) || '-'}
+                  {(task.responsibleUserId && participantNames[task.responsibleUserId]) || '-'}
                 </td>
                 <td className="px-4 py-4 text-sm text-gray-900">{formatDeadline(task.deadline)}</td>
                 <td className="px-4 py-4 text-sm text-gray-900">

@@ -76,8 +76,8 @@ const WorkTasksPage: React.FC = () => {
     const allParticipantIds = new Set<string>();
     tasksData.forEach((task) => {
       task.participants.forEach((id) => allParticipantIds.add(id));
-      if (task.responsibleUser) {
-        allParticipantIds.add(task.responsibleUser);
+      if (task.responsibleUserId) {
+        allParticipantIds.add(task.responsibleUserId);
       }
     });
 
@@ -104,7 +104,7 @@ const WorkTasksPage: React.FC = () => {
       setError(null);
 
       const [tasksData, categoriesData] = await Promise.all([getTasks(), getCategories()]);
-
+      console.log(tasksData)
       setTasks(tasksData);
       setCategories(categoriesData);
 

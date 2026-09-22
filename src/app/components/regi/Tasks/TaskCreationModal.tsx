@@ -25,7 +25,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     deadline: '',
     hourEstimate: '',
     maxParticipants: '1', // Default to 1 participant required
-    responsibleUser: '',
+    responsibleUserId: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -42,7 +42,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
         deadline: '',
         hourEstimate: '',
         maxParticipants: '1', // Default to 1 participant required
-        responsibleUser: currentUser?.name ?? '',
+        responsibleUserId: currentUser?.id ?? '',
       });
       setErrors({});
     }
@@ -64,6 +64,8 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   const validateForm = (): boolean => {
     // First validate with Zod schema
     const result = safeParseTaskFormData(formData);
+
+    console.log(result)
 
     if (!result.success) {
       const zodErrors: FormErrors = {};
@@ -112,7 +114,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       title: formData.title.trim(),
       category: formData.category,
       description: formData.description.trim() || undefined,
-      responsibleUser: formData.responsibleUser || undefined,
+      responsibleUserId: formData.responsibleUserId || undefined,
       deadline: formData.deadline ? new Date(formData.deadline) : undefined,
       hourEstimate: formData.hourEstimate ? Number(formData.hourEstimate) : undefined,
       maxParticipants: Number(formData.maxParticipants), // Always a number now, never undefined
@@ -343,8 +345,8 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               <span className="font-medium">Ansvarsvakt:</span>
             </div>
             <select
-              id="responsibleUser"
-              onChange={(e) => handleInputChange('category', e.target.value)}
+              id="responsibleUserId"
+              onChange={(e) => handleInputChange('responsibleUserId', e.target.value)}
               className={`w-full border rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 ${
                 errors.category
                   ? 'border-red-300 focus:border-red-500'
@@ -352,7 +354,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               }`}
             >
               {users.map((user) => (
-                <option key={user.name} value={user.name}>
+                <option key={user.id} value={user.id}>
                   {user.name}
                 </option>
               ))}

@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 const UserSchema = z.object({
   name: z.string(),
+  id: z.string(),
   email: z.email(),
   phone: z.string(),
   birthDate: z.date().optional(),

@@ -5,6 +5,7 @@ import { ImportRowResult } from '../../shared/types/csvImport';
 function toAppUser(row: any): User {
   return {
     name: row.name ?? '',
+    id: row.id ?? '',
     email: row.email ?? '',
     birthDate: row.birth_date ?? null,
     phone: row.phone ?? '',
@@ -54,6 +55,7 @@ export async function getAllActiveUsersWithRegi(): Promise<User[]> {
 export async function updateUser(uid: string, data: Partial<User>): Promise<void> {
   const payload: any = {
     name: data.name,
+    id: data.id,
     email: data.email,
     birth_date: data.birthDate ?? undefined,
     phone: data.phone,
@@ -112,6 +114,7 @@ export async function createUser(
   const payload = {
     email: data.email,
     name: data.name,
+    id: data.id,
     phone: data.phone,
     birthDate: data.birthDate ? data.birthDate.toISOString().slice(0, 10) : undefined,
     address: {
