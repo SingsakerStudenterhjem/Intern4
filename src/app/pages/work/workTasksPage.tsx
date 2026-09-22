@@ -72,10 +72,32 @@ const WorkTasksPage: React.FC = () => {
   const canManageCategoriesCheck = canManageCategories(user?.role);
   const canDeleteTasksCheck = canManageTasks(user?.role);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  const loadParticipantNames = async (tasksData: Task[]): Promise<void> => {
+    const allParticipantIds = new Set<string>();
+    tasksData.forEach((task) => {
+      task.participants.forEach((id) => allParticipantIds.add(id));
+      if (task.responsibleUser) {
+        allParticipantIds.add(task.responsibleUser);
+      }
+    });
 
+    const namePromises = Array.from(allParticipantIds).map(async (userId) => {
+      try {
+        const userData = await getUser(userId);
+        return { userId, name: userData?.name || 'Ukjent bruker' };
+      } catch {
+        return { userId, name: 'Ukjent bruker' };
+      }
+    });
+
+    const names = await Promise.all(namePromises);
+    const nameMap = names.reduce((acc, { userId, name }) => {
+      acc[userId] = name;
+      return acc;
+    }, {} as ParticipantNames);
+
+    setParticipantNames(nameMap);
+  };
   const loadData = async (): Promise<void> => {
     try {
       setLoading(true);
@@ -97,32 +119,10 @@ const WorkTasksPage: React.FC = () => {
     }
   };
 
-  const loadParticipantNames = async (tasksData: Task[]): Promise<void> => {
-    const allParticipantIds = new Set<string>();
-    tasksData.forEach((task) => {
-      task.participants.forEach((id) => allParticipantIds.add(id));
-      if (task.contactPersonId) {
-        allParticipantIds.add(task.contactPersonId);
-      }
-    });
+  useEffect(() => {
+    loadData();
+  }, []);
 
-    const namePromises = Array.from(allParticipantIds).map(async (userId) => {
-      try {
-        const userData = await getUser(userId);
-        return { userId, name: userData?.name || 'Ukjent bruker' };
-      } catch {
-        return { userId, name: 'Ukjent bruker' };
-      }
-    });
-
-    const names = await Promise.all(namePromises);
-    const nameMap = names.reduce((acc, { userId, name }) => {
-      acc[userId] = name;
-      return acc;
-    }, {} as ParticipantNames);
-
-    setParticipantNames(nameMap);
-  };
 
   const handleCreateTask = async (taskData: TaskCreationData): Promise<void> => {
     try {

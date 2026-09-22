@@ -16,7 +16,6 @@ const TasksTable: React.FC<TasksTableProps> = ({
   onRowClick,
   onJoinTask,
   currentUserId,
-  userRole,
   participantNames = {},
 }) => {
   const formatDeadline = (deadline: any) => {
@@ -130,7 +129,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
                   </span>
                 </td>
                 <td className="px-4 py-4 text-sm text-gray-900">
-                  {(task.contactPersonId && participantNames[task.contactPersonId]) || '-'}
+                  {(task.responsibleUser && participantNames[task.responsibleUser]) || '-'}
                 </td>
                 <td className="px-4 py-4 text-sm text-gray-900">{formatDeadline(task.deadline)}</td>
                 <td className="px-4 py-4 text-sm text-gray-900">

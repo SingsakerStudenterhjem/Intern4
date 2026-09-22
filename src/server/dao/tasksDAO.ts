@@ -32,7 +32,7 @@ function toAppTask(row: any): Task {
     title: workItem?.title ?? '',
     description: workItem?.description ?? undefined,
     category: workCategory?.name ?? '',
-    contactPersonId: row.contact_person_uuid ?? undefined,
+    responsibleUser: row.contact_person_uuid ?? undefined,
     deadline: row.deadline ?? undefined,
     hourEstimate: row.time_estimate ?? undefined,
     maxParticipants: row.max_participants ?? undefined,
@@ -68,7 +68,7 @@ export async function addTask(data: TaskCreationData): Promise<string> {
     id: item.id,
     deadline: data.deadline ?? null,
     time_estimate: data.hourEstimate ?? null,
-    contact_person_uuid: data.contactPersonId ?? null,
+    contact_person_uuid: data.responsibleUser ?? null,
     max_participants: data.maxParticipants ?? undefined,
   });
   if (e3) throw new Error(`Could not add task: ${e3.message}`);
@@ -116,7 +116,7 @@ export async function updateTask(
   const patchTask: any = {
     deadline: data.deadline ?? undefined,
     time_estimate: data.hourEstimate ?? undefined,
-    contact_person_uuid: data.contactPersonId ?? undefined,
+    contact_person_uuid: data.responsibleUser ?? undefined,
     max_participants: data.maxParticipants ?? undefined,
   };
   Object.keys(patchTask).forEach((k) => patchTask[k] === undefined && delete patchTask[k]);

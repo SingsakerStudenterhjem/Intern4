@@ -12,13 +12,16 @@ const UserSchema = z.object({
     country: z.string().optional(),
   }),
   study: z.string(),
+  studyId: z.string(),
   studyPlace: z.string(),
+  schoolId: z.string(),
   profilePicture: z.string().optional(),
   seniority: z.number().int(),
   roomNumber: z.number().int(),
   role: z.string(),
+  role_id: z.number().int(),
   onLeave: z.boolean(),
-  isActive: z.boolean(),
+  is_active: z.boolean(),
   regiPreapproved: z.boolean().default(false),
   regiCategoryId: z.string().nullable().optional(),
   regiCategoryHours: z.number().optional(),
@@ -37,7 +40,7 @@ export const NewUserInputSchema = UserSchema.omit({ createdAt: true }).extend({
   seniority: UserSchema.shape.seniority.default(0),
   roomNumber: UserSchema.shape.roomNumber.default(0),
   onLeave: UserSchema.shape.onLeave.default(false),
-  isActive: UserSchema.shape.isActive.default(true),
+  is_active: UserSchema.shape.is_active.default(true),
 });
 
 export type NewUserInput = z.infer<typeof NewUserInputSchema>;

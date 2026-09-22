@@ -31,6 +31,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   if (!task) return null;
 
+  console.log(task);
+
   const formatDeadline = (deadline: any) => {
     if (!deadline) return 'Ingen frist';
 
@@ -205,8 +207,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   <span className="font-medium text-gray-700">Kontaktperson:</span>
                 </div>
                 <p className="text-sm text-gray-900 ml-6">
-                  {(task.contactPersonId && participantNames[task.contactPersonId]) ||
-                    'Ikke satt'}
+                  {(task.responsibleUser && participantNames[task.responsibleUser]) || 'Ikke satt'}
                 </p>
 
                 <div className="flex items-center space-x-2 text-sm">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Calendar, Clock, User, Users, X } from 'lucide-react';
+import { Calendar, Clock, Users, X } from 'lucide-react';
 import {
   FormErrors,
   safeParseTaskFormData,
@@ -8,6 +8,8 @@ import {
   TaskFormData,
   validateTaskCreationData,
 } from '../../../../shared/types/regi/tasks';
+import { getAllActiveUsersWithRegi } from '../../../../server/dao/userDAO';
+import { User } from '../../../../shared/types/user';
 
 const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   isOpen,
@@ -23,13 +25,16 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     deadline: '',
     hourEstimate: '',
     maxParticipants: '1', // Default to 1 participant required
+    responsibleUser: '',
   });
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       // Reset form when modal opens
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         title: '',
         category: categories.length > 0 ? categories[0].name : '',
@@ -37,10 +42,22 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
         deadline: '',
         hourEstimate: '',
         maxParticipants: '1', // Default to 1 participant required
+        responsibleUser: currentUser?.name ?? '',
       });
       setErrors({});
     }
   }, [isOpen, categories]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const data = await getAllActiveUsersWithRegi();
+        setUsers(data);
+      } catch (e) {
+        console.log(e);
+      }
+    })();
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -95,7 +112,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       title: formData.title.trim(),
       category: formData.category,
       description: formData.description.trim() || undefined,
-      contactPersonId: currentUser?.id || undefined,
+      responsibleUser: formData.responsibleUser || undefined,
       deadline: formData.deadline ? new Date(formData.deadline) : undefined,
       hourEstimate: formData.hourEstimate ? Number(formData.hourEstimate) : undefined,
       maxParticipants: Number(formData.maxParticipants), // Always a number now, never undefined
@@ -320,15 +337,26 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
           </div>
 
           {/* Contact Person Info */}
-          <div className="bg-gray-50 rounded-sm p-4">
+          <div>
             <div className="flex items-center space-x-2 text-sm text-gray-700">
-              <User className="w-4 h-4" />
-              <span className="font-medium">Kontaktperson:</span>
-              <span>{currentUser?.name || 'Ukjent'}</span>
+              <Users className="w-4 h-4 inline mr-1" />
+              <span className="font-medium">Ansvarsvakt:</span>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Du vil bli registrert som kontaktperson for denne oppgaven
-            </p>
+            <select
+              id="responsibleUser"
+              onChange={(e) => handleInputChange('category', e.target.value)}
+              className={`w-full border rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 ${
+                errors.category
+                  ? 'border-red-300 focus:border-red-500'
+                  : 'border-gray-300 focus:border-navy-500'
+              }`}
+            >
+              {users.map((user) => (
+                <option key={user.name} value={user.name}>
+                  {user.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Form Actions */}

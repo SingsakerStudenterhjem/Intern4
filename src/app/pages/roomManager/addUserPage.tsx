@@ -11,10 +11,22 @@ import {
   Role,
   BasicUserWithRole,
 } from '../../../server/dao/userDAO';
+import { getSchoolById, getSchools, getStudies, getStudyById } from '../../../server/dao/roomDAO';
+import { School } from '../../../shared/types/school';
+import { Study } from '../../../shared/types/study';
 
 type EditUserData = Pick<
   User,
-  'role' | 'roomNumber' | 'onLeave' | 'isActive' | 'phone' | 'study' | 'studyPlace' | 'seniority'
+  | 'role'
+  | 'roomNumber'
+  | 'onLeave'
+  | 'is_active'
+  | 'phone'
+  | 'study'
+  | 'studyId'
+  | 'studyPlace'
+  | 'schoolId'
+  | 'seniority'
 >;
 
 const AddUserPage: React.FC = () => {
@@ -29,13 +41,16 @@ const AddUserPage: React.FC = () => {
       city: '',
     },
     study: '',
+    studyId: '',
     studyPlace: '',
+    schoolId: '',
     profilePicture: '',
     seniority: 0,
     roomNumber: 0,
     role: 'Halv/Halv',
+    role_id: 0,
     onLeave: false,
-    isActive: true,
+    is_active: true,
     regiPreapproved: false,
   });
 
@@ -65,6 +80,9 @@ const AddUserPage: React.FC = () => {
     type: 'success' | 'error';
     text: string;
   } | null>(null);
+
+  const [schools, setSchools] = useState<School[]>([]);
+  const [studies, setStudies] = useState<Study[]>([]);
 
   const loadUsers = async () => {
     try {
@@ -100,15 +118,19 @@ const AddUserPage: React.FC = () => {
     setEditLoading(true);
     try {
       const fullUser = await getUser(user.id);
+      const studyPlace = await getSchoolById(fullUser?.schoolId);
+      const study = await getStudyById(fullUser?.studyId);
       if (fullUser) {
         setEditData({
           role: fullUser.role,
           roomNumber: fullUser.roomNumber,
           onLeave: fullUser.onLeave,
-          isActive: fullUser.isActive,
+          is_active: fullUser.is_active,
           phone: fullUser.phone,
-          study: fullUser.study,
-          studyPlace: fullUser.studyPlace,
+          study: study.name,
+          studyId: fullUser.studyId,
+          studyPlace: studyPlace.name,
+          schoolId: fullUser.schoolId,
           seniority: fullUser.seniority,
         });
       }
@@ -301,13 +323,16 @@ const AddUserPage: React.FC = () => {
         birthDate: new Date(),
         address: { street: '', postalCode: '', city: '' },
         study: '',
+        studyId: '',
         studyPlace: '',
+        schoolId: '',
         profilePicture: '',
         seniority: 0,
         roomNumber: 0,
         role: 'Halv/Halv',
+        role_id: 0,
         onLeave: false,
-        isActive: true,
+        is_active: true,
         regiPreapproved: false,
       });
       setBirthDateString('');
@@ -328,6 +353,19 @@ const AddUserPage: React.FC = () => {
       setIsSubmitting(false);
     }
   };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const schools = await getSchools();
+        const studies = await getStudies();
+        setSchools(schools);
+        setStudies(studies);
+      } catch (e) {
+        console.log(e);
+      }
+    })();
+  }, [showAddForm]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -544,7 +582,7 @@ const AddUserPage: React.FC = () => {
                         id="isActive"
                         name="isActive"
                         type="checkbox"
-                        checked={userData.isActive}
+                        checked={userData.is_active}
                         onChange={handleInputChange}
                         className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
                       />
@@ -560,15 +598,19 @@ const AddUserPage: React.FC = () => {
                     <label htmlFor="study" className="block text-sm font-medium text-gray-700 mb-1">
                       Studieprogram
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="study"
                       name="study"
                       value={userData.study}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
-                      placeholder="Dataingeniør"
-                    />
+                    >
+                      {studies.map((study) => (
+                        <option key={study.id} value={study.name}>
+                          {study.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
@@ -578,15 +620,19 @@ const AddUserPage: React.FC = () => {
                     >
                       Studiested
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="studyPlace"
                       name="studyPlace"
                       value={userData.studyPlace}
                       onChange={handleInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
-                      placeholder="NTNU"
-                    />
+                    >
+                      {schools.map((school) => (
+                        <option key={school.id} value={school.name}>
+                          {school.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -886,14 +932,19 @@ const AddUserPage: React.FC = () => {
                     >
                       Studieprogram
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="edit-study"
                       name="study"
                       value={editData.study}
                       onChange={handleEditInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
-                    />
+                    >
+                      {studies.map((study) => (
+                        <option key={study.id} value={study.name}>
+                          {study.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>
@@ -903,14 +954,19 @@ const AddUserPage: React.FC = () => {
                     >
                       Studiested
                     </label>
-                    <input
-                      type="text"
+                    <select
                       id="edit-studyPlace"
                       name="studyPlace"
                       value={editData.studyPlace}
                       onChange={handleEditInputChange}
                       className="w-full px-3 py-2 border border-gray-300 rounded-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
-                    />
+                    >
+                      {schools.map((school) => (
+                        <option key={school.id} value={school.id}>
+                          {school.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -936,7 +992,7 @@ const AddUserPage: React.FC = () => {
                       id="edit-isActive"
                       name="isActive"
                       type="checkbox"
-                      checked={editData.isActive}
+                      checked={editData.is_active}
                       onChange={handleEditInputChange}
                       className="h-4 w-4 text-navy-600 focus:ring-navy-500 border-gray-300 rounded"
                     />

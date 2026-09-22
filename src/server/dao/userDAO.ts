@@ -1,5 +1,5 @@
 import { supabase } from '../supabaseClient';
-import { User, NewUserInput } from '../../shared/types/user';
+import { NewUserInput, User } from '../../shared/types/user';
 import { ImportRowResult } from '../../shared/types/csvImport';
 
 function toAppUser(row: any): User {
@@ -16,11 +16,13 @@ function toAppUser(row: any): User {
     },
     profilePicture: row.profile_picture ?? '',
     studyPlace: row.place_of_education ?? '',
-    study: row.study_program ?? 'annet',
+    study: row.study ?? 'annet',
+    studyId: row.study_id ?? 'annet',
+    schoolId: row.school_id ?? '',
     seniority: row.seniority ?? 0,
     roomNumber: row.room_number ?? 0,
     onLeave: row.on_leave ?? false,
-    isActive: row.is_active ?? true,
+    is_active: row.is_active ?? true,
     regiPreapproved: row.regi_preapproved ?? false,
     regiCategoryId: row.regi_category_id != null ? String(row.regi_category_id) : null,
     regiCategoryHours:
@@ -29,6 +31,7 @@ function toAppUser(row: any): User {
         : undefined,
     createdAt: row.created_at,
     role: row.roles?.name ?? 'Halv/Halv',
+    role_id: row.role_id ?? 5,
   };
 }
 
@@ -42,19 +45,25 @@ export async function getUser(uid: string): Promise<User | undefined> {
   return data ? toAppUser(data) : undefined;
 }
 
+export async function getAllActiveUsersWithRegi(): Promise<User[]> {
+  const { data, error } = await supabase.from('users').select('*, *');
+  if (error) throw new Error(error.message);
+  return data.filter((user) => user.role_id !== 7 && user.is_active);
+}
+
 export async function updateUser(uid: string, data: Partial<User>): Promise<void> {
   const payload: any = {
     name: data.name,
     email: data.email,
     birth_date: data.birthDate ?? undefined,
     phone: data.phone,
-    place_of_education: data.studyPlace,
+    school_id: data.schoolId,
     profile_picture: data.profilePicture,
-    study_program: data.study,
+    study_id: data.studyId,
     seniority: data.seniority,
     room_number: data.roomNumber,
     on_leave: data.onLeave,
-    is_active: data.isActive,
+    is_active: data.is_active,
     regi_preapproved: data.regiPreapproved,
     street: data.address?.street,
     postal_code: data.address?.postalCode,
@@ -117,7 +126,7 @@ export async function createUser(
     seniority: data.seniority,
     roomNumber: data.roomNumber,
     onLeave: data.onLeave,
-    isActive: data.isActive,
+    isActive: data.is_active,
     role: data.role,
   };
 
