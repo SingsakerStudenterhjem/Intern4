@@ -104,7 +104,6 @@ const WorkTasksPage: React.FC = () => {
       setError(null);
 
       const [tasksData, categoriesData] = await Promise.all([getTasks(), getCategories()]);
-      console.log(tasksData)
       setTasks(tasksData);
       setCategories(categoriesData);
 

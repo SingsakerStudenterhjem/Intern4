@@ -65,8 +65,6 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     // First validate with Zod schema
     const result = safeParseTaskFormData(formData);
 
-    console.log(result)
-
     if (!result.success) {
       const zodErrors: FormErrors = {};
       result.error.issues.forEach((issue) => {

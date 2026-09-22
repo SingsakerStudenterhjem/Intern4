@@ -31,8 +31,6 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   if (!task) return null;
 
-  console.log(task);
-
   const formatDeadline = (deadline: any) => {
     if (!deadline) return 'Ingen frist';
 
