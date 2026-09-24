@@ -293,7 +293,6 @@ export async function getApprovedRegiHoursByUserSince(
     if (fromUid) acc[fromUid] = (acc[fromUid] ?? 0) - hours;
     if (toUid) acc[toUid] = (acc[toUid] ?? 0) + hours;
   });
-
   return acc;
 }
 
@@ -301,6 +300,12 @@ export async function getNetAvailableHours(userId: string): Promise<number> {
   const hoursMap = await getApprovedRegiHoursByUserSince();
   return hoursMap[userId] ?? 0;
 }
+
+export function getSemesterStart(): Date{
+  const now = new Date();
+  const year = now.getFullYear();
+  return now.getMonth() < 7 ? new Date(year, 0, 1) : new Date(year, 7, 1);
+};
 
 export async function giveAwayRegiHours(
   fromUserId: string,

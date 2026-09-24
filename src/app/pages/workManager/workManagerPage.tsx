@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import WorkApprovalList from '../../components/regi/WorkManager/WorkApprovalList';
 import RegiTransferApprovalList from '../../components/regi/WorkManager/RegiTransferApprovalList';
 import Registatus from '../../components/regi/WorkManager/Registatus';
@@ -6,6 +6,8 @@ import GrantRegiForm from '../../components/regi/WorkManager/GrantRegiForm';
 import GrantPenaltyForm from '../../components/regi/WorkManager/GrantPenaltyForm';
 import RegiCategoryManagement from '../../components/regi/WorkManager/RegiCategoryManagement';
 import RegiLogs from '../../components/regi/WorkManager/RegiLogs';
+import {getAllActiveUsersWithRegi} from "../../../server/dao/userDAO";
+import {getApprovedRegiHoursByUserSince, getSemesterStart} from "../../../server/dao/regiDAO";
 
 type TabKey = 'godkjenning' | 'oversikt' | 'gi-timer' | 'gi-straff' | 'kategorier' | 'regilogger';
 
@@ -21,9 +23,32 @@ const TABS: { key: TabKey; label: string }[] = [
 const WorkManagerPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>('godkjenning');
   // To-be implemented
-  // const [totalHours, setTotalHours] = useState<number>(0);
-  // const [approvedHours, setApprovedHours] = useState<number>(0);
-  // const [remainingHours, setRemainingHours] = useState<number>(0);
+  const [totalHours, setTotalHours] = useState<number>(0);
+  const [approvedHours, setApprovedHours] = useState<number>(0);
+  const [remainingHours, setRemainingHours] = useState<number>(0);
+
+  const startDate = getSemesterStart()
+
+  async function getAllHours() {
+    const users = await getAllActiveUsersWithRegi();
+    const fullRegiUsers = users.filter((user) => user.role_id != 5);
+    const halfRegiUsers = users.filter((user) => user.role_id == 5);
+    const totalHours = ((fullRegiUsers.length - 1) * 48) + ((halfRegiUsers.length - 1) * 18);
+    const approvedHours = await getApprovedRegiHoursByUserSince(startDate);
+    var approvedHoursSum = 0;
+    Object.keys(approvedHours).forEach((key) => {
+      approvedHoursSum += approvedHours[key];
+    });
+    setTotalHours(totalHours);
+    setApprovedHours(approvedHoursSum)
+    setRemainingHours(totalHours - approvedHoursSum)
+  };
+
+  useEffect(() => {
+    (async ()=> {
+      getAllHours()
+    })();
+  }, [activeTab]);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -35,9 +60,9 @@ const WorkManagerPage: React.FC = () => {
             <p className="text-gray-600 mt-1">
               Godkjenn innsendte timer, gi regi til beboere og følg status for hele huset.
             </p>
-            {/*<p className="text-gray-600 mt-1">*/}
-            {/*  Periodens totale antall regitimer: x, Godkjente timer: y, Resterende timer: z*/}
-            {/*</p>*/}
+            <><p className="text-gray-600 mt-1">
+              Periodens totale antall regitimer: {totalHours}, Godkjente timer: {approvedHours}, Resterende timer: {remainingHours}
+            </p></>
           </div>
         </header>
 

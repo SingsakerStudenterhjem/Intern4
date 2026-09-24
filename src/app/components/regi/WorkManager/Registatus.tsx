@@ -6,6 +6,7 @@ import { getRequiredRegiHours } from '../../../constants/regiRequirements';
 import {
   getApprovedRegiHoursByUserSince,
   getTotalPenaltyHoursByUser,
+  getSemesterStart
 } from '../../../../server/dao/regiDAO';
 import {
   getActiveUsersWithRole,
@@ -27,12 +28,6 @@ type RegistatusRow = {
   onLeave: boolean;
   regiPreapproved: boolean;
   regiCategoryId?: string;
-};
-
-const getSemesterStart = (): Date => {
-  const now = new Date();
-  const year = now.getFullYear();
-  return now.getMonth() < 7 ? new Date(year, 0, 1) : new Date(year, 7, 1);
 };
 
 const semesterStart = getSemesterStart();
