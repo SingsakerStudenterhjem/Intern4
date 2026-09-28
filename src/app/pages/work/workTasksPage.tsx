@@ -122,7 +122,6 @@ const WorkTasksPage: React.FC = () => {
     loadData();
   }, []);
 
-
   const handleCreateTask = async (taskData: TaskCreationData): Promise<void> => {
     try {
       await addTask(taskData);

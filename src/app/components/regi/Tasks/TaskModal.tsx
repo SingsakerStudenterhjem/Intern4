@@ -205,14 +205,15 @@ const TaskModal: React.FC<TaskModalProps> = ({
                   <span className="font-medium text-gray-700">Ansvarsvakt:</span>
                 </div>
                 <p className="text-sm text-gray-900 ml-6">
-                  {(task.responsibleUserId && participantNames[task.responsibleUserId]) || 'Ikke satt'}
+                  {(task.responsibleUserId && participantNames[task.responsibleUserId]) ||
+                    'Ikke satt'}
                 </p>
 
                 <div className="flex items-center space-x-2 text-sm">
                   <Calendar className="w-4 h-4 text-gray-500" />
                   <span className="font-medium text-gray-700">Frist:</span>
                 </div>
-                <p className="text-sm text-gray-900 ml-6">{formatDeadline(task.deadline)}</p>
+                <p className="text-sm text-gray-900 ml-6">{formatDeadline(task.time)}</p>
 
                 <div className="flex items-center space-x-2 text-sm">
                   <Clock className="w-4 h-4 text-gray-500" />

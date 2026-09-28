@@ -22,7 +22,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     title: '',
     category: '',
     description: '',
-    deadline: '',
+    time: '',
     hourEstimate: '',
     maxParticipants: '1', // Default to 1 participant required
     responsibleUserId: '',
@@ -39,7 +39,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
         title: '',
         category: categories.length > 0 ? categories[0].name : '',
         description: '',
-        deadline: '',
+        time: '',
         hourEstimate: '',
         maxParticipants: '1', // Default to 1 participant required
         responsibleUserId: currentUser?.id ?? '',
@@ -113,7 +113,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       category: formData.category,
       description: formData.description.trim() || undefined,
       responsibleUserId: formData.responsibleUserId || undefined,
-      deadline: formData.deadline ? new Date(formData.deadline) : undefined,
+      time: formData.time ? new Date(formData.time) : undefined,
       hourEstimate: formData.hourEstimate ? Number(formData.hourEstimate) : undefined,
       maxParticipants: Number(formData.maxParticipants), // Always a number now, never undefined
     };
@@ -195,7 +195,6 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                   ? 'border-red-300 focus:border-red-500'
                   : 'border-gray-300 focus:border-navy-500'
               }`}
-              placeholder="Begå lovbrudd"
               aria-invalid={!!errors.title}
               aria-describedby={errors.title ? 'title-error' : undefined}
             />
@@ -254,17 +253,17 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
           {/* Two column layout for smaller fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Deadline */}
+            {/* time */}
             <div>
-              <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="time" className="block text-sm font-medium text-gray-700 mb-2">
                 <Calendar className="w-4 h-4 inline mr-1" />
-                Frist
+                Dato
               </label>
               <input
                 type="datetime-local"
-                id="deadline"
-                value={formData.deadline}
-                onChange={(e) => handleInputChange('deadline', e.target.value)}
+                id="time"
+                value={formData.time}
+                onChange={(e) => handleInputChange('time', e.target.value)}
                 className="w-full border border-gray-300 rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 focus:border-navy-500"
               />
             </div>
@@ -290,7 +289,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
                     ? 'border-red-300 focus:border-red-500'
                     : 'border-gray-300 focus:border-navy-500'
                 }`}
-                placeholder="F.eks. 2.5"
+                placeholder="0"
                 aria-invalid={!!errors.hourEstimate}
                 aria-describedby={errors.hourEstimate ? 'hourEstimate-error' : undefined}
               />

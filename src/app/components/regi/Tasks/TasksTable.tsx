@@ -79,7 +79,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
               <div className="flex items-center space-x-1">
                 <Calendar className="w-4 h-4" />
-                <span>Frist</span>
+                <span>Dato</span>
               </div>
             </th>
             <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -131,7 +131,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
                 <td className="px-4 py-4 text-sm text-gray-900">
                   {(task.responsibleUserId && participantNames[task.responsibleUserId]) || '-'}
                 </td>
-                <td className="px-4 py-4 text-sm text-gray-900">{formatDeadline(task.deadline)}</td>
+                <td className="px-4 py-4 text-sm text-gray-900">{formatDeadline(task.time)}</td>
                 <td className="px-4 py-4 text-sm text-gray-900">
                   {task.hourEstimate ? `${task.hourEstimate}t` : '-'}
                 </td>

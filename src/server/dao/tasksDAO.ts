@@ -11,7 +11,7 @@ function getJoinedValue<T>(value: SupabaseJoin<T>): T | undefined {
 const TASK_SELECT = `
   id,
   created_at,
-  deadline,
+  time,
   time_estimate,
   contact_person_uuid,
   max_participants,
@@ -33,7 +33,7 @@ function toAppTask(row: any): Task {
     description: workItem?.description ?? undefined,
     category: workCategory?.name ?? '',
     responsibleUserId: row.contact_person_uuid ?? undefined,
-    deadline: row.deadline ?? undefined,
+    time: row.time ?? undefined,
     hourEstimate: row.time_estimate ?? undefined,
     maxParticipants: row.max_participants ?? undefined,
     participants: (workItem?.participants ?? []).map((p: any) => String(p.user_uuid)),
@@ -66,7 +66,7 @@ export async function addTask(data: TaskCreationData): Promise<string> {
 
   const { error: e3 } = await supabase.from('work_tasks').insert({
     id: item.id,
-    deadline: data.deadline ?? null,
+    time: data.time ?? null,
     time_estimate: data.hourEstimate ?? null,
     contact_person_uuid: data.responsibleUserId ?? null,
     max_participants: data.maxParticipants ?? undefined,
@@ -91,7 +91,7 @@ export async function getTasks(): Promise<Task[]> {
   const { data, error } = await supabase
     .from('work_tasks')
     .select(TASK_SELECT)
-    .order('deadline', { ascending: true });
+    .order('time', { ascending: true });
 
   if (error) {
     throw new Error(`Could not get tasks: ${error.message}`);
@@ -112,9 +112,9 @@ export async function updateTask(
     if (error) throw new Error(`Could not update task: ${error.message}`);
   }
 
-  // update work_tasks if deadline, estimate, contact person or capacity changed
+  // update work_tasks if time, estimate, contact person or capacity changed
   const patchTask: any = {
-    deadline: data.deadline ?? undefined,
+    time: data.time ?? undefined,
     time_estimate: data.hourEstimate ?? undefined,
     contact_person_uuid: data.responsibleUserId ?? undefined,
     max_participants: data.maxParticipants ?? undefined,
@@ -177,7 +177,7 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
     .from('work_tasks')
     .select(TASK_SELECT)
     .in('id', taskIds)
-    .order('deadline', { ascending: true });
+    .order('time', { ascending: true });
 
   if (error) {
     throw new Error(`Could not get user tasks: ${error.message}`);
