@@ -68,7 +68,9 @@ const AboutMePage = () => {
           <div className="flex justify-between items-start">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Profil</h1>
-              <p className="text-gray-600 mt-1">Se og rediger personlig informasjon.</p>
+              <p className="text-gray-600 mt-1">
+                Se og rediger personlig informasjon. OBS! Redigering er ikke implementert enda.
+              </p>
             </div>
           </div>
           <div className="bg-white rounded-sm shadow p-5">
