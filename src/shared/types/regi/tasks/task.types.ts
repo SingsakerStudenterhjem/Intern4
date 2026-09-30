@@ -22,7 +22,7 @@ export const TaskFormDataSchema = z.object({
   time: z.string().default(''), // datetime-local input gives string
   hourEstimate: z.string().default(''), // number input as string
   maxParticipants: z.string().default('1'), // number input as string
-  responsibleUserId: z.string().default(''),
+  responsibleUserId: z.string().default('').optional(),
 });
 
 // Task Creation Data Schema (processed form data for API)

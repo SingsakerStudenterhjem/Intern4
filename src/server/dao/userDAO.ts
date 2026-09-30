@@ -49,7 +49,7 @@ export async function getUser(uid: string): Promise<User | undefined> {
 export async function getAllActiveUsersWithRegi(): Promise<User[]> {
   const { data, error } = await supabase.from('users').select('*, *');
   if (error) throw new Error(error.message);
-  return data.filter((user) => user.role_id !== 7 && user.is_active);
+  return data.filter((user) => (user.role_id == 5 || user.role_id == 6) && user.is_active);
 }
 
 export async function updateUser(uid: string, data: Partial<User>): Promise<void> {

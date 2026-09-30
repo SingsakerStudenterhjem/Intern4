@@ -30,6 +30,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [users, setUsers] = useState<User[]>([]);
+  const [hasResponsibleUser, setHasResponsibleUser] = useState<boolean>(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -42,7 +43,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
         time: '',
         hourEstimate: '',
         maxParticipants: '1', // Default to 1 participant required
-        responsibleUserId: currentUser?.id ?? '',
+        responsibleUserId: '',
       });
       setErrors({});
     }
@@ -336,26 +337,38 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
           </div>
 
           {/* Contact Person Info */}
-          <div>
-            <div className="flex items-center space-x-2 text-sm text-gray-700">
-              <Users className="w-4 h-4 inline mr-1" />
-              <span className="font-medium">Ansvarsvakt:</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <div className="flex items-center space-x-2 text-sm text-gray-700">
+                <Users className="w-4 h-4 inline mr-1" />
+                <span className="font-medium">Ha ansvarsvakt:</span>
+              </div>
+              <input type="checkbox" onClick={() => setHasResponsibleUser(!hasResponsibleUser)} />
             </div>
-            <select
-              id="responsibleUserId"
-              onChange={(e) => handleInputChange('responsibleUserId', e.target.value)}
-              className={`w-full border rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 ${
-                errors.category
-                  ? 'border-red-300 focus:border-red-500'
-                  : 'border-gray-300 focus:border-navy-500'
-              }`}
-            >
-              {users.map((user) => (
-                <option key={user.id} value={user.id}>
-                  {user.name}
-                </option>
-              ))}
-            </select>
+            <div>
+              <div className="flex items-center space-x-2 text-sm text-gray-700">
+                <Users className="w-4 h-4 inline mr-1" />
+                <span className="font-medium">Ansvarsvakt:</span>
+              </div>
+              <select
+                id="responsibleUserId"
+                onChange={(e) => handleInputChange('responsibleUserId', e.target.value)}
+                className={`w-full border rounded-sm px-3 py-2 focus:outline-none focus:ring-2 focus:ring-navy-500 ${
+                  errors.category
+                    ? 'border-red-300 focus:border-red-500'
+                    : 'border-gray-300 focus:border-navy-500'
+                }`}
+                disabled={!hasResponsibleUser}
+              >
+                {hasResponsibleUser
+                  ? users.map((user) => (
+                      <option key={user.id} value={user.id}>
+                        {user.name}
+                      </option>
+                    ))
+                  : null}
+              </select>
+            </div>
           </div>
 
           {/* Form Actions */}
