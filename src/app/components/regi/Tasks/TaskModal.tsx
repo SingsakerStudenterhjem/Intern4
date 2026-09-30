@@ -32,7 +32,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
   if (!task) return null;
 
   const formatDeadline = (deadline: any) => {
-    if (!deadline) return 'Ingen frist';
+    if (!deadline) return 'Ingen dato';
 
     if (deadline?.seconds) {
       return new Date(deadline.seconds * 1000).toLocaleString('no-NO');

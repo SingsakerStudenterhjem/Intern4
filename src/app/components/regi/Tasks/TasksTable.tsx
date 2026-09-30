@@ -19,7 +19,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
   participantNames = {},
 }) => {
   const formatDeadline = (deadline: any) => {
-    if (!deadline) return 'Ingen frist';
+    if (!deadline) return 'Ingen dato';
 
     // Handle Firestore Timestamp
     if (deadline?.seconds) {
