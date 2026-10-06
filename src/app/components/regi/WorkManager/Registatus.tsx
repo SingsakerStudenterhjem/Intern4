@@ -8,7 +8,13 @@ import {
   getTotalPenaltyHoursByUser,
   getSemesterStart,
 } from '../../../../server/dao/regiDAO';
-import { getActiveUsersWithRole, setRegiPreapproved } from '../../../../server/dao/userDAO';
+import {
+  getActiveUsersWithRole,
+  getRoles,
+  Role,
+  setRegiPreapproved,
+  updateUser,
+} from '../../../../server/dao/userDAO';
 
 type RegistatusRow = {
   id: string;
@@ -33,17 +39,20 @@ const Registatus: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [roles, setRoles] = useState<Role[]>();
 
   const load = async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
 
-      const [activeUsers, hoursMap, penaltyMap] = await Promise.all([
+      const [activeUsers, hoursMap, penaltyMap, rolesData] = await Promise.all([
         getActiveUsersWithRole(),
         getApprovedRegiHoursByUserSince(semesterStart),
         getTotalPenaltyHoursByUser(),
+        getRoles(),
       ]);
+      setRoles(rolesData);
 
       const nextRows = activeUsers.map((u) => {
         const penaltyHours = penaltyMap[u.id] ?? 0;
@@ -85,7 +94,7 @@ const Registatus: React.FC = () => {
     if (authLoading) return;
     if (!user) return;
     if (!canApproveWork(user.role)) return;
-    load();
+    (async () => load())();
   }, [authLoading, user?.id, user?.role]);
 
   const handleTogglePreapproved = async (row: RegistatusRow) => {
@@ -208,7 +217,21 @@ const Registatus: React.FC = () => {
                     <div className="font-medium">{row.name}</div>
                     <div className="text-xs text-gray-500">{row.email}</div>
                   </td>
-                  <td className="px-4 py-3">{row.role ?? 'Uten rolle'}</td>
+                  <td className="px-4 py-3">
+                    <select
+                      defaultValue={row.role}
+                      onChange={(e) => {
+                        e.preventDefault();
+                        (async () => updateUser(row.id, { role: e.target.value }))();
+                      }}
+                    >
+                      {roles?.map((role) => (
+                        <option key={role.id} value={role.name}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="px-4 py-3">{row.approvedHours.toFixed(2)} t</td>
                   <td className="px-4 py-3">
                     {row.requiredHours.toFixed(0)} t

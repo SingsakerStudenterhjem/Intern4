@@ -31,6 +31,9 @@ type EditUserData = Pick<
 
 const AddUserPage: React.FC = () => {
   const [userData, setUserData] = useState<NewUserInput>({
+    id: '',
+    regiCategoryHours: undefined,
+    regiCategoryId: undefined,
     name: '',
     email: '',
     phone: '',
@@ -183,7 +186,7 @@ const AddUserPage: React.FC = () => {
       .then((data) => setRoles(data))
       .catch((err) => console.error('Failed to load roles:', err))
       .finally(() => setRolesLoading(false));
-    loadUsers();
+    (async () => loadUsers())();
   }, []);
 
   const availableRoles = Array.from(new Set(users.map((u) => u.role).filter(Boolean))).sort();
@@ -317,6 +320,9 @@ const AddUserPage: React.FC = () => {
       });
 
       setUserData({
+        id: '',
+        regiCategoryHours: undefined,
+        regiCategoryId: undefined,
         name: '',
         email: '',
         phone: '',
