@@ -3,8 +3,9 @@ import WorkApprovalList from '../components/WorkApprovalList';
 import Registatus from '../status/components/Registatus';
 import GrantRegiForm from '../components/GrantRegiForm';
 import { PageLayout } from '../../../shared/layouts';
-// import RegiLogs from '../components/RegiLogs';
 import RegiLogsPage from '../components/RegiLogsPage';
+import RegiCategoryManagement from '../components/RegiCategoryManagement';
+import GrantPenaltyForm from '../components/GrantPunishmentRegi';
 
 type TabKey = 'godkjenning' | 'oversikt' | 'gi-timer' | 'gi-straff' | 'kategorier' | 'regilogger';
 
@@ -52,8 +53,8 @@ const WorkManagerPage: React.FC = () => {
         )}
         {activeTab === 'oversikt' && <Registatus />}
         {activeTab === 'gi-timer' && <GrantRegiForm />}
-        {/*{activeTab === 'gi-straff' && <GrantPenaltyForm />}*/}
-        {/*{activeTab === 'kategorier' && <RegiCategoryManagement />}*/}
+        {activeTab === 'gi-straff' && <GrantPenaltyForm />}
+        {activeTab === 'kategorier' && <RegiCategoryManagement />}
         {activeTab === 'regilogger' && <RegiLogsPage />}
       </section>
     </PageLayout>
