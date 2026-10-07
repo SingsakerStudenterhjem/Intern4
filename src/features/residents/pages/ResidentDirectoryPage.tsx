@@ -18,7 +18,7 @@ import { getResidentDirectoryUsers } from '../../../server/dao/userDAO';
 import { PageLayout } from '../../../shared/layouts';
 import { ResidentDirectoryUser } from '../../../shared/types/user';
 import { formatDate } from '../../../shared/utils/date';
-import { RESIDENT_PATHS } from '../paths';
+import { RESIDENT_PATHS } from '../../../shared/paths';
 import {
   buildStatistics,
   filterResidents,

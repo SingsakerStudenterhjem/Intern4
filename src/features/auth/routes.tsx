@@ -2,7 +2,7 @@ import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import type { FeatureRoute } from '../../shared/types/feature';
-import { AUTH_PATHS } from './paths';
+import { AUTH_PATHS } from '../../shared/paths';
 
 export const authRoutes: FeatureRoute[] = [
   {

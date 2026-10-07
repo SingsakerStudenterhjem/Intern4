@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { TASK_PATHS } from '../../features/tasks/paths';
+import { TASK_PATHS } from '../../shared/paths';
 
 const NotFoundPage = () => {
   return (

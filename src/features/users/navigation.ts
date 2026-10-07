@@ -1,6 +1,6 @@
 import type { FeatureNavItem, PermissionCheck } from '../../shared/types/feature';
 import { canAccessRoomManagement } from './permissions';
-import { USER_PATHS } from './paths';
+import { USER_PATHS } from '../../shared/paths';
 
 const canAccessRoomManagementItem: PermissionCheck = ({ user }) =>
   canAccessRoomManagement(user?.role);

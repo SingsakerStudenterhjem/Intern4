@@ -4,7 +4,7 @@ import { ArrowRight } from 'lucide-react';
 import WorkApprovalList from '../approvals/components/WorkApprovalList';
 import Registatus from '../status/components/Registatus';
 import GrantRegiForm from '../granting/components/GrantRegiForm';
-import { REGI_PATHS } from '../paths';
+import { REGI_PATHS } from '../../../shared/paths';
 import { PageLayout } from '../../../shared/layouts';
 
 const WorkManagerPage: React.FC = () => {

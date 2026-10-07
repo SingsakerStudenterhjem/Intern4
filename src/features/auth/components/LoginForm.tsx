@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { logIn } from '../../../server/dao/authentication';
 import { useAuth } from '../../../app/providers/AuthContext';
 import { useEffect } from 'react';
-import { AUTH_PATHS } from '../paths';
+import { AUTH_PATHS } from '../../../shared/paths';
 
 const LoginForm = () => {
   const router = useNavigate();

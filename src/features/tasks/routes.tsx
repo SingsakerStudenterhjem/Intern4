@@ -1,6 +1,6 @@
 import WorkTasksPage from './pages/WorkTasksPage';
 import type { FeatureRoute } from '../../shared/types/feature';
-import { TASK_PATHS } from './paths';
+import { TASK_PATHS } from '../../shared/paths';
 
 export const taskRoutes: FeatureRoute[] = [
   {

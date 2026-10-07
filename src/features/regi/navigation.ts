@@ -1,7 +1,7 @@
 import type { FeatureNavItem, PermissionCheck } from '../../shared/types/feature';
-import { canApproveWork } from './permissions';
-import { REGI_PATHS } from './paths';
-import { TASK_PATHS } from '../tasks/paths';
+import { canApproveWork } from '../regi-boss/permissions';
+import { REGI_PATHS } from '../../shared/paths';
+import { TASK_PATHS } from '../../shared/paths';
 
 const canAccessRegiManager: PermissionCheck = ({ user }) => canApproveWork(user?.role);
 

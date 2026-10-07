@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../../server/supabaseClient';
 import { resetPassword } from '../../../server/dao/authentication';
-import { AUTH_PATHS } from '../paths';
-import { TASK_PATHS } from '../../tasks/paths';
+import { AUTH_PATHS } from '../../../shared/paths';
+import { TASK_PATHS } from '../../../shared/paths';
 import { useAuth } from '../../../app/providers/AuthContext';
 
 const ResetPasswordForm = () => {

@@ -1,7 +1,7 @@
 import ProfilePage from './pages/ProfilePage';
 import AddUserPage from './pages/AddUserPage';
 import type { FeatureRoute } from '../../shared/types/feature';
-import { USER_PATHS } from './paths';
+import { USER_PATHS } from '../../shared/paths';
 
 export const userRoutes: FeatureRoute[] = [
   {

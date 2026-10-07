@@ -1,5 +1,5 @@
 import type { FeatureNavItem } from '../../shared/types/feature';
-import { TASK_PATHS } from './paths';
+import { TASK_PATHS } from '../../shared/paths';
 
 export const taskNavigation: FeatureNavItem[] = [
   {

@@ -1,5 +1,5 @@
 import type { FeatureNavItem } from '../../shared/types/feature';
-import { RESIDENT_PATHS } from './paths';
+import { RESIDENT_PATHS } from '../../shared/paths';
 
 export const residentNavigation: FeatureNavItem[] = [
   {

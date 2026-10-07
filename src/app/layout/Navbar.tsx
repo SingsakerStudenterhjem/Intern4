@@ -7,8 +7,8 @@ import { logOut } from '../../server/dao/authentication';
 import { appNavigation } from './navigation';
 import type { FeatureNavItem } from '../../shared/types/feature';
 import { APP_ROUTES } from '../constants/appRoutes';
-import { AUTH_PATHS } from '../../features/auth/paths';
-import { USER_PATHS } from '../../features/users/paths';
+import { AUTH_PATHS } from '../../shared/paths';
+import { USER_PATHS } from '../../shared/paths';
 
 const Navbar = () => {
   const { user } = useAuth();

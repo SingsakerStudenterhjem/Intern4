@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import WorkLogForm from '../components/WorkLogForm';
 import WorkLogList from '../components/WorkLogList';
 import { useAuth } from '../../../../app/providers/AuthContext';
-import { TASK_PATHS } from '../../../tasks/paths';
+import { TASK_PATHS } from '../../../../shared/paths';
 import { PageLayout } from '../../../../shared/layouts';
 
 const WorkPage = () => {

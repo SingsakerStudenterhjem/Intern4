@@ -1,6 +1,6 @@
 import ResidentDirectoryPage from './pages/ResidentDirectoryPage';
 import type { FeatureRoute } from '../../shared/types/feature';
-import { RESIDENT_PATHS } from './paths';
+import { RESIDENT_PATHS } from '../../shared/paths';
 
 export const residentRoutes: FeatureRoute[] = [
   {

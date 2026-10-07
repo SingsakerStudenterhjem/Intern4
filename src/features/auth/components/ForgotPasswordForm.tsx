@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../../../server/dao/authentication';
-import { AUTH_PATHS } from '../paths';
+import { AUTH_PATHS } from '../../../shared/paths';
 
 const COOLDOWN_SECONDS = 60;
 

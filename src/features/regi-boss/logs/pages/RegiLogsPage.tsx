@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { RefreshCw, Search } from 'lucide-react';
 import { RegiLogWithUser } from '../../../../shared/types/regi';
 import { getAllRegiLogs } from '../../../../server/dao/regiDAO';
-import { REGI_PATHS } from '../../paths';
+import { REGI_PATHS } from '../../../../shared/paths';
 import { useAuth } from '../../../../app/providers/AuthContext';
 import { canApproveWork } from '../../permissions';
 import { PageLayout } from '../../../../shared/layouts';

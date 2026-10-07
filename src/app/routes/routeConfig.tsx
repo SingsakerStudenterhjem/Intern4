@@ -5,7 +5,7 @@ import ProtectedRoute from './ProtectedRoute';
 import { APP_ROUTES } from '../constants/appRoutes';
 import { features } from '../../features';
 import type { FeatureRoute } from '../../shared/types/feature';
-import { TASK_PATHS } from '../../features/tasks/paths';
+import { TASK_PATHS } from '../../shared/paths';
 
 const featureRoutes: FeatureRoute[] = features.flatMap((feature) => feature.routes ?? []);
 
