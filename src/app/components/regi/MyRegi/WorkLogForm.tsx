@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { z } from 'zod';
 import { RegiLogSchema, WorkTypeSchema } from '../../../../shared/types/regi';
 import { addRegiLog } from '../../../../server/dao/regiDAO';
 import { useAuth } from '../../../hooks/useAuth';
 import { Category } from '../../../../shared/types/regi/tasks';
 import { getCategories } from '../../../../server/dao/categoriesDAO';
+import { X } from 'lucide-react';
 
 const FormSchema = z.object({
   title: z.string().min(1, 'Påkrevd'),
@@ -15,8 +16,11 @@ const FormSchema = z.object({
   images: z.array(z.instanceof(File)).optional(),
 });
 
+const getFileKey = (file: File) => `${file.name}-${file.size}-${file.lastModified}`;
+
 const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const { user } = useAuth();
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -28,6 +32,28 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
     hours: '',
     type: '',
   });
+
+  const syncFiles = (nextFiles: File[]) => {
+    setFiles(nextFiles);
+
+    if (!fileInputRef.current) return;
+    fileInputRef.current.value = '';
+  };
+
+  const addFiles = (selectedFiles: File[]) => {
+    if (selectedFiles.length === 0) return;
+
+    const existingFileKeys = new Set(files.map(getFileKey));
+    const nextFiles = [...files];
+
+    selectedFiles.forEach((file) => {
+      if (!existingFileKeys.has(getFileKey(file))) {
+        nextFiles.push(file);
+      }
+    });
+
+    syncFiles(nextFiles);
+  };
 
   useEffect(() => {
     let mounted = true;
@@ -83,14 +109,17 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         status: 'pending',
       });
 
-      await addRegiLog({
-        userId: payload.userId,
-        title: payload.title,
-        description: payload.description,
-        date: payload.date,
-        hours: payload.hours,
-        type: payload.type,
-      });
+      await addRegiLog(
+        {
+          userId: payload.userId,
+          title: payload.title,
+          description: payload.description,
+          date: payload.date,
+          hours: payload.hours,
+          type: payload.type,
+        },
+        files
+      );
 
       setForm({
         title: '',
@@ -100,8 +129,17 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         type: categories[0]?.name ?? '',
       });
       setFiles([]);
-      // eslint-disable-next-line @typescript-eslint/no-unused-expressions
-      onCreated && onCreated();
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      if (onCreated) {
+        onCreated();
+      }
+    } catch (submitError) {
+      setErrors({
+        form:
+          submitError instanceof Error ? submitError.message : 'Kunne ikke registrere regiarbeid.',
+      });
     } finally {
       setSubmitting(false);
     }
@@ -168,6 +206,46 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
           />
           {errors.hours && <p className="text-red-600 text-sm mt-1">{errors.hours}</p>}
         </div>
+      </div>
+
+      <div className="mb-4">
+        <label className="block mb-1 text-sm font-medium text-gray-700">Bilder (valgfritt)</label>
+        <input
+          ref={fileInputRef}
+          id="work-log-images"
+          type="file"
+          multiple
+          accept="image/*"
+          onChange={(e) => addFiles(Array.from(e.target.files || []))}
+          className="sr-only"
+        />
+        <label
+          htmlFor="work-log-images"
+          className="inline-flex cursor-pointer items-center rounded-md bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+        >
+          Velg bilder
+        </label>
+        {files.length > 0 && (
+          <ul className="mt-3 space-y-2">
+            {files.map((file, index) => (
+              <li
+                key={`${file.name}-${file.lastModified}`}
+                className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+              >
+                <span className="truncate pr-3">{file.name}</span>
+                <button
+                  type="button"
+                  onClick={() => syncFiles(files.filter((_, fileIndex) => fileIndex !== index))}
+                  className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                  aria-label={`Fjern ${file.name}`}
+                  title="Fjern bilde"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <button

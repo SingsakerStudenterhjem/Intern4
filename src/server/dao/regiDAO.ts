@@ -6,6 +6,7 @@ import {
   RegiTransferWithId,
 } from '../../shared/types/regi';
 import { getUser } from './userDAO';
+import { uploadImages } from './imageDAO';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
 
@@ -48,9 +49,12 @@ async function getCategoryIdByNameOrDefault(categoryName?: string): Promise<numb
 
 export async function addRegiLog(
   data: Omit<RegiLog, 'id' | 'createdAt' | 'status'>,
+  files: File[] = [],
   options?: { autoApprove?: boolean }
 ) {
   const catId = await getCategoryIdByNameOrDefault(data.type);
+
+  const imagePath = await uploadImages(data.userId, 'regi', files);
 
   const { data: item, error: e1 } = await supabase
     .from('work_items')
@@ -76,6 +80,19 @@ export async function addRegiLog(
     .single();
 
   if (e2) throw new Error(e2.message);
+
+  if (imagePath.length > 0) {
+    const { error: e3 } = await supabase.from('work_misc').insert({
+      id: item.id,
+      image_paths: imagePath,
+    });
+
+    if (e3) {
+      await supabase.from('work_assignments').delete().eq('id', assignment.id);
+      await supabase.from('work_items').delete().eq('id', item.id);
+      throw new Error(e3.message);
+    }
+  }
   return String(assignment.id);
 }
 
@@ -301,11 +318,11 @@ export async function getNetAvailableHours(userId: string): Promise<number> {
   return hoursMap[userId] ?? 0;
 }
 
-export function getSemesterStart(): Date{
+export function getSemesterStart(): Date {
   const now = new Date();
   const year = now.getFullYear();
   return now.getMonth() < 7 ? new Date(year, 0, 1) : new Date(year, 7, 1);
-};
+}
 
 export async function giveAwayRegiHours(
   fromUserId: string,
