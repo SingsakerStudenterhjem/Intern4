@@ -5,7 +5,7 @@ import { RegiLogWithUser } from '../../../../shared/types/regi';
 import { getAllRegiLogs } from '../../../../server/dao/regiDAO';
 import { REGI_PATHS } from '../../../../shared/paths';
 import { useAuth } from '../../../../app/providers/AuthContext';
-import { canApproveWork } from '../../permissions';
+import { canApproveWork } from '../../../../shared/permissions';
 import { PageLayout } from '../../../../shared/layouts';
 import { formatDate } from '../../../../shared/utils/date';
 

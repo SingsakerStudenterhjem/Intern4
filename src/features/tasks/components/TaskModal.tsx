@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, CheckCircle2, Clock, Pencil, Trash2, User, Users, X } from 'lucide-react';
 import { getTaskWorkflowState } from '../../../shared/types/regi/tasks';
-import { canManageTasks, canViewAllParticipants } from '../permissions';
+import { canManageTasks, canViewAllParticipants } from '../../../shared/permissions';
 import { TaskModalProps } from './types';
 import { formatDateTime } from '../../../shared/utils/date';
 

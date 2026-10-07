@@ -20,7 +20,7 @@ import {
   Task,
   TaskCreationData,
 } from '../../../shared/types/regi/tasks';
-import { canManageCategories, canManageTasks } from '../permissions';
+import { canManageCategories, canManageTasks } from '../../../shared/permissions';
 import { useTasks } from './useTasks';
 import { useTaskManagementData } from './useTaskManagementData';
 

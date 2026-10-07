@@ -1,7 +1,7 @@
 import React from 'react';
 import { RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../../app/providers/AuthContext';
-import { canApproveWork } from '../../permissions';
+import { canApproveWork } from '../../../../shared/permissions';
 import { semesterLabel, useRegistatus } from '../hooks/useRegistatus';
 
 const Registatus: React.FC = () => {

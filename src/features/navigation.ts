@@ -1,15 +1,17 @@
 import type { FeatureNavItem } from '../shared/types/feature';
-import { alcoholNavigation } from './alcohol/navigation';
 import { FEATURE_ORDER, type FeatureKey } from './featureOrder';
-import { helgaNavigation } from './helga/navigation';
-import { receptionNavigation } from './reception/navigation';
-import { regiNavigation } from './regi/navigation';
-import { residentNavigation } from './residents/navigation';
-import { shiftNavigation } from './shifts/navigation';
-import { taskNavigation } from './tasks/navigation';
-import { userNavigation } from './users/navigation';
-import { vervNavigation } from './verv/navigation';
-import { wineCellarNavigation } from './wine-cellar/navigation';
+import {
+  wineCellarNavigation,
+  vervNavigation,
+  userNavigation,
+  taskNavigation,
+  shiftNavigation,
+  residentNavigation,
+  regiNavigation,
+  receptionNavigation,
+  helgaNavigation,
+  alcoholNavigation,
+} from '../shared/navigation';
 
 const navigationByFeature: Partial<Record<FeatureKey, FeatureNavItem[]>> = {
   alcohol: alcoholNavigation,
