@@ -49,6 +49,8 @@ const WorkApprovalReviewPage: React.FC = () => {
 
   const current = queue[currentIndex];
 
+  useEffect(() => console.log(current), [current]);
+
   const goToIndex = (index: number) => {
     const next = queue[index];
     if (next) {

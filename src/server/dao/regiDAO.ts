@@ -136,6 +136,7 @@ export type PendingRegiApproval = {
   category: string;
   hours: number;
   createdAt: any;
+  imagePaths?: string[];
 };
 
 export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> {

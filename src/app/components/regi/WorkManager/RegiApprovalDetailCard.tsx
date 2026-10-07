@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Ban, Calendar, Check, Clock, User, MessageCircle } from 'lucide-react';
 import { PendingRegiApproval } from '../../../../server/dao/regiDAO';
+import { ImagePreview } from '../../common/ImagePreview';
 
 interface RegiApprovalDetailCardProps {
   approval: PendingRegiApproval;
@@ -21,6 +22,7 @@ const RegiApprovalDetailCard: React.FC<RegiApprovalDetailCardProps> = ({
   const [comment, setComment] = useState<string>('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMode('idle');
     setComment('');
   }, [approval.id]);
@@ -92,6 +94,8 @@ const RegiApprovalDetailCard: React.FC<RegiApprovalDetailCardProps> = ({
             {approval.description || 'Ingen beskrivelse.'}
           </div>
         </div>
+
+        <ImagePreview paths={approval.imagePaths} title="Bilder" />
       </div>
 
       <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 rounded-b-sm">
