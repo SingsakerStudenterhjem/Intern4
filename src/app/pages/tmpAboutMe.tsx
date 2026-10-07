@@ -3,6 +3,25 @@ import { useAuth } from '../hooks/useAuth';
 import { User } from '../../shared/types/user';
 import { getUser } from '../../server/dao/userDAO';
 
+type GeneralInfoType =
+  | 'first_name'
+  | 'birth_date'
+  | 'email'
+  | 'phone_number'
+  | 'school'
+  | 'study'
+  | 'year';
+
+const info: { key: GeneralInfoType; label: string }[] = [
+  { key: 'first_name', label: 'Navn' },
+  { key: 'birth_date', label: 'Fødselsdato' },
+  { key: 'email', label: 'Epost' },
+  { key: 'phone_number', label: 'Telefon' },
+  { key: 'school', label: 'Skole' },
+  { key: 'study', label: 'Studie' },
+  { key: 'year', label: 'Klassetrinn' },
+];
+
 const AboutMePage = () => {
   const { user, loading } = useAuth();
   const [userData, setUserData] = useState<User>();
@@ -41,25 +60,6 @@ const AboutMePage = () => {
   }, [userData]);
 
   if (loading || !user) return null;
-
-  type GeneralInfoType =
-    | 'first_name'
-    | 'birth_date'
-    | 'email'
-    | 'phone_number'
-    | 'school'
-    | 'study'
-    | 'year';
-
-  const info: { key: GeneralInfoType; label: string }[] = [
-    { key: 'first_name', label: 'Navn' },
-    { key: 'birth_date', label: 'Fødselsdato' },
-    { key: 'email', label: 'Epost' },
-    { key: 'phone_number', label: 'Telefon' },
-    { key: 'school', label: 'Skole' },
-    { key: 'study', label: 'Studie' },
-    { key: 'year', label: 'Klassetrinn' },
-  ];
 
   return (
     <div className="min-h-screen bg-gray-50">
