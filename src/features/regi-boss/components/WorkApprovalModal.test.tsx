@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import WorkApprovalModal from './WorkApprovalModal';
-import type { PendingRegiApproval } from '../../../../shared/types/regi';
+import type { PendingRegiApproval } from '../../../shared/types/regi';
 
 const createSignedImageUrls = vi.fn();
 

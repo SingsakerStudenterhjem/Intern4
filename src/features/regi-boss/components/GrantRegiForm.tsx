@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { z } from 'zod';
-import { useAuth } from '../../../../app/providers/AuthContext';
-import { WorkTypeSchema } from '../../../../shared/types/regi';
+import { useAuth } from '../../../app/providers/AuthContext';
+import { WorkTypeSchema } from '../../../shared/types/regi';
 import { useGrantRegiWorkflow } from '../hooks/useGrantRegiWorkflow';
 
 const getErrorMessage = (error: unknown, fallback: string): string =>

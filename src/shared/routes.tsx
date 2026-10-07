@@ -6,8 +6,6 @@ import WorkTasksPage from '../features/tasks/pages/WorkTasksPage';
 import ResidentDirectoryPage from '../features/residents/pages/ResidentDirectoryPage';
 import { regiManagerRoles } from './permissions';
 import WorkManagerPage from '../features/regi-boss/pages/WorkManagerPage';
-import WorkApprovalsPage from '../features/regi-boss/approvals/pages/WorkApprovalsPage';
-import RegiLogsPage from '../features/regi-boss/logs/pages/RegiLogsPage';
 import WorkPage from '../features/regi/my-regi/pages/WorkPage';
 import LoginPage from '../features/auth/pages/LoginPage';
 import ForgotPasswordPage from '../features/auth/pages/ForgotPasswordPage';
@@ -61,16 +59,6 @@ export const regiBossRoutes: FeatureRoute[] = [
   {
     path: REGI_PATHS.REGISJEF,
     element: <WorkManagerPage />,
-    allowedRoles: regiManagerRoles,
-  },
-  {
-    path: REGI_PATHS.REGIGODKJENNING,
-    element: <WorkApprovalsPage />,
-    allowedRoles: regiManagerRoles,
-  },
-  {
-    path: REGI_PATHS.REGILOGS,
-    element: <RegiLogsPage />,
     allowedRoles: regiManagerRoles,
   },
 ];

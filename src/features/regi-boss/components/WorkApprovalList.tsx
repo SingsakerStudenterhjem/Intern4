@@ -1,11 +1,11 @@
 import React from 'react';
 import { Ban, Check, RefreshCw, Search } from 'lucide-react';
-import { useAuth } from '../../../../app/providers/AuthContext';
-import { PendingRegiApproval } from '../../../../shared/types/regi';
+import { useAuth } from '../../../app/providers/AuthContext';
+import { PendingRegiApproval } from '../../../shared/types/regi';
 import WorkApprovalModal from './WorkApprovalModal';
-import { canApproveWork } from '../../../../shared/permissions';
+import { canApproveWork } from '../../../shared/permissions';
 import { useWorkApprovals } from '../hooks/useWorkApprovals';
-import { formatDate } from '../../../../shared/utils/date';
+import { formatDate } from '../../../shared/utils/date';
 
 const WorkApprovalList: React.FC = () => {
   const { user, loading: authLoading } = useAuth();

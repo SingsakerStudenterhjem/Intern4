@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Ban, Calendar, Check, Clock, User, X } from 'lucide-react';
-import { PendingRegiApproval } from '../../../../shared/types/regi';
-import { formatDate, formatDateTime } from '../../../../shared/utils/date';
-import { ImagePreviewGrid } from '../../../../shared/components';
+import { PendingRegiApproval } from '../../../shared/types/regi';
+import { formatDate, formatDateTime } from '../../../shared/utils/date';
+import { ImagePreviewGrid } from '../../../shared/components';
 
 interface WorkApprovalModalProps {
   approval: PendingRegiApproval | null;
