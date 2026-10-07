@@ -8,7 +8,7 @@ describe('task.types', () => {
       category: 'Generelt',
       description: 'Rydd og vask benker',
       contactPersonId: '11111111-1111-4111-8111-111111111111',
-      deadline: new Date('2026-04-10T10:00:00.000Z'),
+      date: new Date('2026-04-10T10:00:00.000Z'),
       hourEstimate: 2.5,
       maxParticipants: 3,
     });
@@ -25,7 +25,7 @@ describe('task.types', () => {
       category: 'Arrangement',
       description: '',
       contactPersonId: '22222222-2222-4222-8222-222222222222',
-      deadline: '2026-04-10T18:00',
+      date: '2026-04-10T18:00',
       hourEstimate: '1.5',
       maxParticipants: '4',
     });

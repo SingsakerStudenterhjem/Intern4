@@ -22,8 +22,8 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   if (!task) return null;
 
-  const formatDeadline = (deadline: NonNullable<TaskModalProps['task']>['deadline']) =>
-    formatDateTime(deadline, deadline ? 'Ugyldig dato' : 'Ingen frist');
+  const formatDate = (date: NonNullable<TaskModalProps['task']>['date']) =>
+    formatDateTime(date, date ? 'Ugyldig dato' : 'Ingen frist');
 
   const {
     currentParticipant,
@@ -206,9 +206,9 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
                 <div className="flex items-center space-x-2 text-sm">
                   <Calendar className="w-4 h-4 text-gray-500" />
-                  <span className="font-medium text-gray-700">Frist:</span>
+                  <span className="font-medium text-gray-700">Dato:</span>
                 </div>
-                <p className="text-sm text-gray-900 ml-6">{formatDeadline(task.deadline)}</p>
+                <p className="text-sm text-gray-900 ml-6">{formatDate(task.date)}</p>
 
                 <div className="flex items-center space-x-2 text-sm">
                   <Clock className="w-4 h-4 text-gray-500" />

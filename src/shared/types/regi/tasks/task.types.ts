@@ -18,7 +18,7 @@ export const TaskSchema = z.object({
   category: z.string().min(1, 'Kategori er påkrevd'),
   description: z.string().optional(),
   contactPersonId: z.string().uuid().optional(),
-  deadline: z.string().nullable().optional(),
+  date: z.string().nullable().optional(),
   hourEstimate: z.number().positive().nullable(),
   maxParticipants: z.number().int().positive(),
   participants: z.array(TaskParticipantSchema).default([]),
@@ -31,7 +31,7 @@ export const TaskFormDataSchema = z.object({
   category: z.string(),
   description: z.string().default(''),
   contactPersonId: z.string().default(''),
-  deadline: z.string().default(''),
+  date: z.string().default(''),
   hourEstimate: z.string().default(''),
   maxParticipants: z.string().default('1'),
 });
@@ -41,7 +41,7 @@ export const TaskCreationDataSchema = z.object({
   category: z.string().min(1, 'Kategori er påkrevd'),
   description: z.string().optional(),
   contactPersonId: z.string().uuid().optional(),
-  deadline: z.date().optional(),
+  date: z.date().optional(),
   hourEstimate: z.number().positive(),
   maxParticipants: z.number().int().positive(),
 });

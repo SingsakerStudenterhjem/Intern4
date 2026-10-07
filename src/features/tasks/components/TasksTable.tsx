@@ -11,8 +11,8 @@ const TasksTable: React.FC<TasksTableProps> = ({
   currentUserId,
   participantNames = {},
 }) => {
-  const formatDeadline = (deadline: Task['deadline']) =>
-    formatDate(deadline, deadline ? 'Ugyldig dato' : 'Ingen frist');
+  const formatDeadline = (date: Task['date']) =>
+    formatDate(date, date ? 'Ugyldig dato' : 'Ingen frist');
 
   const getParticipantStatus = (task: Task) => {
     const workflow = getTaskWorkflowState(task, currentUserId);
@@ -110,7 +110,7 @@ const TasksTable: React.FC<TasksTableProps> = ({
                     ? (participantNames[task.contactPersonId] ?? 'Ukjent bruker')
                     : '-'}
                 </td>
-                <td className="px-4 py-4 text-sm text-gray-900">{formatDeadline(task.deadline)}</td>
+                <td className="px-4 py-4 text-sm text-gray-900">{formatDeadline(task.date)}</td>
                 <td className="px-4 py-4 text-sm text-gray-900">
                   {task.hourEstimate ? `${task.hourEstimate}t` : '-'}
                 </td>

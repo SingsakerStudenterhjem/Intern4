@@ -24,7 +24,7 @@ type TaskParticipantRow = {
 type TaskRow = {
   id: number | string;
   created_at?: string | null;
-  deadline?: string | null;
+  date?: string | null;
   time_estimate?: number | string | null;
   contact_person_uuid?: string | null;
   max_participants?: number | string | null;
@@ -43,7 +43,7 @@ type TaskItemPatch = {
 };
 
 type TaskPatch = {
-  deadline?: Date | string | null;
+  date?: Date | string | null;
   time_estimate?: number | null;
   contact_person_uuid?: string | null;
   max_participants?: number;
@@ -89,7 +89,7 @@ function toAppTask(row: TaskRow): Task {
     description: workItem?.description ?? '',
     category: workCategory?.name ?? '',
     contactPersonId: row.contact_person_uuid ? String(row.contact_person_uuid) : undefined,
-    deadline: row.deadline ?? null,
+    date: row.date ?? null,
     hourEstimate: row.time_estimate != null ? Number(row.time_estimate) : null,
     maxParticipants: Math.max(Number(row.max_participants ?? 1), 1),
     participants: (workItem?.participants ?? []).map(toTaskParticipant),
@@ -144,7 +144,7 @@ export async function addTask(data: TaskCreationData): Promise<string> {
 
   const { error: e3 } = await supabase.from('work_tasks').insert({
     id: item.id,
-    deadline: data.deadline ?? null,
+    date: data.date ?? null,
     time_estimate: data.hourEstimate,
     contact_person_uuid: data.contactPersonId ?? null,
     max_participants: data.maxParticipants,
@@ -161,7 +161,7 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
       `
       id,
       created_at,
-      deadline,
+      date,
       time_estimate,
       contact_person_uuid,
       max_participants,
@@ -196,7 +196,7 @@ export async function getTasks(): Promise<Task[]> {
       `
       id,
       created_at,
-      deadline,
+      date,
       time_estimate,
       contact_person_uuid,
       max_participants,
@@ -209,14 +209,14 @@ export async function getTasks(): Promise<Task[]> {
           user_uuid,
           hours_used,
           approved_state,
-          approval_comment,
+          comment,
           approved_by_uuid,
           created_at
         )
       )
     `
     )
-    .order('deadline', { ascending: true });
+    .order('date', { ascending: true });
 
   if (error) {
     throw new Error(`Could not get tasks: ${error.message}`);
@@ -250,7 +250,7 @@ export async function updateTask(taskId: string, data: Partial<TaskCreationData>
   }
 
   const patchTask: TaskPatch = {
-    deadline: data.deadline,
+    date: data.date,
     time_estimate: data.hourEstimate,
     contact_person_uuid: data.contactPersonId,
     max_participants: data.maxParticipants,
@@ -385,7 +385,7 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
       `
       id,
       created_at,
-      deadline,
+      date,
       time_estimate,
       contact_person_uuid,
       max_participants,
@@ -406,7 +406,7 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
     `
     )
     .in('id', taskIds)
-    .order('deadline', { ascending: true });
+    .order('date', { ascending: true });
 
   if (error) {
     throw new Error(`Could not get tasks by user: ${error.message}`);

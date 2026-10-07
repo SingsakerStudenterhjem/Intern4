@@ -20,7 +20,7 @@ const task = (overrides: Partial<Task> = {}): Task => ({
   category: 'Generelt',
   description: 'Beskrivelse',
   contactPersonId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
-  deadline: null,
+  date: null,
   hourEstimate: 2,
   maxParticipants: 2,
   participants: [],

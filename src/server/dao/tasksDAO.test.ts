@@ -73,7 +73,7 @@ function createTaskRow(overrides: Record<string, unknown> = {}) {
   return {
     id: 1,
     created_at: '2026-04-10T10:00:00.000Z',
-    deadline: null,
+    date: null,
     time_estimate: 2,
     contact_person_uuid: null,
     max_participants: 2,

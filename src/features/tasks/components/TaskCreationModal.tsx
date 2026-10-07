@@ -24,7 +24,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     category: '',
     description: '',
     contactPersonId: '',
-    deadline: '',
+    date: '',
     hourEstimate: '',
     maxParticipants: '1',
   });
@@ -44,12 +44,13 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         title: editingTask?.title ?? '',
         category: editingTask?.category ?? (categories.length > 0 ? categories[0].name : ''),
         description: editingTask?.description ?? '',
         contactPersonId: editingTask?.contactPersonId ?? currentUser?.id ?? '',
-        deadline: toDateTimeLocalValue(editingTask?.deadline),
+        date: toDateTimeLocalValue(editingTask?.date),
         hourEstimate: editingTask?.hourEstimate != null ? String(editingTask.hourEstimate) : '',
         maxParticipants: String(editingTask?.maxParticipants ?? 1),
       });
@@ -111,7 +112,7 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       category: formData.category,
       description: formData.description.trim() || undefined,
       contactPersonId: formData.contactPersonId || undefined,
-      deadline: formData.deadline ? new Date(formData.deadline) : undefined,
+      date: formData.date ? new Date(formData.date) : undefined,
       hourEstimate: Number(formData.hourEstimate),
       maxParticipants: Number(formData.maxParticipants),
     };
@@ -368,15 +369,15 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Deadline */}
             <div>
-              <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
                 <Calendar className="w-4 h-4 inline mr-1" />
                 Frist
               </label>
               <input
                 type="datetime-local"
-                id="deadline"
-                value={formData.deadline}
-                onChange={(e) => handleInputChange('deadline', e.target.value)}
+                id="date"
+                value={formData.date}
+                onChange={(e) => handleInputChange('date', e.target.value)}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>

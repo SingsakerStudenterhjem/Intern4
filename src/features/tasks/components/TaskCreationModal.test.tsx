@@ -42,7 +42,7 @@ const editingTask: Task = {
   category: 'Dataarbeid',
   description: 'Eksisterende beskrivelse',
   contactPersonId: '22222222-2222-4222-8222-222222222222',
-  deadline: '2026-04-12T12:00:00.000Z',
+  date: '2026-04-12T12:00:00.000Z',
   hourEstimate: 2,
   maxParticipants: 3,
   participants: [],
@@ -91,7 +91,7 @@ describe('TaskCreationModal', () => {
         category: 'Dataarbeid',
         description: 'Viktig oppgave',
         contactPersonId: '22222222-2222-4222-8222-222222222222',
-        deadline: undefined,
+        date: undefined,
         hourEstimate: 2.5,
         maxParticipants: 4,
       });
@@ -156,7 +156,7 @@ describe('TaskCreationModal', () => {
         category: 'Dataarbeid',
         description: 'Eksisterende beskrivelse',
         contactPersonId: '22222222-2222-4222-8222-222222222222',
-        deadline: new Date('2026-04-12T12:00:00.000Z'),
+        date: new Date('2026-04-12T12:00:00.000Z'),
         hourEstimate: 2,
         maxParticipants: 3,
       });
