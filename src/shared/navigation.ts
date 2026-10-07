@@ -46,6 +46,15 @@ export const residentNavigation: FeatureNavItem[] = [
   },
 ];
 
+export const regiBossNavigation: FeatureNavItem[] = [
+  {
+    key: 'regiBoss',
+    label: 'Regisjef',
+    to: REGI_PATHS.REGISJEF,
+    canAccess: canAccessRegiManager,
+  },
+];
+
 export const regiNavigation: FeatureNavItem[] = [
   {
     key: 'regi',
@@ -60,12 +69,6 @@ export const regiNavigation: FeatureNavItem[] = [
         key: 'my-regi',
         label: 'Min regi',
         to: REGI_PATHS.REGI,
-      },
-      {
-        key: 'regi-manager',
-        label: 'Regisjef',
-        to: REGI_PATHS.REGISJEF,
-        canAccess: canAccessRegiManager,
       },
       {
         key: 'regi-logs',

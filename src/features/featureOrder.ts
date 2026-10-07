@@ -4,6 +4,7 @@ export const FEATURE_ORDER = [
   'residents',
   'shifts',
   'regi',
+  'regiBoss',
   'verv',
   'alcohol',
   'wine-cellar',

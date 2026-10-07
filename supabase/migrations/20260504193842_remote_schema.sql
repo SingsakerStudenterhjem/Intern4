@@ -53,7 +53,7 @@ alter table "public"."users" enable row level security;
     "created_at" timestamp with time zone not null default now(),
     "hours_used" real,
     "approved_state" smallint not null default '0'::smallint,
-    "approval_comment" text,
+    "comment" text,
     "approved_by_uuid" uuid,
     "user_uuid" uuid not null,
     "work_id" bigint not null

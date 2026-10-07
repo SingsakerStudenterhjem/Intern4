@@ -156,7 +156,7 @@ describe('tasksDAO', () => {
       performed_at: '2026-04-21',
       approved_state: 0,
       approved_by_uuid: null,
-      approval_comment: null,
+      comment: null,
     });
     expect(updateBuilder.eq).toHaveBeenCalledWith('id', 9);
   });
@@ -180,7 +180,7 @@ describe('tasksDAO', () => {
               user_uuid: '11111111-1111-1111-1111-111111111111',
               hours_used: null,
               approved_state: 0,
-              approval_comment: null,
+              comment: null,
               approved_by_uuid: null,
               created_at: '2026-04-10T10:00:00.000Z',
             },
@@ -199,7 +199,7 @@ describe('tasksDAO', () => {
               user_uuid: '11111111-1111-1111-1111-111111111111',
               hours_used: 2,
               approved_state: 0,
-              approval_comment: null,
+              comment: null,
               approved_by_uuid: null,
               created_at: '2026-04-10T10:00:00.000Z',
             },

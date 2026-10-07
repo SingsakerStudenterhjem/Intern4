@@ -11,6 +11,7 @@ import {
   helgaFeature,
   authFeature,
   alcoholFeature,
+  regiBossFeature,
 } from '../shared';
 import { FEATURE_ORDER, type FeatureKey } from './featureOrder';
 
@@ -20,6 +21,7 @@ const featuresByKey: Record<FeatureKey, FeatureDefinition> = {
   helga: helgaFeature,
   reception: receptionFeature,
   regi: regiFeature,
+  regiBoss: regiBossFeature,
   residents: residentFeature,
   shifts: shiftFeature,
   tasks: taskFeature,

@@ -191,7 +191,7 @@ describe('regiDAO', () => {
         created_at: '2026-04-10T10:00:00.000Z',
         performed_at: '2026-04-08',
         approved_state: 0,
-        approval_comment: 'Ser bra ut',
+        comment: 'Ser bra ut',
         work_items: {
           title: 'Sendt inn',
           description: 'Detaljer',
@@ -301,7 +301,7 @@ describe('regiDAO', () => {
     expect(updateBuilder.update).toHaveBeenCalledWith({
       approved_state: 1,
       approved_by_uuid: '22222222-2222-2222-2222-222222222222',
-      approval_comment: 'Ser bra ut',
+      comment: 'Ser bra ut',
     });
     expect(updateBuilder.eq).toHaveBeenCalledWith('id', '12');
   });

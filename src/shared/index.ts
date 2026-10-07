@@ -10,12 +10,14 @@ import {
   receptionNavigation,
   helgaNavigation,
   alcoholNavigation,
+  regiBossNavigation,
 } from './navigation';
 import {
   alcoholRoutes,
   authRoutes,
   helgaRoutes,
   receptionRoutes,
+  regiBossRoutes,
   regiRoutes,
   residentRoutes,
   shiftRoutes,
@@ -77,6 +79,12 @@ export const helgaFeature: FeatureDefinition = {
   key: 'helga',
   routes: helgaRoutes,
   navigation: helgaNavigation,
+};
+
+export const regiBossFeature: FeatureDefinition = {
+  key: 'regiBoss',
+  routes: regiBossRoutes,
+  navigation: regiBossNavigation,
 };
 
 export const authFeature: FeatureDefinition = {

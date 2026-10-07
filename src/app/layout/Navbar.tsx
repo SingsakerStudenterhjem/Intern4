@@ -62,6 +62,8 @@ const Navbar = () => {
     return items;
   }, []);
 
+  useEffect(() => console.log(visibleItems), [visibleItems]);
+
   return (
     <nav className="relative z-40 bg-white shadow px-8 py-2 flex justify-between items-center">
       <div className="text-xl font-semibold">

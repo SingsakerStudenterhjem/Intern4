@@ -11,6 +11,7 @@ import {
   receptionNavigation,
   helgaNavigation,
   alcoholNavigation,
+  regiBossNavigation,
 } from '../shared/navigation';
 
 const navigationByFeature: Partial<Record<FeatureKey, FeatureNavItem[]>> = {
@@ -18,6 +19,7 @@ const navigationByFeature: Partial<Record<FeatureKey, FeatureNavItem[]>> = {
   helga: helgaNavigation,
   reception: receptionNavigation,
   regi: regiNavigation,
+  regiBoss: regiBossNavigation,
   residents: residentNavigation,
   shifts: shiftNavigation,
   tasks: taskNavigation,

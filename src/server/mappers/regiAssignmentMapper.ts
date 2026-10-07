@@ -36,7 +36,7 @@ export type RegiAssignmentRow = {
   created_at?: Date | string | { seconds: number } | null;
   performed_at?: Date | string | { seconds: number } | null;
   approved_state?: number | null;
-  approval_comment?: string | null;
+  comment?: string | null;
   approved_by_uuid?: string | null;
   work_items?: RegiWorkItemRelation;
 };
@@ -131,7 +131,7 @@ export function toRegiLogWithId(row: RegiAssignmentRow, userId: string): RegiLog
     workId: row.work_id ? String(row.work_id) : undefined,
     status: getStatus(row),
     type: row.work_items?.work_categories?.name ?? row.work_items?.type ?? 'misc',
-    reviewerComment: row.approval_comment ?? undefined,
+    reviewerComment: row.comment ?? undefined,
   };
 }
 
@@ -160,6 +160,6 @@ export function toRegiLogWithUser(
     category: getCategory(row),
     status: getStatus(row),
     approvedByName: approver?.name,
-    approvalComment: row.approval_comment ?? null,
+    approvalComment: row.comment ?? null,
   };
 }

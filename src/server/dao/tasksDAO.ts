@@ -17,7 +17,7 @@ type TaskParticipantRow = {
   approved_state?: number | null;
   hours_used?: number | null;
   created_at?: string | null;
-  approval_comment?: string | null;
+  comment?: string | null;
   approved_by_uuid?: string | null;
 };
 
@@ -74,7 +74,7 @@ function toTaskParticipant(row: TaskParticipantRow): TaskParticipant {
     status: getTaskAssignmentStatus(row),
     joinedAt: row.created_at ?? '',
     hoursUsed: row.hours_used != null ? Number(row.hours_used) : null,
-    approvalComment: row.approval_comment ?? null,
+    approvalComment: row.comment ?? null,
     approvedByUuid: row.approved_by_uuid ? String(row.approved_by_uuid) : null,
   };
 }
@@ -175,7 +175,7 @@ export async function getTask(taskId: string): Promise<Task | undefined> {
           user_uuid,
           hours_used,
           approved_state,
-          approval_comment,
+          comment,
           approved_by_uuid,
           created_at
         )
@@ -348,7 +348,7 @@ export async function submitTaskCompletion(taskId: string, userId: string): Prom
       performed_at: formatDateColumnValue(new Date()),
       approved_state: 0,
       approved_by_uuid: null,
-      approval_comment: null,
+      comment: null,
     })
     .eq('id', assignment.id);
 
@@ -398,7 +398,7 @@ export async function getTasksByUser(userId: string): Promise<Task[]> {
           user_uuid,
           hours_used,
           approved_state,
-          approval_comment,
+          comment,
           approved_by_uuid,
           created_at
         )
