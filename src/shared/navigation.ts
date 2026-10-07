@@ -70,12 +70,6 @@ export const regiNavigation: FeatureNavItem[] = [
         label: 'Min regi',
         to: REGI_PATHS.REGI,
       },
-      {
-        key: 'regi-logs',
-        label: 'Regilogger',
-        to: REGI_PATHS.REGILOGS,
-        canAccess: canAccessRegiManager,
-      },
     ],
   },
 ];
