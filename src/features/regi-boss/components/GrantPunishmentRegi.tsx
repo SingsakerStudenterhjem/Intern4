@@ -2,7 +2,8 @@ import { z } from 'zod';
 import { useAuth } from '../../../app/providers/AuthContext';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../../server/supabaseClient';
-import RegiLogsPage from './RegiLogsPage';
+import { getActiveUsersWithRole } from '../../../server/dao/userDAO';
+import { BasicUserWithRole } from '../../../shared/types/user';
 
 const FormSchema = z.object({
   userId: z.string().uuid({ message: 'Velg en bruker' }),
@@ -33,31 +34,6 @@ export async function addRegiPenalty(
 
   if (error) throw new Error(error.message);
   return String(created.id);
-}
-
-export type BasicUserWithRole = {
-  id: string;
-  name: string;
-  email: string;
-  role?: string;
-  onLeave: boolean;
-  isActive: boolean;
-  regiPreapproved: boolean;
-  regiCategoryId?: string;
-  regiCategoryHours?: number;
-};
-
-export async function getActiveUsersWithRole(): Promise<BasicUserWithRole[]> {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('is_active', true)
-    .order('name', { ascending: true });
-
-  if (error) throw new Error(error.message);
-
-  // return (data ?? []).map(toBasicUserWithRole);
-  return data;
 }
 
 const GrantPenaltyForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
