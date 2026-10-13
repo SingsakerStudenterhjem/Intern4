@@ -95,19 +95,21 @@ const Registatus: React.FC = () => {
                     <div className="font-medium">{row.name}</div>
                     <div className="text-xs text-gray-500">{row.email}</div>
                   </td>
-                  <select
-                    defaultValue={row.role}
-                    onChange={(e) => {
-                      e.preventDefault();
-                      (async () => updateUser(row.id, { role: e.target.value }))();
-                    }}
-                  >
-                    {roles?.map((role) => (
-                      <option key={role.id} value={role.name}>
-                        {role.name}
-                      </option>
-                    ))}
-                  </select>
+                  <td className="px-4 py-3">
+                    <select
+                      defaultValue={row.role}
+                      onChange={(e) => {
+                        e.preventDefault();
+                        (async () => updateUser(row.id, { role: e.target.value }))();
+                      }}
+                    >
+                      {roles?.map((role) => (
+                        <option key={role.id} value={role.name}>
+                          {role.name}
+                        </option>
+                      ))}
+                    </select>
+                  </td>
                   <td className="px-4 py-3">{row.approvedHours.toFixed(2)} t</td>
                   <td className="px-4 py-3">
                     {row.requiredHours.toFixed(0)} t{' '}

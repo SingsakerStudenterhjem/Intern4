@@ -63,6 +63,7 @@ type UserUpdatePayload = {
   phone?: string;
   school_id?: string;
   profile_picture?: string;
+  role_id?: number;
   study_id?: string;
   seniority?: number;
   room_number?: number;
@@ -150,6 +151,17 @@ export async function updateUser(uid: string, data: UpdateUserInput): Promise<vo
     city: data.address?.city,
     country: data.address?.country,
   };
+
+  if (data.role !== undefined) {
+    const { data: roleRow, error: roleErr } = await supabase
+      .from('roles')
+      .select('id')
+      .eq('name', data.role)
+      .maybeSingle();
+    if (roleErr || !roleRow) throw new Error('Ugyldig rolle');
+    payload.role_id = roleRow.id;
+  }
+
   (Object.keys(payload) as (keyof UserUpdatePayload)[]).forEach((key) => {
     if (payload[key] === undefined) delete payload[key];
   });
