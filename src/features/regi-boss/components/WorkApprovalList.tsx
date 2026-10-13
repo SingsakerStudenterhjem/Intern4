@@ -45,7 +45,7 @@ const WorkApprovalList: React.FC = () => {
           disabled={busy}
           onClick={(e) => {
             e.stopPropagation();
-            void approve(approval.id);
+            void approve(approval.id, approval.userId, approval.hours);
           }}
           aria-label={`Godkjenn ${approval.title}`}
           className="inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"

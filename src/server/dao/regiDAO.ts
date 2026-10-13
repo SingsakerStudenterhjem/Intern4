@@ -316,17 +316,12 @@ async function setApprovalState(assignmentId: string, approvedState: 1 | 2): Pro
   if (error) throw new Error(error.message);
 }
 
-export async function approveRegiLog(
-  assignmentId: string,
-  approvedByUuid: string,
-  approvalComment?: string
-): Promise<void> {
+export async function approveRegiLog(assignmentId: string, approvedByUuid: string): Promise<void> {
   const { error } = await supabase
     .from('work_assignments')
     .update({
       approved_state: 1,
       approved_by_uuid: approvedByUuid,
-      comment: approvalComment?.trim() ? approvalComment.trim() : null,
     })
     .eq('id', assignmentId);
 
@@ -353,7 +348,25 @@ export async function getTotalPenaltyHoursByUser(): Promise<Record<string, numbe
 }
 
 export async function deleteRegiPenalty(id: string): Promise<void> {
-  const { error } = await supabase.from('regi_penalties').delete().eq('id', id);
+  const { error } = await supabase.from('regi_penalties').delete().eq('user_uuid', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function editRegiPenalty(
+  user_uuid: string,
+  data: Partial<{
+    hours: number;
+    id: string;
+    reason: string;
+    assigned_by_uuid: string;
+    created_at: Date;
+  }>
+): Promise<void> {
+  const { error } = await supabase
+    .from('regi_penalties')
+    .update({ data })
+    .eq('user_uuid', user_uuid);
+
   if (error) throw new Error(error.message);
 }
 
@@ -362,4 +375,15 @@ export async function getAllRoles(): Promise<Role[]> {
   if (error) throw new Error(error.message);
 
   return data;
+}
+
+export async function getPendingApproval(id: string, u_id: string): Promise<PendingRegiApproval> {
+  const { data, error } = await supabase.from('work_assignments').select('*').eq('id', id);
+  if (error) throw new Error(error.message);
+  const user = await getUser(u_id);
+
+  return toPendingRegiApproval(data as RegiAssignmentRow, {
+    name: user?.name ?? '',
+    email: user?.email ?? '',
+  });
 }

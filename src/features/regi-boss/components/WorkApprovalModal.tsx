@@ -7,7 +7,7 @@ import { ImagePreviewGrid } from '../../../shared/components';
 interface WorkApprovalModalProps {
   approval: PendingRegiApproval | null;
   onClose: () => void;
-  onApprove: (assignmentId: string, approvalComment?: string) => Promise<void>;
+  onApprove: (assignmentId: string, assignedUser: string, assingmentHours: number) => Promise<void>;
   onReject: (assignmentId: string) => Promise<void>;
   isProcessing?: boolean;
 }
@@ -25,7 +25,7 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
   if (!approval) return null;
 
   const confirmApprove = async () => {
-    await onApprove(approval.id, approvalComment);
+    await onApprove(approval.id, approval.userId, approval.hours);
     onClose();
   };
 

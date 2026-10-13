@@ -2,11 +2,18 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { PendingRegiApproval } from '../../../shared/types/regi';
 import {
   approveRegiLog,
+  deleteRegiPenalty,
+  editRegiPenalty,
+  getApprovedRegiHoursByUserSince,
   getPendingRegiApprovals,
+  getTotalPenaltyHoursByUser,
   rejectRegiLog,
 } from '../../../server/dao/regiDAO';
 import { canApproveWork } from '../../../shared/permissions';
 import { AuthUser } from '../../auth/hooks/useAuth';
+import { getUser } from '../../../server/dao/userDAO';
+import { semesterStart } from './useRegistatus';
+import { getRequiredRegiHoursForRole } from '../../../app/constants/regiRequirements';
 
 export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
   const [approvals, setApprovals] = useState<PendingRegiApproval[]>([]);
@@ -51,12 +58,32 @@ export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
     });
   }, [approvals, query]);
 
-  const approve = async (assignmentId: string, approvalComment?: string): Promise<void> => {
+  const approve = async (
+    assignmentId: string,
+    assignmentUserId: string,
+    assignmentHours: number
+  ): Promise<void> => {
     try {
       if (!user) return;
-
       setActionLoadingId(assignmentId);
-      await approveRegiLog(assignmentId, user.id, approvalComment);
+      await approveRegiLog(assignmentId, user.id);
+
+      const [assignmentUser, hoursMap, penaltyMap] = await Promise.all([
+        getUser(assignmentUserId),
+        getApprovedRegiHoursByUserSince(semesterStart),
+        getTotalPenaltyHoursByUser(),
+      ]);
+
+      const requiredHours = assignmentUser ? getRequiredRegiHoursForRole(assignmentUser.role) : 0;
+      const approvedHours = hoursMap[assignmentUserId] ?? 0;
+      const penaltyHours = penaltyMap[assignmentUserId] ?? 0;
+      const remainingHours = Math.max(requiredHours - approvedHours + penaltyHours, 0);
+
+      if (approvedHours >= requiredHours && remainingHours == penaltyHours) {
+        await deleteRegiPenalty(assignmentUserId);
+      } else if (approvedHours >= requiredHours && penaltyHours > 0) {
+        await editRegiPenalty(assignmentUserId, { hours: penaltyHours - assignmentHours });
+      }
 
       setApprovals((prev) => prev.filter((approval) => approval.id !== assignmentId));
       if (selected?.id === assignmentId) setSelected(null);

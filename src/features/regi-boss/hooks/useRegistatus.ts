@@ -55,7 +55,7 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
         const requiredHours = getRequiredRegiHoursForRole(activeUser.role);
         const approvedHours = hoursMap[activeUser.id] ?? 0;
         const penaltyHours = penaltyMap[activeUser.id] ?? 0;
-        const remainingHours = Math.max(requiredHours - approvedHours, 0);
+        const remainingHours = Math.max(requiredHours - approvedHours + penaltyHours, 0);
 
         return {
           id: activeUser.id,

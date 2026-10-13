@@ -122,17 +122,7 @@ const Registatus: React.FC = () => {
                       </span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
-                    {row.remainingHours.toFixed(2)} t
-                    {row.penaltyHours > 0 && (
-                      <span
-                        className="ml-1 text-xs font-semibold text-red-600"
-                        title={`Inkluderer ${row.penaltyHours.toFixed(2)} t strafferegi`}
-                      >
-                        (+{row.penaltyHours.toFixed(0)} straff)
-                      </span>
-                    )}
-                  </td>
+                  <td className="px-4 py-3"> {row.remainingHours.toFixed(2)} t</td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {row.onLeave ? (
                       <span className="inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
