@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import WorkApprovalList from '../components/WorkApprovalList';
-import Registatus from '../status/components/Registatus';
+import Registatus from '../components/Registatus';
 import GrantRegiForm from '../components/GrantRegiForm';
 import { PageLayout } from '../../../shared/layouts';
 import RegiLogsPage from '../components/RegiLogsPage';

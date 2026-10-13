@@ -1,117 +1,21 @@
-import { z } from 'zod';
 import { useAuth } from '../../../app/providers/AuthContext';
-import { useEffect, useMemo, useState } from 'react';
-import { supabase } from '../../../server/supabaseClient';
-import { getActiveUsersWithRole } from '../../../server/dao/userDAO';
-import { BasicUserWithRole } from '../../../shared/types/user';
+import { useGrantPenaltyRegi } from '../hooks/useGrantPenaltyRegi';
+import { canApproveWork } from '../../../shared/permissions';
+import React from 'react';
 
-const FormSchema = z.object({
-  userId: z.string().uuid({ message: 'Velg en bruker' }),
-  hours: z.coerce.number().positive('Må være > 0'),
-  reason: z.string().min(1, 'Årsak er påkrevd'),
-});
+const GrantPenaltyForm: React.FC<{ onCreated?: () => void }> = () => {
+  const { user, loading: authLoading } = useAuth();
+  const { errors, loading, message, submitting, setField, sortedUsers, handleSubmit, form } =
+    useGrantPenaltyRegi(user, authLoading);
 
-type FormState = {
-  userId: string;
-  hours: string;
-  reason: string;
-};
-
-export async function addRegiPenalty(
-  data: { userId: string; hours: number; reason: string },
-  assignedByUuid: string
-): Promise<string> {
-  const { data: created, error } = await supabase
-    .from('regi_penalties')
-    .insert({
-      user_uuid: data.userId,
-      hours: data.hours,
-      reason: data.reason,
-      assigned_by_uuid: assignedByUuid,
-    })
-    .select('id')
-    .single();
-
-  if (error) throw new Error(error.message);
-  return String(created.id);
-}
-
-const GrantPenaltyForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
-  const { user } = useAuth();
-  const [form, setForm] = useState<FormState>({ userId: '', hours: '', reason: '' });
-  const [errors, setErrors] = useState<Record<string, string>>({});
-  const [users, setUsers] = useState<BasicUserWithRole[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        setLoading(true);
-        const activeUsers = await getActiveUsersWithRole();
-        if (!mounted) return;
-        setUsers(activeUsers.filter((u) => u.isActive));
-      } catch (error) {
-        console.error('Kunne ikke laste brukere', error);
-        setMessage('Kunne ikke laste brukere.');
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    })();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  const setField = (k: keyof FormState, v: string) => {
-    setForm((s) => ({ ...s, [k]: v }));
-    setErrors((e) => ({ ...e, [k]: '' }));
-    setMessage(null);
-  };
-
-  const sortedUsers = useMemo(() => {
-    return [...users].sort((a, b) => a.name.localeCompare(b.name));
-  }, [users]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrors({});
-    setMessage(null);
-
-    const parsed = FormSchema.safeParse(form);
-
-    if (!parsed.success) {
-      const map: Record<string, string> = {};
-      parsed.error.issues.forEach((issue) => {
-        const key = issue.path[0] as string;
-        map[key] = issue.message;
-      });
-      setErrors(map);
-      return;
-    }
-
-    if (!user) return;
-
-    try {
-      setSubmitting(true);
-      await addRegiPenalty(
-        { userId: parsed.data.userId, hours: parsed.data.hours, reason: parsed.data.reason },
-        user.id
-      );
-
-      setMessage('Strafferegi registrert.');
-      setForm({ userId: '', hours: '', reason: '' });
-      onCreated?.();
-    } catch (err: any) {
-      console.error(err);
-      setMessage(err?.message ?? 'Kunne ikke registrere strafferegi.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  if (authLoading) return null;
+  if (!user || !canApproveWork(user.role)) {
+    return (
+      <div className="p-4 shadow-sm rounded-md bg-gray-50 text-sm text-gray-700">
+        Du kan ikke gi strafferegi.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-1">
