@@ -54,6 +54,7 @@ export const UpdateUserInputSchema = z.object({
   address: AddressSchema.partial().optional(),
   schoolId: UserSchema.shape.schoolId.optional(),
   studyId: UserSchema.shape.studyId.optional(),
+  role: UserSchema.shape.role.optional(),
   profilePicture: UserSchema.shape.profilePicture.optional(),
   seniority: UserSchema.shape.seniority.optional(),
   roomNumber: UserSchema.shape.roomNumber.optional(),

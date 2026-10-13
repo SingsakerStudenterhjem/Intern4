@@ -3,10 +3,14 @@ import { RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../app/providers/AuthContext';
 import { canApproveWork } from '../../../shared/permissions';
 import { semesterLabel, useRegistatus } from '../hooks/useRegistatus';
+import { updateUser } from '../../../server/dao/userDAO';
 
 const Registatus: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
-  const { filtered, loading, error, query, setQuery, load } = useRegistatus(user, authLoading);
+  const { filtered, loading, error, query, setQuery, load, roles } = useRegistatus(
+    user,
+    authLoading
+  );
 
   if (authLoading) return null;
   if (!user || !canApproveWork(user.role)) {
@@ -91,10 +95,42 @@ const Registatus: React.FC = () => {
                     <div className="font-medium">{row.name}</div>
                     <div className="text-xs text-gray-500">{row.email}</div>
                   </td>
-                  <td className="px-4 py-3">{row.role ?? 'Uten rolle'}</td>
+                  <select
+                    defaultValue={row.role}
+                    onChange={(e) => {
+                      e.preventDefault();
+                      (async () => updateUser(row.id, { role: e.target.value }))();
+                    }}
+                  >
+                    {roles?.map((role) => (
+                      <option key={role.id} value={role.name}>
+                        {role.name}
+                      </option>
+                    ))}
+                  </select>
                   <td className="px-4 py-3">{row.approvedHours.toFixed(2)} t</td>
-                  <td className="px-4 py-3">{row.requiredHours.toFixed(0)} t</td>
-                  <td className="px-4 py-3">{row.remainingHours.toFixed(2)} t</td>
+                  <td className="px-4 py-3">
+                    {row.requiredHours.toFixed(0)} t{' '}
+                    {row.penaltyHours > 0 && (
+                      <span
+                        className="ml-1 text-xs font-semibold text-red-600"
+                        title={`Inkluderer ${row.penaltyHours.toFixed(2)} t strafferegi`}
+                      >
+                        (+{row.penaltyHours.toFixed(0)} straff)
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {row.remainingHours.toFixed(2)} t
+                    {row.penaltyHours > 0 && (
+                      <span
+                        className="ml-1 text-xs font-semibold text-red-600"
+                        title={`Inkluderer ${row.penaltyHours.toFixed(2)} t strafferegi`}
+                      >
+                        (+{row.penaltyHours.toFixed(0)} straff)
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 whitespace-nowrap">
                     {row.onLeave ? (
                       <span className="inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">

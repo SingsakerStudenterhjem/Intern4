@@ -20,6 +20,7 @@ import {
   toRegiLogWithUser,
   WorkItemTypeRelation,
 } from '../mappers/regiAssignmentMapper';
+import { Role } from '../../shared/types/user';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
 
@@ -334,4 +335,31 @@ export async function approveRegiLog(
 
 export async function rejectRegiLog(assignmentId: string): Promise<void> {
   await setApprovalState(assignmentId, 2);
+}
+
+export async function getTotalPenaltyHoursByUser(): Promise<Record<string, number>> {
+  const { data, error } = await supabase.from('regi_penalties').select('user_uuid, hours');
+  if (error) throw new Error(error.message);
+
+  return (data ?? []).reduce(
+    (acc, row) => {
+      const uid = row.user_uuid ? String(row.user_uuid) : '';
+      if (!uid) return acc;
+      acc[uid] = (acc[uid] ?? 0) + (Number(row.hours) || 0);
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+}
+
+export async function deleteRegiPenalty(id: string): Promise<void> {
+  const { error } = await supabase.from('regi_penalties').delete().eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
+export async function getAllRoles(): Promise<Role[]> {
+  const { data, error } = await supabase.from('roles').select('*');
+  if (error) throw new Error(error.message);
+
+  return data;
 }

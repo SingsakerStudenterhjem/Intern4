@@ -1,9 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getRequiredRegiHoursForRole } from '../../../app/constants/regiRequirements';
 import { canApproveWork } from '../../../shared/permissions';
-import { getApprovedRegiHoursByUserSince } from '../../../server/dao/regiDAO';
+import {
+  getAllRoles,
+  getApprovedRegiHoursByUserSince,
+  getTotalPenaltyHoursByUser,
+} from '../../../server/dao/regiDAO';
 import { getActiveUsersWithRole } from '../../../server/dao/userDAO';
 import { AuthUser } from '../../auth/hooks/useAuth';
+import { Role } from '../../../shared/types/user';
 
 export type RegistatusRow = {
   id: string;
@@ -13,6 +18,7 @@ export type RegistatusRow = {
   requiredHours: number;
   approvedHours: number;
   remainingHours: number;
+  penaltyHours: number;
   onLeave: boolean;
 };
 
@@ -30,20 +36,25 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
+  const [roles, setRoles] = useState<Role[]>([]);
 
   const load = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
 
-      const [activeUsers, hoursMap] = await Promise.all([
+      const [activeUsers, hoursMap, penaltyMap, rolesResponse] = await Promise.all([
         getActiveUsersWithRole(),
         getApprovedRegiHoursByUserSince(semesterStart),
+        getTotalPenaltyHoursByUser(),
+        getAllRoles(),
       ]);
 
+      setRoles(rolesResponse);
       const nextRows = activeUsers.map((activeUser) => {
         const requiredHours = getRequiredRegiHoursForRole(activeUser.role);
         const approvedHours = hoursMap[activeUser.id] ?? 0;
+        const penaltyHours = penaltyMap[activeUser.id] ?? 0;
         const remainingHours = Math.max(requiredHours - approvedHours, 0);
 
         return {
@@ -54,6 +65,7 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
           requiredHours,
           approvedHours,
           remainingHours,
+          penaltyHours,
           onLeave: activeUser.onLeave,
         };
       });
@@ -77,6 +89,7 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
     if (authLoading) return;
     if (!user) return;
     if (!canApproveWork(user.role)) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [authLoading, load, user]);
 
@@ -99,5 +112,6 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
     query,
     setQuery,
     load,
+    roles
   };
 };
