@@ -181,7 +181,7 @@ const RegiCategoryManagement: React.FC = () => {
         </div>
         <button
           onClick={startAdd}
-          className="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-sm text-white bg-navy-600 hover:bg-navy-700 whitespace-nowrap"
+          className="inline-flex items-center px-3 py-2 border border-transparent text-sm text-white font-medium rounded-sm bg-blue-600 hover:bg-blue-700 whitespace-nowrap"
         >
           <Plus className="w-4 h-4 mr-2" />
           Ny kategori
