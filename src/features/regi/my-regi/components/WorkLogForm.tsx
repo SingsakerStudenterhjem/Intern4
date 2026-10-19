@@ -126,24 +126,24 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   };
   return (
     <form onSubmit={handleSubmit} className="space-y-3">
-      <h2 className="font-semibold text-xl text-gray-900">Registrer regi</h2>
+      <h2 className="font-semibold text-xl text-fg">Registrer regi</h2>
       <div>
-        <label className="block mb-1 text-sm font-medium text-gray-700">Tittel</label>
+        <label className="block mb-1 text-sm font-medium text-muted">Tittel</label>
         <input
           value={form.title}
           onChange={(e) => setField('title', e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
           placeholder="Arbeidet oppsummert"
         />
-        {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title}</p>}
+        {errors.title && <p className="text-danger text-sm mt-1">{errors.title}</p>}
       </div>
 
       <div className="mb-3">
-        <label className="block mb-1 text-sm font-medium text-gray-700">Arbeidets art</label>
+        <label className="block mb-1 text-sm font-medium text-muted">Arbeidets art</label>
         <select
           value={form.type}
           onChange={(e) => setField('type', e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-border px-3 py-2 bg-surface focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
         >
           <option value="">Velg type</option>
           {categories.map((category) => (
@@ -155,44 +155,44 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       </div>
 
       <div className="mb-3">
-        <label className="block mb-1 text-sm font-medium text-gray-700">Beskrivelse</label>
+        <label className="block mb-1 text-sm font-medium text-muted">Beskrivelse</label>
         <textarea
           value={form.description}
           onChange={(e) => setField('description', e.target.value)}
-          className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
           rows={4}
           placeholder="Forklaring av arbeidet"
         />
-        {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
+        {errors.description && <p className="text-danger text-sm mt-1">{errors.description}</p>}
       </div>
 
       <div className="mb-3 grid grid-cols-2 gap-3">
         <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">Dato</label>
+          <label className="block mb-1 text-sm font-medium text-muted">Dato</label>
           <input
             type="date"
             value={form.date}
             onChange={(e) => setField('date', e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
           />
-          {errors.date && <p className="text-red-600 text-sm mt-1">{errors.date}</p>}
+          {errors.date && <p className="text-danger text-sm mt-1">{errors.date}</p>}
         </div>
         <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">Timer</label>
+          <label className="block mb-1 text-sm font-medium text-muted">Timer</label>
           <input
             type="number"
             step="0.25"
             value={form.hours}
             onChange={(e) => setField('hours', e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             placeholder="1.5"
           />
-          {errors.hours && <p className="text-red-600 text-sm mt-1">{errors.hours}</p>}
+          {errors.hours && <p className="text-danger text-sm mt-1">{errors.hours}</p>}
         </div>
       </div>
 
       <div className="mb-4">
-        <label className="block mb-1 text-sm font-medium text-gray-700">Bilder (valgfritt)</label>
+        <label className="block mb-1 text-sm font-medium text-muted">Bilder (valgfritt)</label>
         <input
           ref={fileInputRef}
           id="work-log-images"
@@ -204,7 +204,7 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         />
         <label
           htmlFor="work-log-images"
-          className="inline-flex cursor-pointer items-center rounded-md bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+          className="inline-flex cursor-pointer items-center rounded-md bg-primary-subtle px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary-subtle focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2"
         >
           Velg bilder
         </label>
@@ -213,13 +213,13 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
             {files.map((file, index) => (
               <li
                 key={`${file.name}-${file.lastModified}`}
-                className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+                className="flex items-center justify-between rounded-md border border-border bg-surface-muted px-3 py-2 text-sm text-muted"
               >
                 <span className="truncate pr-3">{file.name}</span>
                 <button
                   type="button"
                   onClick={() => syncFiles(files.filter((_, fileIndex) => fileIndex !== index))}
-                  className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                  className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-subtle transition-colors hover:bg-danger-subtle hover:text-danger focus:outline-none focus:ring-2 focus:ring-danger focus:ring-offset-1"
                   aria-label={`Fjern ${file.name}`}
                   title="Fjern bilde"
                 >
@@ -234,11 +234,11 @@ const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
       <button
         type="submit"
         disabled={submitting}
-        className="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+        className="px-3 py-2 rounded bg-primary text-primary-fg disabled:opacity-50"
       >
         {submitting ? 'Lagrer...' : 'Registrer'}
       </button>
-      {errors.form && <p className="text-sm text-red-600">{errors.form}</p>}
+      {errors.form && <p className="text-sm text-danger">{errors.form}</p>}
     </form>
   );
 };

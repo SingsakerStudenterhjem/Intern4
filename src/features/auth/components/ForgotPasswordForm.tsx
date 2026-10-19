@@ -60,24 +60,24 @@ const ForgotPasswordForm = () => {
   if (sent) {
     return (
       <div>
-        <div className="bg-green-50 border border-green-200 rounded p-4 mb-4">
-          <p className="text-green-800 text-sm">
+        <div className="bg-success-subtle border border-success-border rounded p-4 mb-4">
+          <p className="text-success-subtle-fg text-sm">
             Hvis det finnes en konto med denne e-postadressen, vil du motta en e-post med en lenke
             for å tilbakestille passordet ditt.
           </p>
         </div>
 
-        {error && <div className="text-red-500 mb-4 text-sm">{error}</div>}
+        {error && <div className="text-danger mb-4 text-sm">{error}</div>}
 
         <div className="flex items-center justify-between">
-          <Link to={AUTH_PATHS.LOGIN} className="text-sm text-blue-600 hover:underline">
+          <Link to={AUTH_PATHS.LOGIN} className="text-sm text-primary hover:underline">
             Tilbake til innlogging
           </Link>
           <button
             type="button"
             onClick={handleResend}
             disabled={countdown > 0 || loading}
-            className="text-sm text-blue-600 hover:underline disabled:text-gray-400 disabled:no-underline disabled:cursor-not-allowed"
+            className="text-sm text-primary hover:underline disabled:text-subtle disabled:no-underline disabled:cursor-not-allowed"
           >
             {countdown > 0 ? `Send på nytt (${countdown}s)` : 'Send på nytt'}
           </button>
@@ -88,7 +88,7 @@ const ForgotPasswordForm = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+      {error && <div className="text-danger mb-4">{error}</div>}
 
       <div className="mb-4">
         <label className="block mb-1">E-post</label>
@@ -98,20 +98,20 @@ const ForgotPasswordForm = () => {
           onChange={(e) => setEmail(e.target.value)}
           disabled={loading}
           placeholder="epost"
-          className="w-full border border-gray-300 rounded px-3 py-2 disabled:opacity-50"
+          className="w-full border border-input rounded px-3 py-2 disabled:opacity-50"
         />
       </div>
 
       <button
         type="submit"
         disabled={loading || !email}
-        className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+        className="w-full py-2 rounded bg-primary text-primary-fg disabled:opacity-50"
       >
         {loading ? 'Sender...' : 'Send tilbakestillingslenke'}
       </button>
 
       <div className="mt-4 text-center">
-        <Link to={AUTH_PATHS.LOGIN} className="text-sm text-blue-600 hover:underline">
+        <Link to={AUTH_PATHS.LOGIN} className="text-sm text-primary hover:underline">
           Tilbake til innlogging
         </Link>
       </div>

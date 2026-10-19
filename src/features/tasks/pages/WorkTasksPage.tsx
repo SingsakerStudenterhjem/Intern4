@@ -61,7 +61,7 @@ const WorkTasksPage: React.FC = () => {
   if (loading || authLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -75,7 +75,7 @@ const WorkTasksPage: React.FC = () => {
           {canManageTaskCategories && (
             <button
               onClick={toggleCategoryManagement}
-              className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-muted bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
             >
               <Settings className="w-4 h-4 mr-2" />
               Administrer kategorier
@@ -84,7 +84,7 @@ const WorkTasksPage: React.FC = () => {
           {canCreateTasks && (
             <button
               onClick={handleOpenCreateTask}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-fg bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
             >
               <Plus className="w-4 h-4 mr-2" />
               Ny oppgave
@@ -94,8 +94,8 @@ const WorkTasksPage: React.FC = () => {
       }
     >
       {error && (
-        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="mb-6 p-4 bg-danger-subtle border border-danger-border rounded-md">
+          <p className="text-sm text-danger">{error}</p>
         </div>
       )}
 
@@ -103,8 +103,8 @@ const WorkTasksPage: React.FC = () => {
         <div
           className={`mb-6 p-4 border rounded-md ${
             message.type === 'success'
-              ? 'bg-green-50 border-green-200 text-green-700'
-              : 'bg-red-50 border-red-200 text-red-700'
+              ? 'bg-success-subtle border-success-border text-success'
+              : 'bg-danger-subtle border-danger-border text-danger'
           }`}
         >
           <p className="text-sm">{message.text}</p>
@@ -122,24 +122,24 @@ const WorkTasksPage: React.FC = () => {
         />
       )}
 
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-surface rounded-lg shadow">
+        <div className="p-6 border-b border-border">
           <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtle w-5 h-5" />
               <input
                 type="text"
                 placeholder="Søk etter oppgaver..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
               />
             </div>
 
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             >
               <option value="all">Alle kategorier</option>
               {availableCategories
@@ -160,9 +160,9 @@ const WorkTasksPage: React.FC = () => {
                   value="available"
                   checked={filter === 'available'}
                   onChange={(e) => setFilter(e.target.value)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  className="h-4 w-4 text-primary focus:ring-ring border-input"
                 />
-                <label htmlFor="available" className="ml-2 text-sm text-gray-700">
+                <label htmlFor="available" className="ml-2 text-sm text-muted">
                   Ledige
                 </label>
               </div>
@@ -174,9 +174,9 @@ const WorkTasksPage: React.FC = () => {
                   value="myTasks"
                   checked={filter === 'myTasks'}
                   onChange={(e) => setFilter(e.target.value)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  className="h-4 w-4 text-primary focus:ring-ring border-input"
                 />
-                <label htmlFor="myTasks" className="ml-2 text-sm text-gray-700">
+                <label htmlFor="myTasks" className="ml-2 text-sm text-muted">
                   Mine
                 </label>
               </div>
@@ -188,9 +188,9 @@ const WorkTasksPage: React.FC = () => {
                   value="all"
                   checked={filter === 'all'}
                   onChange={(e) => setFilter(e.target.value)}
-                  className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                  className="h-4 w-4 text-primary focus:ring-ring border-input"
                 />
-                <label htmlFor="all" className="ml-2 text-sm text-gray-700">
+                <label htmlFor="all" className="ml-2 text-sm text-muted">
                   Alle
                 </label>
               </div>
@@ -210,7 +210,7 @@ const WorkTasksPage: React.FC = () => {
           {totalPages > 1 && (
             <div className="mt-6 flex justify-between items-center">
               <div>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-muted">
                   Viser {paginatedTasks.length} av {filteredTasks.length} oppgaver
                 </p>
               </div>
@@ -218,17 +218,17 @@ const WorkTasksPage: React.FC = () => {
                 <button
                   onClick={prevPage}
                   disabled={currentPage === 1}
-                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-2 text-sm font-medium text-subtle bg-surface border border-input rounded-md hover:bg-surface-muted disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Forrige
                 </button>
-                <span className="px-3 py-2 text-sm text-gray-700">
+                <span className="px-3 py-2 text-sm text-muted">
                   Side {currentPage} av {totalPages}
                 </span>
                 <button
                   onClick={nextPage}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-2 text-sm font-medium text-subtle bg-surface border border-input rounded-md hover:bg-surface-muted disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Neste
                 </button>

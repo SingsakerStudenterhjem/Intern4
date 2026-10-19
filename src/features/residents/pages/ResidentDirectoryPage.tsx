@@ -15,6 +15,7 @@ import {
   YAxis,
 } from 'recharts';
 import { getResidentDirectoryUsers } from '../../../server/dao/userDAO';
+import { useChartColors } from '../../../app/providers/ThemeProvider';
 import { PageLayout } from '../../../shared/layouts';
 import { ResidentDirectoryUser } from '../../../shared/types/user';
 import { formatDate } from '../../../shared/utils/date';
@@ -38,8 +39,6 @@ type ChartTooltipProps = {
   payload?: ChartTooltipPayload[];
 };
 
-const CHART_COLORS = ['#2563eb', '#0f766e', '#d97706', '#7c3aed', '#dc2626', '#4b5563'];
-
 const formatDecimal = (value: number | null, suffix = ''): string => {
   if (value === null) return '-';
   return `${value.toFixed(1)}${suffix}`;
@@ -54,9 +53,9 @@ const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
   if (!active || !item) return null;
 
   return (
-    <div className="rounded-md border border-gray-200 bg-white px-3 py-2 text-sm shadow-sm">
-      <p className="font-medium text-gray-900">{label ?? item.label}</p>
-      <p className="text-gray-600">
+    <div className="rounded-md border border-border bg-surface px-3 py-2 text-sm shadow-sm">
+      <p className="font-medium text-fg">{label ?? item.label}</p>
+      <p className="text-muted">
         {item.value} beboere, {item.percentage} %
       </p>
     </div>
@@ -71,10 +70,10 @@ type SummaryCardProps = {
 };
 
 const SummaryCard = ({ title, value, detail, className = '' }: SummaryCardProps) => (
-  <section className={`rounded-lg border border-gray-200 bg-white p-3 shadow-sm ${className}`}>
-    <h2 className="text-xs font-medium text-gray-600">{title}</h2>
-    <p className="mt-1 text-lg font-semibold leading-tight text-gray-950">{value}</p>
-    <p className="mt-1 text-xs leading-snug text-gray-500">{detail}</p>
+  <section className={`rounded-lg border border-border bg-surface p-3 shadow-sm ${className}`}>
+    <h2 className="text-xs font-medium text-muted">{title}</h2>
+    <p className="mt-1 text-lg font-semibold leading-tight text-fg">{value}</p>
+    <p className="mt-1 text-xs leading-snug text-subtle">{detail}</p>
   </section>
 );
 
@@ -86,10 +85,10 @@ type ChartCardProps = {
 };
 
 const ChartCard = ({ title, description, children, data }: ChartCardProps) => (
-  <section className="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
+  <section className="rounded-lg border border-border bg-surface p-3 shadow-sm">
     <div className="mb-2">
-      <h2 className="text-base font-semibold text-gray-950">{title}</h2>
-      <p className="mt-0.5 text-xs leading-snug text-gray-600">{description}</p>
+      <h2 className="text-base font-semibold text-fg">{title}</h2>
+      <p className="mt-0.5 text-xs leading-snug text-muted">{description}</p>
     </div>
     {children}
     <ul className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1 text-xs sm:grid-cols-2">
@@ -98,13 +97,13 @@ const ChartCard = ({ title, description, children, data }: ChartCardProps) => (
         .map((item) => (
           <li
             key={item.label}
-            className="flex min-w-0 items-center justify-between gap-2 text-gray-600"
+            className="flex min-w-0 items-center justify-between gap-2 text-muted"
             aria-label={formatDatum(item)}
           >
             <span className="truncate" title={item.label}>
               {item.label}
             </span>
-            <span className="shrink-0 font-medium text-gray-900">
+            <span className="shrink-0 font-medium text-fg">
               {item.value} ({item.percentage} %)
             </span>
           </li>
@@ -123,39 +122,44 @@ const VerticalDistributionChart = ({
   title,
   description,
   data,
-}: VerticalDistributionChartProps) => (
-  <ChartCard title={title} description={description} data={data}>
-    <div className="h-40 sm:h-44" aria-label={`${title} diagram`}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} margin={{ top: 14, right: 4, left: -28, bottom: -4 }}>
-          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
-          <XAxis
-            dataKey="label"
-            tickLine={false}
-            axisLine={false}
-            tick={{ fill: '#4b5563', fontSize: 11 }}
-          />
-          <YAxis
-            allowDecimals={false}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fill: '#6b7280', fontSize: 11 }}
-          />
-          <Tooltip cursor={{ fill: '#f3f4f6' }} content={<ChartTooltip />} />
-          <Bar dataKey="value" radius={[6, 6, 0, 0]} fill="#2563eb" aria-label={title}>
-            {data.map((item, index) => (
-              <Cell key={item.label} fill={CHART_COLORS[index % CHART_COLORS.length]} />
-            ))}
-            <LabelList dataKey="value" position="top" className="fill-gray-700 text-xs" />
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  </ChartCard>
-);
+}: VerticalDistributionChartProps) => {
+  const colors = useChartColors();
+
+  return (
+    <ChartCard title={title} description={description} data={data}>
+      <div className="h-40 sm:h-44" aria-label={`${title} diagram`}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 14, right: 4, left: -28, bottom: -4 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={colors.grid} />
+            <XAxis
+              dataKey="label"
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: colors.axis, fontSize: 11 }}
+            />
+            <YAxis
+              allowDecimals={false}
+              tickLine={false}
+              axisLine={false}
+              tick={{ fill: colors.axis, fontSize: 11 }}
+            />
+            <Tooltip cursor={{ fill: colors.cursor }} content={<ChartTooltip />} />
+            <Bar dataKey="value" radius={[6, 6, 0, 0]} fill={colors.series[0]} aria-label={title}>
+              {data.map((item, index) => (
+                <Cell key={item.label} fill={colors.series[index % colors.series.length]} />
+              ))}
+              <LabelList dataKey="value" position="top" className="fill-muted text-xs" />
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    </ChartCard>
+  );
+};
 
 const StudyYearChart = ({ data }: { data: ChartDatum[] }) => {
   const visibleData = data.filter((item) => item.value > 0);
+  const colors = useChartColors();
 
   return (
     <ChartCard title="Studieår" description="Hvor i studieløpet dagens beboere er." data={data}>
@@ -174,7 +178,7 @@ const StudyYearChart = ({ data }: { data: ChartDatum[] }) => {
               paddingAngle={2}
             >
               {visibleData.map((item, index) => (
-                <Cell key={item.label} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                <Cell key={item.label} fill={colors.series[index % colors.series.length]} />
               ))}
             </Pie>
           </PieChart>
@@ -186,6 +190,7 @@ const StudyYearChart = ({ data }: { data: ChartDatum[] }) => {
 
 const CourseChart = ({ data }: { data: ChartDatum[] }) => {
   const chartHeight = Math.min(Math.max(data.length * 28, 150), 240);
+  const colors = useChartColors();
 
   return (
     <ChartCard
@@ -195,7 +200,7 @@ const CourseChart = ({ data }: { data: ChartDatum[] }) => {
     >
       <div className="overflow-x-auto">
         <div
-          className="min-w-[360px]"
+          className="min-w-[300px]"
           style={{ height: chartHeight }}
           aria-label="Studieprogram diagram"
         >
@@ -205,13 +210,13 @@ const CourseChart = ({ data }: { data: ChartDatum[] }) => {
               layout="vertical"
               margin={{ top: 4, right: 24, left: 0, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e5e7eb" />
+              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={colors.grid} />
               <XAxis
                 type="number"
                 allowDecimals={false}
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: '#6b7280', fontSize: 11 }}
+                tick={{ fill: colors.axis, fontSize: 11 }}
               />
               <YAxis
                 type="category"
@@ -219,14 +224,14 @@ const CourseChart = ({ data }: { data: ChartDatum[] }) => {
                 width={112}
                 tickLine={false}
                 axisLine={false}
-                tick={{ fill: '#4b5563', fontSize: 11 }}
+                tick={{ fill: colors.axis, fontSize: 11 }}
               />
-              <Tooltip cursor={{ fill: '#f3f4f6' }} content={<ChartTooltip />} />
-              <Bar dataKey="value" radius={[0, 6, 6, 0]} fill="#0f766e">
+              <Tooltip cursor={{ fill: colors.cursor }} content={<ChartTooltip />} />
+              <Bar dataKey="value" radius={[0, 6, 6, 0]} fill={colors.series[1]}>
                 {data.map((item, index) => (
-                  <Cell key={item.label} fill={CHART_COLORS[index % CHART_COLORS.length]} />
+                  <Cell key={item.label} fill={colors.series[index % colors.series.length]} />
                 ))}
-                <LabelList dataKey="value" position="right" className="fill-gray-700 text-xs" />
+                <LabelList dataKey="value" position="right" className="fill-muted text-xs" />
               </Bar>
             </BarChart>
           </ResponsiveContainer>
@@ -304,7 +309,7 @@ const ResidentTab = ({ to, active = false, disabled = false, children }: Residen
   if (disabled || !to) {
     return (
       <span
-        className={`${baseClass} cursor-not-allowed bg-gray-100 text-gray-400`}
+        className={`${baseClass} cursor-not-allowed bg-surface-muted text-subtle`}
         aria-disabled="true"
       >
         {children}
@@ -316,7 +321,9 @@ const ResidentTab = ({ to, active = false, disabled = false, children }: Residen
     <Link
       to={to}
       className={`${baseClass} ${
-        active ? 'bg-blue-100 text-blue-700' : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+        active
+          ? 'bg-primary-subtle text-primary'
+          : 'text-muted hover:bg-surface-muted hover:text-fg'
       }`}
     >
       {children}
@@ -386,20 +393,20 @@ const ResidentDirectoryPage: React.FC = () => {
       {showStatistics ? (
         <>
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="mb-6 p-4 bg-danger-subtle border border-danger-border rounded-md">
+              <p className="text-sm text-danger">{error}</p>
             </div>
           )}
 
           {loading ? (
-            <div className="bg-white rounded-lg shadow flex justify-center py-12">
+            <div className="bg-surface rounded-lg shadow flex justify-center py-12">
               <div
-                className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+                className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
                 aria-label="Laster beboere"
               ></div>
             </div>
           ) : residents.length === 0 ? (
-            <div className="bg-white rounded-lg shadow px-6 py-8 text-center text-gray-500">
+            <div className="bg-surface rounded-lg shadow px-6 py-8 text-center text-subtle">
               Ingen beboere funnet.
             </div>
           ) : (
@@ -407,11 +414,11 @@ const ResidentDirectoryPage: React.FC = () => {
           )}
         </>
       ) : (
-        <div className="bg-white rounded-lg shadow">
-          <div className="p-6 border-b border-gray-200">
+        <div className="bg-surface rounded-lg shadow">
+          <div className="p-6 border-b border-border">
             <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtle w-5 h-5" />
                 <input
                   type="text"
                   placeholder={
@@ -421,15 +428,15 @@ const ResidentDirectoryPage: React.FC = () => {
                   }
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                 />
               </div>
             </div>
           </div>
 
           {error && (
-            <div className="m-6 p-4 bg-red-50 border border-red-200 rounded-md">
-              <p className="text-sm text-red-700">{error}</p>
+            <div className="m-6 p-4 bg-danger-subtle border border-danger-border rounded-md">
+              <p className="text-sm text-danger">{error}</p>
             </div>
           )}
 
@@ -437,42 +444,42 @@ const ResidentDirectoryPage: React.FC = () => {
             {loading ? (
               <div className="flex justify-center py-12">
                 <div
-                  className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
+                  className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
                   aria-label="Laster beboere"
                 ></div>
               </div>
             ) : showOldResidents ? (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-surface-muted">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       Navn
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       Adresse
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       Postnummer
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-surface divide-y divide-border">
                   {filteredResidents.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={3} className="px-6 py-8 text-center text-subtle">
                         Ingen gamle beboere funnet.
                       </td>
                     </tr>
                   ) : (
                     filteredResidents.map((resident) => (
-                      <tr key={resident.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <tr key={resident.id} className="hover:bg-surface-muted">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-fg">
                           {resident.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                           {formatAddress(resident)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                           {resident.address.postalCode || '-'}
                         </td>
                       </tr>
@@ -481,61 +488,61 @@ const ResidentDirectoryPage: React.FC = () => {
                 </tbody>
               </table>
             ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-border">
+                <thead className="bg-surface-muted">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       Navn
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       Rom
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       Telefon
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       E-post
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       Studie
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       Født
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                       Rolle
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-surface divide-y divide-border">
                   {filteredResidents.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan={7} className="px-6 py-8 text-center text-subtle">
                         Ingen beboere funnet.
                       </td>
                     </tr>
                   ) : (
                     filteredResidents.map((resident) => (
-                      <tr key={resident.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <tr key={resident.id} className="hover:bg-surface-muted">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-fg">
                           {resident.name}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                           {formatRoom(resident.roomNumber)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                           {resident.phone || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-primary">
                           {resident.email || '-'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                           {formatStudy(resident)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                           {formatDate(resident.birthDate)}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
                           {resident.role ?? 'Ingen rolle'}
                         </td>
                       </tr>
@@ -546,7 +553,7 @@ const ResidentDirectoryPage: React.FC = () => {
             )}
           </div>
 
-          <div className="px-6 py-3 border-t border-gray-200 text-sm text-gray-500">
+          <div className="px-6 py-3 border-t border-border text-sm text-subtle">
             Viser {filteredResidents.length} av {residents.length}{' '}
             {showOldResidents ? 'gamle beboere' : 'beboere'}
           </div>

@@ -224,7 +224,7 @@ const AddUserPage: React.FC = () => {
       actions={
         <button
           onClick={() => setShowAddForm(!showAddForm)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-fg bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
         >
           {showAddForm ? 'Skjul skjema' : 'Legg til bruker'}
         </button>
@@ -234,8 +234,8 @@ const AddUserPage: React.FC = () => {
         <div
           className={`mb-6 p-3 rounded-md text-sm transition-all duration-300 ${
             message.type === 'success'
-              ? 'bg-green-50 text-green-700 border border-green-200'
-              : 'bg-red-50 text-red-800 border border-red-200'
+              ? 'bg-success-subtle text-success border border-success-border'
+              : 'bg-danger-subtle text-danger-subtle-fg border border-danger-border'
           }`}
         >
           {message.text}
@@ -244,12 +244,12 @@ const AddUserPage: React.FC = () => {
 
       {/* Add User Form */}
       {showAddForm && (
-        <div className="mb-8 bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Ny bruker</h2>
+        <div className="mb-8 bg-surface rounded-lg shadow p-6">
+          <h2 className="text-lg font-medium text-fg mb-4">Ny bruker</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-muted mb-1">
                 Navn *
               </label>
               <input
@@ -259,13 +259,13 @@ const AddUserPage: React.FC = () => {
                 required
                 value={userData.name}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                 placeholder="Skriv inn fullt navn"
               />
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="email" className="block text-sm font-medium text-muted mb-1">
                 E-post *
               </label>
               <input
@@ -275,7 +275,7 @@ const AddUserPage: React.FC = () => {
                 required
                 value={userData.email}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                 placeholder="navn@eksempel.com"
               />
             </div>
@@ -283,7 +283,7 @@ const AddUserPage: React.FC = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="role" className="block text-sm font-medium text-muted mb-1">
                 Rolle
               </label>
               <select
@@ -292,7 +292,7 @@ const AddUserPage: React.FC = () => {
                 value={userData.role}
                 onChange={handleInputChange}
                 disabled={rolesLoading}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
               >
                 {rolesLoading ? (
                   <option>Laster roller...</option>
@@ -307,7 +307,7 @@ const AddUserPage: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="roomNumber" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="roomNumber" className="block text-sm font-medium text-muted mb-1">
                 Romnummer
               </label>
               <input
@@ -317,13 +317,13 @@ const AddUserPage: React.FC = () => {
                 min="0"
                 value={userData.roomNumber}
                 onChange={handleInputChange}
-                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                  validationErrors.roomNumber ? 'border-red-300' : 'border-gray-300'
+                className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring ${
+                  validationErrors.roomNumber ? 'border-danger-border' : 'border-input'
                 }`}
                 placeholder="260"
               />
               {validationErrors.roomNumber && (
-                <p className="mt-1 text-sm text-red-600">{validationErrors.roomNumber}</p>
+                <p className="mt-1 text-sm text-danger">{validationErrors.roomNumber}</p>
               )}
             </div>
           </div>
@@ -332,17 +332,17 @@ const AddUserPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setShowOptionalFields(!showOptionalFields)}
-              className="flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+              className="flex items-center text-primary hover:text-primary-subtle-fg text-sm font-medium"
             >
               {showOptionalFields ? '− Skjul valgfrie felter' : '+ Vis valgfrie felter'}
             </button>
           </div>
 
           {showOptionalFields && (
-            <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 mb-4">
+            <div className="bg-surface-muted p-4 rounded-lg border border-border mb-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="phone" className="block text-sm font-medium text-muted mb-1">
                     Telefon
                   </label>
                   <input
@@ -351,21 +351,18 @@ const AddUserPage: React.FC = () => {
                     name="phone"
                     value={userData.phone}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      validationErrors.phone ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring ${
+                      validationErrors.phone ? 'border-danger-border' : 'border-input'
                     }`}
                     placeholder="+47 123 45 678"
                   />
                   {validationErrors.phone && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.phone}</p>
+                    <p className="mt-1 text-sm text-danger">{validationErrors.phone}</p>
                   )}
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="birthDate"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                  <label htmlFor="birthDate" className="block text-sm font-medium text-muted mb-1">
                     Fodselsdato
                   </label>
                   <input
@@ -374,17 +371,14 @@ const AddUserPage: React.FC = () => {
                     name="birthDate"
                     value={birthDateString}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label
-                    htmlFor="seniority"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                  <label htmlFor="seniority" className="block text-sm font-medium text-muted mb-1">
                     Ansiennitet (ar)
                   </label>
                   <input
@@ -394,13 +388,13 @@ const AddUserPage: React.FC = () => {
                     min="0"
                     value={userData.seniority}
                     onChange={handleInputChange}
-                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-                      validationErrors.seniority ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring ${
+                      validationErrors.seniority ? 'border-danger-border' : 'border-input'
                     }`}
                     placeholder="0"
                   />
                   {validationErrors.seniority && (
-                    <p className="mt-1 text-sm text-red-600">{validationErrors.seniority}</p>
+                    <p className="mt-1 text-sm text-danger">{validationErrors.seniority}</p>
                   )}
                 </div>
 
@@ -412,9 +406,9 @@ const AddUserPage: React.FC = () => {
                       type="checkbox"
                       checked={userData.onLeave}
                       onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-ring border-input rounded"
                     />
-                    <label htmlFor="onLeave" className="ml-2 text-sm font-medium text-gray-700">
+                    <label htmlFor="onLeave" className="ml-2 text-sm font-medium text-muted">
                       Pa permisjon
                     </label>
                   </div>
@@ -425,9 +419,9 @@ const AddUserPage: React.FC = () => {
                       type="checkbox"
                       checked={userData.isActive}
                       onChange={handleInputChange}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                      className="h-4 w-4 text-primary focus:ring-ring border-input rounded"
                     />
-                    <label htmlFor="isActive" className="ml-2 text-sm font-medium text-gray-700">
+                    <label htmlFor="isActive" className="ml-2 text-sm font-medium text-muted">
                       Aktiv bruker
                     </label>
                   </div>
@@ -436,7 +430,7 @@ const AddUserPage: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                  <label htmlFor="study" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="study" className="block text-sm font-medium text-muted mb-1">
                     Studieprogram
                   </label>
                   <select
@@ -445,7 +439,7 @@ const AddUserPage: React.FC = () => {
                     value={userData.studyId}
                     onChange={handleInputChange}
                     disabled={lookupsLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                   >
                     {lookupsLoading ? (
                       <option>Laster studier...</option>
@@ -460,10 +454,7 @@ const AddUserPage: React.FC = () => {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="studyPlace"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
+                  <label htmlFor="studyPlace" className="block text-sm font-medium text-muted mb-1">
                     Studiested
                   </label>
                   <select
@@ -472,7 +463,7 @@ const AddUserPage: React.FC = () => {
                     value={userData.schoolId}
                     onChange={handleInputChange}
                     disabled={lookupsLoading}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                   >
                     {lookupsLoading ? (
                       <option>Laster skoler...</option>
@@ -488,7 +479,7 @@ const AddUserPage: React.FC = () => {
               </div>
 
               <div>
-                <h4 className="text-sm font-medium text-gray-900 mb-2">Adresse</h4>
+                <h4 className="text-sm font-medium text-fg mb-2">Adresse</h4>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="md:col-span-2">
                     <input
@@ -497,7 +488,7 @@ const AddUserPage: React.FC = () => {
                       name="address.street"
                       value={userData.address.street}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                       placeholder="Gate"
                     />
                   </div>
@@ -508,7 +499,7 @@ const AddUserPage: React.FC = () => {
                       name="address.postalCode"
                       value={userData.address.postalCode}
                       onChange={handleInputChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className="w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                       placeholder="Postnummer"
                     />
                   </div>
@@ -520,7 +511,7 @@ const AddUserPage: React.FC = () => {
                     name="address.city"
                     value={userData.address.city}
                     onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full px-3 py-2 border border-input rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
                     placeholder="By"
                   />
                 </div>
@@ -534,8 +525,8 @@ const AddUserPage: React.FC = () => {
               disabled={!canSubmit}
               className={`px-6 py-2 rounded-md font-medium transition-colors ${
                 !canSubmit
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2'
+                  ? 'bg-border-strong text-subtle cursor-not-allowed'
+                  : 'bg-primary text-primary-fg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2'
               }`}
             >
               {isSubmitting ? 'Legger til...' : 'Legg til bruker'}
@@ -545,23 +536,23 @@ const AddUserPage: React.FC = () => {
       )}
 
       {/* Users Table */}
-      <div className="bg-white rounded-lg shadow">
-        <div className="p-6 border-b border-gray-200">
+      <div className="bg-surface rounded-lg shadow">
+        <div className="p-6 border-b border-border">
           <div className="flex flex-col sm:flex-row sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
             <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtle w-5 h-5" />
               <input
                 type="text"
                 placeholder="Søk etter navn eller e-post..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="w-full pl-10 pr-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
               />
             </div>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             >
               <option value="all">Alle roller</option>
               {availableRoles.map((role) => (
@@ -576,59 +567,59 @@ const AddUserPage: React.FC = () => {
         <div className="overflow-x-auto">
           {usersLoading ? (
             <div className="flex justify-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
           ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-border">
+              <thead className="bg-surface-muted">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                     Navn
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                     E-post
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                     Rolle
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
                     Status
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
+                  <th className="px-6 py-3 text-right text-xs font-medium text-subtle uppercase tracking-wider"></th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-surface divide-y divide-border">
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                    <td colSpan={5} className="px-6 py-8 text-center text-subtle">
                       Ingen brukere funnet.
                     </td>
                   </tr>
                 ) : (
                   filteredUsers.map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                    <tr key={user.id} className="hover:bg-surface-muted">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-fg">
                         {user.name}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-subtle">
                         {user.email}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-subtle">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-subtle text-primary-subtle-fg">
                           {user.role ?? 'Ingen rolle'}
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {user.onLeave ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-warning-subtle text-warning-subtle-fg">
                             Permisjon
                           </span>
                         ) : user.isActive ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-success-subtle text-success-subtle-fg">
                             Aktiv
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-surface-muted text-fg">
                             Inaktiv
                           </span>
                         )}
@@ -637,7 +628,7 @@ const AddUserPage: React.FC = () => {
                         {user.role !== 'Admin' && user.isActive ? (
                           <button
                             onClick={() => setDeleteConfirm(user)}
-                            className="text-gray-400 hover:text-red-600 transition-colors"
+                            className="text-subtle hover:text-danger transition-colors"
                             title="Deaktiver bruker"
                             aria-label={`Deaktiver ${user.name}`}
                           >
@@ -653,7 +644,7 @@ const AddUserPage: React.FC = () => {
           )}
         </div>
 
-        <div className="px-6 py-3 border-t border-gray-200 text-sm text-gray-500">
+        <div className="px-6 py-3 border-t border-border text-sm text-subtle">
           Viser {filteredUsers.length} av {users.length} brukere
         </div>
       </div>
@@ -670,11 +661,11 @@ const AddUserPage: React.FC = () => {
           role="presentation"
         >
           <div
-            className="bg-white rounded-lg shadow-xl p-6 max-w-sm mx-4"
+            className="bg-surface rounded-lg shadow-xl p-6 max-w-sm mx-4"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Deaktiver bruker</h3>
-            <p className="text-sm text-gray-600 mb-4">
+            <h3 className="text-lg font-medium text-fg mb-2">Deaktiver bruker</h3>
+            <p className="text-sm text-muted mb-4">
               Er du sikker på at du vil deaktivere <strong>{deleteConfirm.name}</strong>? Brukeren
               mister innlogging, men historikk beholdes.
             </p>
@@ -682,14 +673,14 @@ const AddUserPage: React.FC = () => {
               <button
                 onClick={() => setDeleteConfirm(null)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                className="px-4 py-2 text-sm font-medium text-muted bg-surface border border-input rounded-md hover:bg-surface-muted"
               >
                 Avbryt
               </button>
               <button
                 onClick={() => handleDeleteUser(deleteConfirm)}
                 disabled={isDeleting}
-                className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-danger-fg bg-danger rounded-md hover:bg-danger-hover disabled:opacity-50"
               >
                 {isDeleting ? 'Deaktiverer...' : 'Deaktiver'}
               </button>

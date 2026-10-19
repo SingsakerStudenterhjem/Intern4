@@ -5,7 +5,7 @@ import WorkApprovalList from '../components/WorkApprovalList';
 const WorkApprovalsPage: React.FC = () => {
   return (
     <PageLayout title="Godkjenning" description="Godkjenn eller avvis innsendte regitimer.">
-      <section className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+      <section className="bg-surface border border-border rounded-xl shadow-sm p-5">
         <WorkApprovalList />
       </section>
     </PageLayout>

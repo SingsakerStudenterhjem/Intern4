@@ -41,7 +41,7 @@ const LoginForm = () => {
 
   return (
     <form onSubmit={handleLogin}>
-      {error && <div className="text-red-500 mb-4">{error}</div>}
+      {error && <div className="text-danger mb-4">{error}</div>}
 
       <div>
         <div className="mb-4">
@@ -52,7 +52,7 @@ const LoginForm = () => {
             onChange={(e) => setEmail(e.target.value)}
             disabled={loading}
             placeholder="epost"
-            className="w-full border border-gray-300 rounded px-3 py-2 disabled:opacity-50"
+            className="w-full border border-input rounded px-3 py-2 disabled:opacity-50"
           />
         </div>
 
@@ -66,12 +66,12 @@ const LoginForm = () => {
               onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
               disabled={loading}
               placeholder="passord"
-              className="w-full border border-gray-300 rounded px-3 py-2 pr-10 disabled:opacity-50"
+              className="w-full border border-input rounded px-3 py-2 pr-10 disabled:opacity-50"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-subtle hover:text-muted"
               tabIndex={-1}
             >
               {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -80,7 +80,7 @@ const LoginForm = () => {
         </div>
 
         <div className="mb-6 text-right">
-          <Link to={AUTH_PATHS.FORGOT_PASSWORD} className="text-sm text-blue-600 hover:underline">
+          <Link to={AUTH_PATHS.FORGOT_PASSWORD} className="text-sm text-primary hover:underline">
             Glemt passord?
           </Link>
         </div>
@@ -88,7 +88,7 @@ const LoginForm = () => {
         <button
           type="submit"
           disabled={loading || !email || !password}
-          className="w-full py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+          className="w-full py-2 rounded bg-primary text-primary-fg disabled:opacity-50"
         >
           {loading ? 'Laster...' : 'Logg inn'}
         </button>

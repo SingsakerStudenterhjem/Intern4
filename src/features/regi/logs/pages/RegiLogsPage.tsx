@@ -55,8 +55,8 @@ const RegiLogsPage: React.FC = () => {
   if (!user || !canApproveWork(user.role)) {
     return (
       <PageLayout title="Regilogger">
-        <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
-          <p className="text-sm text-gray-600">Ingen tilgang.</p>
+        <div className="rounded-xl border border-border bg-surface p-5 shadow-sm">
+          <p className="text-sm text-muted">Ingen tilgang.</p>
         </div>
       </PageLayout>
     );
@@ -67,20 +67,20 @@ const RegiLogsPage: React.FC = () => {
       title="Regilogger"
       description="Alle registrerte timer, inkludert godkjente og avviste."
       actions={
-        <Link to={REGI_PATHS.REGISJEF} className="text-blue-600 hover:underline text-sm">
+        <Link to={REGI_PATHS.REGISJEF} className="text-primary hover:underline text-sm">
           Tilbake til oversikt
         </Link>
       }
     >
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 space-y-4">
+      <div className="bg-surface border border-border rounded-xl shadow-sm p-5 space-y-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtle w-5 h-5" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Søk (navn, e-post, tittel, kategori)..."
-              className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
             />
           </div>
           <div className="flex items-center gap-2">
@@ -97,7 +97,7 @@ const RegiLogsPage: React.FC = () => {
             <button
               onClick={load}
               disabled={loading}
-              className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              className="inline-flex items-center px-3 py-2 border border-input text-sm font-medium rounded-md text-muted bg-surface hover:bg-surface-muted disabled:opacity-50"
             >
               <RefreshCw className="w-4 h-4 mr-2" />
               Oppdater
@@ -106,42 +106,42 @@ const RegiLogsPage: React.FC = () => {
         </div>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-md">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="p-3 bg-danger-subtle border border-danger-border rounded-md">
+            <p className="text-sm text-danger">{error}</p>
           </div>
         )}
 
-        <div className="max-h-[70vh] overflow-auto border border-gray-200 rounded-xl bg-white shadow-sm">
+        <div className="max-h-[70vh] overflow-auto border border-border rounded-xl bg-surface shadow-sm">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 sticky top-0">
+            <thead className="bg-surface-muted sticky top-0">
               <tr>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Bruker
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Tittel
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Kategori
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Timer
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Dato
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Status
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Godkjent av
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {loading && (
                 <tr>
-                  <td className="p-3 text-gray-600" colSpan={7}>
+                  <td className="p-3 text-muted" colSpan={7}>
                     Laster...
                   </td>
                 </tr>
@@ -149,10 +149,10 @@ const RegiLogsPage: React.FC = () => {
 
               {!loading &&
                 filtered.map((log) => (
-                  <tr key={log.id} className="hover:bg-gray-50 transition-colors">
+                  <tr key={log.id} className="hover:bg-surface-muted transition-colors">
                     <td className="p-2">
                       <div className="font-medium">{log.userName}</div>
-                      <div className="text-xs text-gray-500">{log.userEmail}</div>
+                      <div className="text-xs text-subtle">{log.userEmail}</div>
                     </td>
                     <td className="p-2">{log.title}</td>
                     <td className="p-2">
@@ -161,8 +161,8 @@ const RegiLogsPage: React.FC = () => {
                         <span
                           className={`inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full ${
                             log.sourceType === 'task'
-                              ? 'bg-purple-100 text-purple-800'
-                              : 'bg-gray-100 text-gray-700'
+                              ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-200'
+                              : 'bg-surface-muted text-muted'
                           }`}
                         >
                           {log.sourceType === 'task' ? 'Oppgave' : 'Manuell'}
@@ -173,25 +173,25 @@ const RegiLogsPage: React.FC = () => {
                     <td className="p-2">{formatDate(log.date)}</td>
                     <td className="p-2">
                       {log.status === 'approved' && (
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-success-subtle text-success-subtle-fg">
                           Godkjent
                         </span>
                       )}
                       {log.status === 'pending' && (
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-warning-subtle text-warning-subtle-fg">
                           Venter
                         </span>
                       )}
                       {log.status === 'rejected' && (
-                        <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                        <span className="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-danger-subtle text-danger-subtle-fg">
                           Avvist
                         </span>
                       )}
                     </td>
-                    <td className="p-2 text-sm text-gray-700">
+                    <td className="p-2 text-sm text-muted">
                       {log.approvedByName ?? '—'}
                       {log.approvalComment && (
-                        <div className="text-xs text-gray-500 mt-1">{log.approvalComment}</div>
+                        <div className="text-xs text-subtle mt-1">{log.approvalComment}</div>
                       )}
                     </td>
                   </tr>
@@ -199,7 +199,7 @@ const RegiLogsPage: React.FC = () => {
 
               {!loading && filtered.length === 0 && (
                 <tr>
-                  <td className="p-3 text-gray-600" colSpan={7}>
+                  <td className="p-3 text-muted" colSpan={7}>
                     Ingen regilogger funnet.
                   </td>
                 </tr>

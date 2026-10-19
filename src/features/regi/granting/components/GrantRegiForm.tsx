@@ -112,16 +112,16 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   return (
     <div className="space-y-1">
       <h2 className="font-medium text-xl mb-2">Gi regitimer</h2>
-      <p className="text-sm text-gray-600 mb-4">
+      <p className="text-sm text-muted mb-4">
         Registrer og godkjenn regi på vegne av aktive brukere.
       </p>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">Bruker</label>
+          <label className="block mb-1 text-sm font-medium text-muted">Bruker</label>
           <select
             value={form.userId}
             onChange={(e) => setField('userId', e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-border px-3 py-2 bg-surface focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             disabled={loading}
           >
             <option value="">Velg bruker</option>
@@ -131,26 +131,26 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
               </option>
             ))}
           </select>
-          {errors.userId && <p className="text-red-600 text-sm mt-1">{errors.userId}</p>}
+          {errors.userId && <p className="text-danger text-sm mt-1">{errors.userId}</p>}
         </div>
 
         <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">Tittel</label>
+          <label className="block mb-1 text-sm font-medium text-muted">Tittel</label>
           <input
             value={form.title}
             onChange={(e) => setField('title', e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             placeholder="Arbeidet oppsummert"
           />
-          {errors.title && <p className="text-red-600 text-sm mt-1">{errors.title}</p>}
+          {errors.title && <p className="text-danger text-sm mt-1">{errors.title}</p>}
         </div>
 
         <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">Arbeidets art</label>
+          <label className="block mb-1 text-sm font-medium text-muted">Arbeidets art</label>
           <select
             value={form.type}
             onChange={(e) => setField('type', e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-border px-3 py-2 bg-surface focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
           >
             <option value="">Velg type</option>
             {categories.map((category) => (
@@ -159,52 +159,52 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
               </option>
             ))}
           </select>
-          {errors.type && <p className="text-red-600 text-sm mt-1">{errors.type}</p>}
+          {errors.type && <p className="text-danger text-sm mt-1">{errors.type}</p>}
         </div>
 
         <div>
-          <label className="block mb-1 text-sm font-medium text-gray-700">Beskrivelse</label>
+          <label className="block mb-1 text-sm font-medium text-muted">Beskrivelse</label>
           <textarea
             value={form.description}
             onChange={(e) => setField('description', e.target.value)}
-            className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             rows={3}
             placeholder="Forklaring av arbeidet"
           />
-          {errors.description && <p className="text-red-600 text-sm mt-1">{errors.description}</p>}
+          {errors.description && <p className="text-danger text-sm mt-1">{errors.description}</p>}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Dato</label>
+            <label className="block mb-1 text-sm font-medium text-muted">Dato</label>
             <input
               type="date"
               value={form.date}
               onChange={(e) => setField('date', e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
             />
-            {errors.date && <p className="text-red-600 text-sm mt-1">{errors.date}</p>}
+            {errors.date && <p className="text-danger text-sm mt-1">{errors.date}</p>}
           </div>
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">Timer</label>
+            <label className="block mb-1 text-sm font-medium text-muted">Timer</label>
             <input
               type="number"
               step="0.25"
               value={form.hours}
               onChange={(e) => setField('hours', e.target.value)}
-              className="w-full rounded-lg border border-gray-200 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full rounded-lg border border-border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
               placeholder="1.5"
             />
-            {errors.hours && <p className="text-red-600 text-sm mt-1">{errors.hours}</p>}
+            {errors.hours && <p className="text-danger text-sm mt-1">{errors.hours}</p>}
           </div>
         </div>
 
-        {message && <p className="text-sm text-gray-700">{message}</p>}
+        {message && <p className="text-sm text-muted">{message}</p>}
 
         <button
           type="submit"
           disabled={submitting || loading}
-          className="px-3 py-2 rounded bg-blue-600 text-white disabled:opacity-50"
+          className="px-3 py-2 rounded bg-primary text-primary-fg disabled:opacity-50"
         >
           {submitting ? 'Lagrer...' : 'Registrer'}
         </button>

@@ -237,22 +237,22 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
     >
       <div className="flex min-h-full items-center justify-center">
         <div
-          className="relative flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-white shadow-xl"
+          className="relative flex max-h-[90dvh] w-full max-w-3xl flex-col overflow-hidden rounded-lg bg-surface shadow-xl"
           role="dialog"
           aria-modal={!isFormOpen}
           aria-hidden={isFormOpen || undefined}
           aria-labelledby="category-management-title"
           onMouseDown={(event) => event.stopPropagation()}
         >
-          <div className="flex items-center justify-between gap-4 border-b border-gray-200 px-5 py-4">
-            <h2 id="category-management-title" className="text-xl font-semibold text-gray-900">
+          <div className="flex items-center justify-between gap-4 border-b border-border px-5 py-4">
+            <h2 id="category-management-title" className="text-xl font-semibold text-fg">
               Kategorier
             </h2>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={startAdd}
-                className="inline-flex items-center rounded-md border border-transparent bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                className="inline-flex items-center rounded-md border border-transparent bg-primary px-3 py-2 text-sm font-medium text-primary-fg hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Ny kategori
@@ -260,7 +260,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-md p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-md p-2 text-subtle hover:text-muted focus:outline-none focus:ring-2 focus:ring-ring"
                 aria-label="Lukk kategorier"
               >
                 <X className="h-5 w-5" />
@@ -268,14 +268,14 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
             </div>
           </div>
 
-          <div className="border-b border-gray-200 px-5 py-3">
+          <div className="border-b border-border px-5 py-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full rounded-md border border-gray-300 py-2 pl-9 pr-3 text-sm focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-md border border-input py-2 pl-9 pr-3 text-sm focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring"
                 placeholder="Søk i kategorier..."
               />
             </div>
@@ -284,17 +284,17 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
           <div className="min-h-0 flex-1 overflow-y-auto">
             {loadingUsage ? (
               <div className="px-6 py-8 text-center">
-                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600" />
-                <p className="mt-2 text-sm text-gray-500">Laster kategorier...</p>
+                <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-primary" />
+                <p className="mt-2 text-sm text-subtle">Laster kategorier...</p>
               </div>
             ) : (
-              <ul className="divide-y divide-gray-200">
+              <ul className="divide-y divide-border">
                 {categories.length === 0 ? (
-                  <li className="px-5 py-8 text-center text-sm text-gray-500">
+                  <li className="px-5 py-8 text-center text-sm text-subtle">
                     Ingen kategorier opprettet
                   </li>
                 ) : filteredCategories.length === 0 ? (
-                  <li className="px-5 py-8 text-center text-sm text-gray-500">
+                  <li className="px-5 py-8 text-center text-sm text-subtle">
                     Ingen kategorier matcher søket
                   </li>
                 ) : (
@@ -306,21 +306,21 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                         <div className="flex min-w-0 items-center justify-between gap-3">
                           <div className="flex min-w-0 items-center gap-3">
                             <div
-                              className="h-4 w-4 shrink-0 rounded-full border border-gray-300"
+                              className="h-4 w-4 shrink-0 rounded-full border border-input"
                               style={{ backgroundColor: category.color }}
                               aria-hidden="true"
                             />
                             <div className="min-w-0 leading-tight">
                               <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                                <h3 className="truncate text-sm font-medium text-gray-900">
+                                <h3 className="truncate text-sm font-medium text-fg">
                                   {category.name}
                                 </h3>
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-subtle">
                                   {usage} oppgave{usage !== 1 ? 'r' : ''}
                                 </span>
                               </div>
                               {category.description && (
-                                <p className="truncate text-xs text-gray-500">
+                                <p className="truncate text-xs text-subtle">
                                   {category.description}
                                 </p>
                               )}
@@ -331,7 +331,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                             <button
                               type="button"
                               onClick={() => startEdit(category)}
-                              className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-gray-100 hover:text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="flex h-8 w-8 items-center justify-center rounded-md text-subtle hover:bg-surface-muted hover:text-muted focus:outline-none focus:ring-2 focus:ring-ring"
                               title="Rediger kategori"
                               aria-label={`Rediger ${category.name}`}
                             >
@@ -340,7 +340,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                             <button
                               type="button"
                               onClick={() => handleDelete(category)}
-                              className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                              className="flex h-8 w-8 items-center justify-center rounded-md text-subtle hover:bg-danger-subtle hover:text-danger focus:outline-none focus:ring-2 focus:ring-danger"
                               title="Slett kategori"
                               aria-label={`Slett ${category.name}`}
                             >
@@ -368,20 +368,20 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
           role="presentation"
         >
           <div
-            className="w-full max-w-xl rounded-lg bg-white shadow-xl"
+            className="w-full max-w-xl rounded-lg bg-surface shadow-xl"
             role="dialog"
             aria-modal="true"
             aria-labelledby="category-form-title"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-              <h3 id="category-form-title" className="text-lg font-semibold text-gray-900">
+            <div className="flex items-center justify-between border-b border-border px-5 py-4">
+              <h3 id="category-form-title" className="text-lg font-semibold text-fg">
                 {editingCategory ? 'Rediger kategori' : 'Ny kategori'}
               </h3>
               <button
                 type="button"
                 onClick={cancelEdit}
-                className="rounded-md p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="rounded-md p-2 text-subtle hover:text-muted focus:outline-none focus:ring-2 focus:ring-ring"
                 aria-label="Lukk skjema"
               >
                 <X className="h-5 w-5" />
@@ -390,8 +390,11 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
 
             <form onSubmit={handleSubmit} className="space-y-4 p-5" noValidate>
               {errors.submit && (
-                <div className="rounded-md border border-red-200 bg-red-50 p-3" role="alert">
-                  <p className="text-sm text-red-600">{errors.submit}</p>
+                <div
+                  className="rounded-md border border-danger-border bg-danger-subtle p-3"
+                  role="alert"
+                >
+                  <p className="text-sm text-danger">{errors.submit}</p>
                 </div>
               )}
 
@@ -399,7 +402,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                 <div>
                   <label
                     htmlFor="categoryName"
-                    className="mb-1 block text-sm font-medium text-gray-700"
+                    className="mb-1 block text-sm font-medium text-muted"
                   >
                     Kategorinavn *
                   </label>
@@ -408,22 +411,22 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                     id="categoryName"
                     value={formData.name}
                     onChange={(e) => handleFormDataChange('name', e.target.value)}
-                    className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.name ? 'border-red-300' : 'border-gray-300'
+                    className={`w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring ${
+                      errors.name ? 'border-danger-border' : 'border-input'
                     }`}
                     placeholder="Strøm"
                     aria-invalid={!!errors.name}
                     aria-describedby={errors.name ? 'category-name-error' : undefined}
                   />
                   {errors.name && (
-                    <p id="category-name-error" className="mt-1 text-sm text-red-600" role="alert">
+                    <p id="category-name-error" className="mt-1 text-sm text-danger" role="alert">
                       {errors.name}
                     </p>
                   )}
                 </div>
 
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                  <label className="mb-1 block text-sm font-medium text-muted">
                     <Palette className="mr-1 inline h-4 w-4" />
                     Farge
                   </label>
@@ -432,7 +435,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                       type="color"
                       value={formData.color}
                       onChange={(e) => handleFormDataChange('color', e.target.value)}
-                      className="h-10 w-12 cursor-pointer rounded border border-gray-300"
+                      className="h-10 w-12 cursor-pointer rounded border border-input"
                       aria-label="Velg farge"
                     />
                     <div className="flex flex-wrap gap-1">
@@ -442,7 +445,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                           type="button"
                           onClick={() => handleFormDataChange('color', color)}
                           className={`h-6 w-6 rounded border-2 ${
-                            formData.color === color ? 'border-gray-800' : 'border-gray-300'
+                            formData.color === color ? 'border-fg' : 'border-input'
                           }`}
                           style={{ backgroundColor: color }}
                           title={color}
@@ -457,7 +460,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
               <div>
                 <label
                   htmlFor="categoryDescription"
-                  className="mb-1 block text-sm font-medium text-gray-700"
+                  className="mb-1 block text-sm font-medium text-muted"
                 >
                   Beskrivelse
                 </label>
@@ -466,7 +469,7 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                   value={formData.description}
                   onChange={(e) => handleFormDataChange('description', e.target.value)}
                   rows={3}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full rounded-md border border-input px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
                   placeholder="Valgfri beskrivelse av kategorien..."
                 />
               </div>
@@ -475,13 +478,13 @@ const CategoryManagement: React.FC<CategoryManagementProps> = ({
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                  className="rounded-md border border-input bg-surface px-4 py-2 text-sm font-medium text-muted hover:bg-surface-muted"
                 >
                   Avbryt
                 </button>
                 <button
                   type="submit"
-                  className="rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                  className="rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-primary-fg hover:bg-primary-hover"
                 >
                   {editingCategory ? 'Lagre endringer' : 'Legg til'}
                 </button>

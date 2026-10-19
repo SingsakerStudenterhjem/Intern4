@@ -42,10 +42,10 @@ const ProfileSectionCard: React.FC<ProfileSectionCardProps> = ({
   className = '',
 }) => {
   return (
-    <section className={`rounded-xl border border-gray-200 bg-white p-4 shadow-sm ${className}`}>
+    <section className={`rounded-xl border border-border bg-surface p-4 shadow-sm ${className}`}>
       <div className="mb-2.5">
-        <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        {description && <p className="mt-1 text-sm text-gray-600">{description}</p>}
+        <h2 className="text-lg font-semibold text-fg">{title}</h2>
+        {description && <p className="mt-1 text-sm text-muted">{description}</p>}
       </div>
       {children}
     </section>
@@ -54,7 +54,7 @@ const ProfileSectionCard: React.FC<ProfileSectionCardProps> = ({
 
 const StubBadge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <span className="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
+    <span className="inline-flex items-center rounded-full bg-surface-muted px-2.5 py-1 text-xs font-medium text-muted">
       {children}
     </span>
   );
@@ -121,9 +121,9 @@ const FieldLabel: React.FC<{ htmlFor: string; children: React.ReactNode; require
   required = false,
 }) => {
   return (
-    <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-gray-700">
+    <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-muted">
       {children}
-      {required && <span className="text-red-500"> *</span>}
+      {required && <span className="text-danger"> *</span>}
     </label>
   );
 };
@@ -136,8 +136,10 @@ const TextInput: React.FC<
   return (
     <input
       {...props}
-      className={`w-full rounded-xl border px-3.5 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-        error ? 'border-red-300 focus:border-red-400' : 'border-gray-200 focus:border-blue-500'
+      className={`w-full rounded-xl border px-3.5 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-ring ${
+        error
+          ? 'border-danger-border focus:border-danger-border'
+          : 'border-border focus:border-ring'
       } ${className}`}
     />
   );
@@ -151,7 +153,7 @@ const SelectInput: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({
   return (
     <select
       {...props}
-      className={`w-full rounded-xl border border-gray-200 px-3.5 py-3 text-sm shadow-sm transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 ${className}`}
+      className={`w-full rounded-xl border border-border px-3.5 py-3 text-sm shadow-sm transition focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring ${className}`}
     >
       {children}
     </select>
@@ -405,14 +407,14 @@ const ProfilePage: React.FC = () => {
       title="Profil"
       description="Oppdater kontaktinformasjon, kontoopplysninger og personlige innstillinger for Internsiden."
     >
-      <div className="grid items-start gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(21rem,0.95fr)]">
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(21rem,0.95fr)]">
         <div className="space-y-4">
           <ProfileSectionCard
             title="Generell info"
             description="Navn, kontaktinformasjon og studieopplysninger."
           >
             {profileLoading ? (
-              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-sm text-gray-600">
+              <div className="rounded-xl border border-dashed border-input bg-surface-muted p-4 text-sm text-muted">
                 Laster profilinformasjon...
               </div>
             ) : (
@@ -455,9 +457,9 @@ const ProfilePage: React.FC = () => {
                       value={form.email}
                       readOnly
                       disabled
-                      className="bg-gray-50 text-gray-500"
+                      className="bg-surface-muted text-subtle"
                     />
-                    <p className="mt-1 text-xs text-gray-500">E-post kan ikke endres her ennå.</p>
+                    <p className="mt-1 text-xs text-subtle">E-post kan ikke endres her ennå.</p>
                   </div>
                   <div className="md:col-span-2">
                     <FieldLabel htmlFor="phone">Telefon</FieldLabel>
@@ -544,7 +546,7 @@ const ProfilePage: React.FC = () => {
                     <button
                       type="submit"
                       disabled={savingGeneralInfo || profileLoading}
-                      className="inline-flex min-w-42 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                      className="inline-flex min-w-42 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-fg shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       {savingGeneralInfo ? 'Lagrer...' : 'Lagre endringer'}
                     </button>
@@ -552,13 +554,13 @@ const ProfilePage: React.FC = () => {
                 </div>
 
                 {formError && (
-                  <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  <div className="rounded-xl border border-danger-border bg-danger-subtle px-4 py-3 text-sm text-danger">
                     {formError}
                   </div>
                 )}
 
                 {formSuccess && (
-                  <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                  <div className="rounded-xl border border-success-border bg-success-subtle px-4 py-3 text-sm text-success">
                     {formSuccess}
                   </div>
                 )}
@@ -571,7 +573,7 @@ const ProfilePage: React.FC = () => {
             description="Bytt passordet du bruker for å logge inn."
           >
             <form className="space-y-2.5" onSubmit={handlePasswordSubmit}>
-              <div className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3 text-sm text-yellow-900">
+              <div className="rounded-xl border border-warning-border bg-warning-subtle px-4 py-3 text-sm text-warning-subtle-fg">
                 Bruk et sterkt passord. Dagens innloggingsflyt krever minst 6 tegn.
               </div>
 
@@ -596,7 +598,7 @@ const ProfilePage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowNewPassword((value) => !value)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-muted"
                       aria-label={showNewPassword ? 'Skjul nytt passord' : 'Vis nytt passord'}
                     >
                       {showNewPassword ? (
@@ -628,7 +630,7 @@ const ProfilePage: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setShowConfirmPassword((value) => !value)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-muted"
                       aria-label={
                         showConfirmPassword ? 'Skjul bekreftet passord' : 'Vis bekreftet passord'
                       }
@@ -646,7 +648,7 @@ const ProfilePage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={savingPassword || !newPassword || !confirmPassword}
-                    className="inline-flex min-w-42 items-center justify-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="inline-flex min-w-42 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-fg shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {savingPassword ? 'Oppdaterer...' : 'Oppdater passord'}
                   </button>
@@ -654,13 +656,13 @@ const ProfilePage: React.FC = () => {
               </div>
 
               {passwordError && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-xl border border-danger-border bg-danger-subtle px-4 py-3 text-sm text-danger">
                   {passwordError}
                 </div>
               )}
 
               {passwordSuccess && (
-                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                <div className="rounded-xl border border-success-border bg-success-subtle px-4 py-3 text-sm text-success">
                   {passwordSuccess}
                 </div>
               )}
@@ -674,7 +676,7 @@ const ProfilePage: React.FC = () => {
             description="Last opp bildet som vises på profilen din."
           >
             <div className="space-y-2.5">
-              <div className="h-32 overflow-hidden rounded-xl border border-gray-200 bg-linear-to-br from-gray-50 to-gray-100">
+              <div className="h-32 overflow-hidden rounded-xl border border-border bg-linear-to-br from-surface-muted to-canvas">
                 <div className="flex h-full items-center justify-center">
                   {profilePictureUrl ? (
                     <img
@@ -683,7 +685,7 @@ const ProfilePage: React.FC = () => {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-white text-lg font-semibold text-gray-400 shadow-sm">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface text-lg font-semibold text-subtle shadow-sm">
                       {fullName
                         .split(' ')
                         .filter(Boolean)
@@ -705,20 +707,20 @@ const ProfilePage: React.FC = () => {
               />
               <label
                 htmlFor="profile-picture"
-                className="inline-flex cursor-pointer items-center rounded-xl bg-blue-600 px-4 py-3 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+                className="inline-flex cursor-pointer items-center rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-fg shadow-sm transition hover:bg-primary-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
                 aria-disabled={savingProfilePicture}
               >
                 {savingProfilePicture ? 'Laster opp...' : 'Last opp bilde'}
               </label>
 
               {profilePictureError && (
-                <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-xl border border-danger-border bg-danger-subtle px-4 py-3 text-sm text-danger">
                   {profilePictureError}
                 </div>
               )}
 
               {profilePictureSuccess && (
-                <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">
+                <div className="rounded-xl border border-success-border bg-success-subtle px-4 py-3 text-sm text-success">
                   {profilePictureSuccess}
                 </div>
               )}
@@ -731,14 +733,14 @@ const ProfilePage: React.FC = () => {
           >
             <div className="space-y-2.5">
               <StubBadge>Kommer senere</StubBadge>
-              <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-3.5">
-                <label className="flex items-center justify-between gap-3 text-sm text-gray-600">
+              <div className="space-y-2 rounded-xl border border-border bg-surface-muted p-3.5">
+                <label className="flex items-center justify-between gap-3 text-sm text-muted">
                   <span>Stå på krysselista i resepsjonen</span>
-                  <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-300" />
+                  <input type="checkbox" disabled className="h-4 w-4 rounded border-input" />
                 </label>
-                <label className="flex items-center justify-between gap-3 text-sm text-gray-600">
+                <label className="flex items-center justify-between gap-3 text-sm text-muted">
                   <span>Stå på krysselista i vinkjelleren</span>
-                  <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-300" />
+                  <input type="checkbox" disabled className="h-4 w-4 rounded border-input" />
                 </label>
                 <div className="grid gap-2.5 sm:grid-cols-2">
                   <div className="min-w-0">
@@ -748,7 +750,7 @@ const ProfilePage: React.FC = () => {
                       value="1234"
                       readOnly
                       disabled
-                      className="bg-white text-gray-400"
+                      className="bg-surface text-subtle"
                     />
                   </div>
                   <div className="min-w-0">
@@ -758,7 +760,7 @@ const ProfilePage: React.FC = () => {
                       value="1234"
                       readOnly
                       disabled
-                      className="bg-white text-gray-400"
+                      className="bg-surface text-subtle"
                     />
                   </div>
                 </div>
@@ -769,7 +771,7 @@ const ProfilePage: React.FC = () => {
           <ProfileSectionCard title="Varsler" description="Velg hvilke varsler du vil motta.">
             <div className="space-y-2.5">
               <StubBadge>Kommer senere</StubBadge>
-              <div className="space-y-2 rounded-xl border border-gray-200 bg-gray-50 p-3.5">
+              <div className="space-y-2 rounded-xl border border-border bg-surface-muted p-3.5">
                 {[
                   'Når du har blitt tildelt en vakt',
                   'Når det er 24 timer igjen til å sitte vakt',
@@ -778,10 +780,10 @@ const ProfilePage: React.FC = () => {
                 ].map((label) => (
                   <label
                     key={label}
-                    className="flex items-center justify-between gap-3 rounded-lg bg-white px-3 py-3 text-sm text-gray-600"
+                    className="flex items-center justify-between gap-3 rounded-lg bg-surface px-3 py-3 text-sm text-muted"
                   >
                     <span>{label}</span>
-                    <input type="checkbox" disabled className="h-4 w-4 rounded border-gray-300" />
+                    <input type="checkbox" disabled className="h-4 w-4 rounded border-input" />
                   </label>
                 ))}
               </div>
@@ -794,22 +796,22 @@ const ProfilePage: React.FC = () => {
           >
             <div className="space-y-2.5">
               <StubBadge>Kommer senere</StubBadge>
-              <div className="overflow-hidden rounded-xl border border-gray-200">
-                <div className="grid grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))] bg-gray-50 text-xs font-semibold uppercase tracking-wide text-gray-500">
+              <div className="overflow-hidden rounded-xl border border-border">
+                <div className="grid grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))] bg-surface-muted text-xs font-semibold uppercase tracking-wide text-subtle">
                   <div className="px-3 py-3">E-post</div>
                   <div className="px-3 py-3">Alle</div>
                   <div className="px-3 py-3">Gutter</div>
                   <div className="px-3 py-3">Slå av</div>
                 </div>
-                <div className="grid grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))] items-center bg-white text-sm text-gray-600">
+                <div className="grid grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))] items-center bg-surface text-sm text-muted">
                   <div className="px-3 py-3">{form.email || user?.email || 'Din e-post'}</div>
                   <div className="px-3 py-3">
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-success-subtle text-success">
                       ✓
                     </span>
                   </div>
                   <div className="px-3 py-3">
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-green-100 text-green-700">
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-success-subtle text-success">
                       ✓
                     </span>
                   </div>
@@ -817,7 +819,7 @@ const ProfilePage: React.FC = () => {
                     <button
                       type="button"
                       disabled
-                      className="rounded-lg bg-gray-100 px-3 py-2 text-xs font-medium text-gray-500"
+                      className="rounded-lg bg-surface-muted px-3 py-2 text-xs font-medium text-subtle"
                     >
                       Fjern
                     </button>

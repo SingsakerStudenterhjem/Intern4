@@ -31,12 +31,12 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
       {
         label: 'Godkjent',
         value: `${totals.approved.toFixed(2)} t`,
-        valueClassName: 'text-green-700',
+        valueClassName: 'text-success',
       },
       {
         label: 'Venter',
         value: `${totals.pending.toFixed(2)} t`,
-        valueClassName: 'text-amber-700',
+        valueClassName: 'text-warning-subtle-fg',
       },
       {
         label: 'Totalt registrert',
@@ -67,72 +67,72 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+      <div className="rounded-xl border border-border bg-surface p-5 shadow-sm">
         <div className="mb-3">
-          <h2 className="text-base font-semibold text-gray-900">Oversikt over min regi</h2>
+          <h2 className="text-base font-semibold text-fg">Oversikt over min regi</h2>
         </div>
-        <dl className="divide-y divide-gray-100">
+        <dl className="divide-y divide-border">
           {overviewItems.map((item) => (
             <div
               key={item.label}
               className="flex items-center justify-between gap-4 py-1 first:pt-0"
             >
-              <dt className="text-sm text-gray-600">{item.label}</dt>
+              <dt className="text-sm text-muted">{item.label}</dt>
               <dd className={`text-base font-semibold ${item.valueClassName}`}>{item.value}</dd>
             </div>
           ))}
         </dl>
       </div>
 
-      <div className="border border-gray-200 rounded-xl bg-white shadow-sm">
-        <div className="border-b border-gray-200 p-4">
-          <h2 className="font-semibold text-gray-900">Regi logg</h2>
-          <p className="mt-1 text-sm text-gray-600">Nyeste først. Godkjenning skjer av regisjef.</p>
+      <div className="border border-border rounded-xl bg-surface shadow-sm">
+        <div className="border-b border-border p-4">
+          <h2 className="font-semibold text-fg">Regi logg</h2>
+          <p className="mt-1 text-sm text-muted">Nyeste først. Godkjenning skjer av regisjef.</p>
         </div>
         {error && (
-          <div className="border-b border-red-200 bg-red-50 px-4 py-3">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="border-b border-danger-border bg-danger-subtle px-4 py-3">
+            <p className="text-sm text-danger">{error}</p>
           </div>
         )}
         <div className="max-h-[480px] overflow-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 sticky top-0">
+            <thead className="bg-surface-muted sticky top-0">
               <tr>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Utført / registrert
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Tittel
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Timer
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Type
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide">
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
                   Status
                 </th>
-                <th className="text-left px-4 py-2 text-xs font-medium text-gray-600 uppercase tracking-wide"></th>
+                <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide"></th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {logs.map((l) => (
                 <tr
                   key={l.id}
-                  className="cursor-pointer transition-colors hover:bg-gray-50"
+                  className="cursor-pointer transition-colors hover:bg-surface-muted"
                   onClick={() => setSelectedLog(l)}
                 >
                   <td className="px-4 py-3">
-                    <div className="font-medium text-gray-900">{formatLogDate(l.date)}</div>
-                    <div className="text-xs text-gray-500">
+                    <div className="font-medium text-fg">{formatLogDate(l.date)}</div>
+                    <div className="text-xs text-subtle">
                       Registrert {formatLogDate(l.createdAt)}
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div>{l.title}</div>
                     {l.imagePaths && l.imagePaths.length > 0 && (
-                      <div className="mt-1 text-xs text-gray-500">
+                      <div className="mt-1 text-xs text-subtle">
                         {l.imagePaths.length} {l.imagePaths.length === 1 ? 'bilde' : 'bilder'}
                       </div>
                     )}
@@ -141,17 +141,17 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
                   <td className="px-4 py-3 capitalize">{l.type}</td>
                   <td className="px-4 py-3 capitalize">
                     {l.status === 'pending' && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-yellow-100 text-yellow-800 text-xs font-semibold">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-warning-subtle text-warning-subtle-fg text-xs font-semibold">
                         venter
                       </span>
                     )}
                     {l.status === 'approved' && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-success-subtle text-success-subtle-fg text-xs font-semibold">
                         godkjent
                       </span>
                     )}
                     {l.status === 'rejected' && (
-                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-800 text-xs font-semibold">
+                      <span className="inline-flex items-center px-2 py-1 rounded-full bg-danger-subtle text-danger-subtle-fg text-xs font-semibold">
                         avvist
                       </span>
                     )}
@@ -165,20 +165,20 @@ const WorkLogList: React.FC<{ userId: string; userRole?: string; refreshKey?: nu
                           void handleDelete(l);
                         }}
                         disabled={deletingId === l.id}
-                        className="inline-flex items-center gap-1 rounded-md border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-700 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center gap-1 rounded-md border border-danger-border px-2.5 py-1.5 text-xs font-medium text-danger hover:bg-danger-subtle disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                         {deletingId === l.id ? 'Sletter...' : 'Slett'}
                       </button>
                     ) : (
-                      <span className="text-xs text-gray-400">—</span>
+                      <span className="text-xs text-subtle">—</span>
                     )}
                   </td>
                 </tr>
               ))}
               {logs.length === 0 && (
                 <tr>
-                  <td className="p-3 text-gray-600" colSpan={7}>
+                  <td className="p-3 text-muted" colSpan={7}>
                     Ingen registreringer ennå.
                   </td>
                 </tr>
