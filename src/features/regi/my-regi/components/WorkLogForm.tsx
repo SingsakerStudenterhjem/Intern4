@@ -40,9 +40,18 @@ const emptyForm = (type = '') => ({
   type,
 });
 
-type WorkLogFormProps = ReturnType<typeof useWorkLogFormWorkflow> & { onCreated?: () => void };
+type WorkLogFormProps = ReturnType<typeof useWorkLogFormWorkflow> & {
+  onCreated?: () => void;
+  // Hidden when shown in a sheet, which has its own title.
+  hideHeading?: boolean;
+};
 
-const WorkLogForm: React.FC<WorkLogFormProps> = ({ categories, createWorkLog, onCreated }) => {
+const WorkLogForm: React.FC<WorkLogFormProps> = ({
+  categories,
+  createWorkLog,
+  onCreated,
+  hideHeading = false,
+}) => {
   const { user } = useAuth();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -157,10 +166,12 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({ categories, createWorkLog, on
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-      <div>
-        <h2 className="text-lg font-semibold">Registrer regi</h2>
-        <p className="text-sm text-muted">Timene sendes til regisjefen for godkjenning.</p>
-      </div>
+      {!hideHeading && (
+        <div>
+          <h2 className="text-lg font-semibold">Registrer regi</h2>
+          <p className="text-sm text-muted">Timene sendes til regisjefen for godkjenning.</p>
+        </div>
+      )}
 
       {success && (
         <StatusMessage tone="success" onDismiss={() => setSuccess(false)}>

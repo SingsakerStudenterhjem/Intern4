@@ -25,6 +25,8 @@ const renderTabBar = (path = '/regi') =>
     </ThemeProvider>
   );
 
+const resident = { id: '1', name: 'Vanlig Bruker', email: 'bruker@example.com', role: 'Halv/Halv' };
+
 describe('MobileTabBar', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -37,40 +39,25 @@ describe('MobileTabBar', () => {
     expect(screen.queryByRole('navigation')).not.toBeInTheDocument();
   });
 
-  it('marks the current tab and opens a role-filtered menu', async () => {
-    const user = userEvent.setup();
-    mockUseAuth.mockReturnValue({
-      user: { id: '1', name: 'Vanlig Bruker', email: 'bruker@example.com', role: 'Halv/Halv' },
-    });
-    renderTabBar('/regi');
+  it('has Hjem, Regi, Beboere and Meny, with Regi current on every regi tab', () => {
+    mockUseAuth.mockReturnValue({ user: resident });
+    renderTabBar('/regi/timer');
 
     const tabBar = screen.getByRole('navigation', { name: 'Hovedmeny' });
-    expect(within(tabBar).getByRole('link', { name: 'Min regi' })).toHaveAttribute(
+    expect(within(tabBar).getByRole('link', { name: 'Regi' })).toHaveAttribute(
       'aria-current',
       'page'
     );
-    expect(within(tabBar).getByRole('link', { name: 'Oppgaver' })).not.toHaveAttribute(
-      'aria-current'
+    expect(within(tabBar).getByRole('link', { name: 'Beboere' })).toHaveAttribute(
+      'href',
+      '/beboere'
     );
     expect(within(tabBar).getByRole('link', { name: 'Hjem' })).not.toHaveAttribute('aria-current');
-    expect(within(tabBar).queryByRole('link', { name: 'Beboere' })).not.toBeInTheDocument();
-
-    await user.click(within(tabBar).getByRole('button', { name: 'Meny' }));
-
-    const menu = screen.getByRole('dialog', { name: 'Meny' });
-    expect(within(menu).getByRole('link', { name: 'Profil' })).toHaveAttribute('href', '/profil');
-    expect(within(menu).getByRole('link', { name: 'Beboere' })).toHaveAttribute('href', '/beboere');
-    expect(within(menu).queryByRole('link', { name: 'Regisjef' })).not.toBeInTheDocument();
-    expect(within(menu).queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument();
-
-    await user.click(within(menu).getByRole('link', { name: 'Profil' }));
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    expect(within(tabBar).getByRole('button', { name: 'Meny' })).toBeInTheDocument();
   });
 
   it('marks Hjem as current only on the home page', () => {
-    mockUseAuth.mockReturnValue({
-      user: { id: '1', name: 'Vanlig Bruker', email: 'bruker@example.com', role: 'Halv/Halv' },
-    });
+    mockUseAuth.mockReturnValue({ user: resident });
     renderTabBar('/');
 
     const tabBar = screen.getByRole('navigation', { name: 'Hovedmeny' });
@@ -78,12 +65,29 @@ describe('MobileTabBar', () => {
       'aria-current',
       'page'
     );
-    expect(within(tabBar).getByRole('link', { name: 'Min regi' })).not.toHaveAttribute(
-      'aria-current'
-    );
+    expect(within(tabBar).getByRole('link', { name: 'Regi' })).not.toHaveAttribute('aria-current');
   });
 
-  it('shows manager links to regi managers and logs out', async () => {
+  it('opens a role-filtered menu that closes on navigation', async () => {
+    const user = userEvent.setup();
+    mockUseAuth.mockReturnValue({ user: resident });
+    renderTabBar('/regi');
+
+    await user.click(screen.getByRole('button', { name: 'Meny' }));
+
+    const menu = screen.getByRole('dialog', { name: 'Meny' });
+    expect(within(menu).getByRole('link', { name: 'Regi' })).toHaveAttribute('href', '/regi');
+    expect(within(menu).getByRole('link', { name: 'Profil' })).toHaveAttribute('href', '/profil');
+    expect(within(menu).queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument();
+    expect(
+      within(menu).queryByRole('link', { name: 'Administrer brukere' })
+    ).not.toBeInTheDocument();
+
+    await user.click(within(menu).getByRole('link', { name: 'Profil' }));
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('logs out from the menu', async () => {
     const user = userEvent.setup();
     mockUseAuth.mockReturnValue({
       user: { id: '2', name: 'Regi Sjef', email: 'regi@example.com', role: 'Regisjef' },
@@ -92,10 +96,9 @@ describe('MobileTabBar', () => {
     renderTabBar('/regi/oppgaver');
 
     await user.click(screen.getByRole('button', { name: 'Meny' }));
-    const menu = screen.getByRole('dialog', { name: 'Meny' });
-    expect(within(menu).getByRole('link', { name: 'Regisjef' })).toBeInTheDocument();
-
-    await user.click(within(menu).getByRole('button', { name: 'Logg ut' }));
+    await user.click(
+      within(screen.getByRole('dialog', { name: 'Meny' })).getByRole('button', { name: 'Logg ut' })
+    );
     expect(mockLogOut).toHaveBeenCalledTimes(1);
   });
 });

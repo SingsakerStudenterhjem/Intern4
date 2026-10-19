@@ -1,14 +1,11 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import HomePage from './HomePage';
-import { getMyActiveTasks, getSuggestedTasks } from './useHomeData';
-import { summarizeSemesterRegi } from '../../features/regi/regiSummary';
 import type { RegiLogWithId } from '../../shared/types/regi';
-import type { Task, TaskParticipant } from '../../shared/types/regi/tasks';
+import type { Task } from '../../shared/types/regi/tasks';
 import { getPendingRegiApprovals, getRegiLogsByUser } from '../../server/dao/regiDAO';
-import { getTasks, joinTask } from '../../server/dao/tasksDAO';
+import { getTasks } from '../../server/dao/tasksDAO';
 
 const ME = '11111111-1111-4111-8111-111111111111';
 const mockUseAuth = vi.fn();
@@ -18,141 +15,91 @@ vi.mock('../../server/dao/regiDAO', () => ({
   getRegiLogsByUser: vi.fn(),
   getPendingRegiApprovals: vi.fn(),
 }));
-vi.mock('../../server/dao/tasksDAO', () => ({
-  getTasks: vi.fn(),
-  joinTask: vi.fn(),
-  leaveTask: vi.fn(),
-  submitTaskCompletion: vi.fn(),
-}));
-vi.mock('../../server/dao/categoriesDAO', () => ({
-  getCategories: vi.fn().mockResolvedValue([]),
-}));
-vi.mock('../../server/dao/userDAO', () => ({
-  getUserNames: vi.fn().mockResolvedValue({}),
-}));
+vi.mock('../../server/dao/tasksDAO', () => ({ getTasks: vi.fn() }));
 
 const log = (overrides: Partial<RegiLogWithId>): RegiLogWithId => ({
   id: '1',
   userId: ME,
   title: 'Regi',
-  hours: 1,
-  date: new Date(2026, 8, 1),
-  createdAt: new Date(2026, 8, 1),
+  hours: 4,
+  date: new Date(),
+  createdAt: new Date(),
   sourceType: 'misc',
   status: 'approved',
   type: 'Regi',
   ...overrides,
 });
 
-const participant = (status: TaskParticipant['status']): TaskParticipant => ({
-  assignmentId: `a-${status}`,
-  userId: ME,
-  status,
-  joinedAt: '2026-09-01T10:00:00.000Z',
-});
-
-const task = (id: string, overrides: Partial<Task> = {}): Task => ({
-  id,
-  title: `Oppgave ${id}`,
+const joinedTask: Task = {
+  id: 't1',
+  title: 'Male gang',
   category: 'Regi',
   deadline: null,
   hourEstimate: 2,
   maxParticipants: 3,
-  participants: [],
+  participants: [
+    { assignmentId: 'a1', userId: ME, status: 'joined', joinedAt: '2026-09-01T10:00:00.000Z' },
+  ],
   createdAt: '2026-09-01T10:00:00.000Z',
   isArchived: false,
-  ...overrides,
-});
+};
 
-describe('home page helpers', () => {
-  it('only counts this semester towards the requirement', () => {
-    const summary = summarizeSemesterRegi(
-      [
-        log({ hours: 10, date: new Date(2026, 7, 15) }),
-        log({ hours: 20, date: new Date(2026, 5, 1) }), // last semester
-        log({ hours: 3, status: 'pending', date: new Date(2026, 8, 2) }),
-        log({ hours: 5, status: 'rejected', date: new Date(2026, 8, 3) }),
-      ],
-      'Halv/Halv',
-      new Date(2026, 9, 19)
-    );
-
-    expect(summary).toEqual({ approved: 10, pending: 3, required: 18, remaining: 8 });
-  });
-
-  it('lists my unfinished tasks with rework first', () => {
-    const tasks = [
-      task('submitted', { participants: [participant('submitted')] }),
-      task('done', { participants: [participant('approved')] }),
-      task('rejected', { participants: [participant('rejected')] }),
-      task('open'),
-    ];
-
-    expect(getMyActiveTasks(tasks, ME).map((t) => t.id)).toEqual(['rejected', 'submitted']);
-  });
-
-  it('suggests at most three joinable tasks, soonest deadline first', () => {
-    const tasks = [
-      task('no-deadline'),
-      task('late', { deadline: '2026-12-01T10:00:00.000Z' }),
-      task('soon', { deadline: '2026-10-21T10:00:00.000Z' }),
-      task('mine', { participants: [participant('joined')] }),
-      task('archived', { isArchived: true }),
-      task('mid', { deadline: '2026-11-01T10:00:00.000Z' }),
-    ];
-
-    expect(getSuggestedTasks(tasks, ME).map((t) => t.id)).toEqual(['soon', 'mid', 'late']);
-  });
-});
+const renderHome = () =>
+  render(
+    <MemoryRouter>
+      <HomePage />
+    </MemoryRouter>
+  );
 
 describe('HomePage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(getRegiLogsByUser).mockResolvedValue([log({ hours: 4, date: new Date() })]);
-    vi.mocked(getTasks).mockResolvedValue([task('1', { title: 'Male gang' })]);
+    vi.mocked(getRegiLogsByUser).mockResolvedValue([log({})]);
+    vi.mocked(getTasks).mockResolvedValue([]);
     vi.mocked(getPendingRegiApprovals).mockResolvedValue([]);
   });
 
-  const renderHome = () =>
-    render(
-      <MemoryRouter>
-        <HomePage />
-      </MemoryRouter>
-    );
-
-  it('greets the user and hides the approvals card from residents', async () => {
+  it('greets the user and summarises this semester’s regi', async () => {
     mockUseAuth.mockReturnValue({ user: { id: ME, name: 'Bjørn Beboersen', role: 'Halv/Halv' } });
     renderHome();
 
     expect(screen.getByRole('heading', { name: 'Hei, Bjørn!' })).toBeInTheDocument();
-    expect(await screen.findByText('Male gang')).toBeInTheDocument();
-    expect(screen.getByText('av 18 t')).toBeInTheDocument();
-    expect(screen.queryByText(/venter på godkjenning$/)).not.toBeInTheDocument();
+    expect(await screen.findByText('14 t igjen')).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /registrer timer/i })).toHaveAttribute(
+      'href',
+      '/regi?registrer=1'
+    );
+    expect(screen.getByText('Ingenting venter på deg akkurat nå.')).toBeInTheDocument();
     expect(getPendingRegiApprovals).not.toHaveBeenCalled();
+  });
+
+  it('lists what needs doing and links into the Regi hub', async () => {
+    mockUseAuth.mockReturnValue({ user: { id: ME, name: 'Bjørn', role: 'Halv/Halv' } });
+    vi.mocked(getTasks).mockResolvedValue([joinedTask]);
+    vi.mocked(getRegiLogsByUser).mockResolvedValue([
+      log({ id: 'r', title: 'Snømåking', status: 'rejected', reviewerComment: 'Mangler bilde' }),
+    ]);
+    renderHome();
+
+    expect(await screen.findByRole('link', { name: /send inn «male gang»/i })).toHaveAttribute(
+      'href',
+      '/regi'
+    );
+    expect(screen.getByRole('link', { name: /«snømåking» ble avslått/i })).toHaveAttribute(
+      'href',
+      '/regi/timer'
+    );
+    expect(screen.getByText('Mangler bilde')).toBeInTheDocument();
   });
 
   it('shows pending approvals to regi managers', async () => {
     mockUseAuth.mockReturnValue({ user: { id: ME, name: 'Ada', role: 'Regisjef' } });
-    vi.mocked(getPendingRegiApprovals).mockResolvedValue(
-      Array.from({ length: 2 }, (_, index) => ({ id: String(index) })) as never
+    vi.mocked(getPendingRegiApprovals).mockResolvedValue([{ id: '1' }, { id: '2' }] as never);
+    renderHome();
+
+    expect(await screen.findByRole('link', { name: /2 venter på godkjenning/i })).toHaveAttribute(
+      'href',
+      '/regi/godkjenning'
     );
-    renderHome();
-
-    const link = await screen.findByRole('link', { name: /2 venter på godkjenning/i });
-    expect(link).toHaveAttribute('href', '/regisjef/godkjenning');
-  });
-
-  it('joins a suggested task and refreshes', async () => {
-    const user = userEvent.setup();
-    mockUseAuth.mockReturnValue({ user: { id: ME, name: 'Bjørn', role: 'Halv/Halv' } });
-    vi.mocked(joinTask).mockResolvedValue(true);
-    renderHome();
-
-    const card = (await screen.findByText('Male gang')).closest('article') as HTMLElement;
-    await user.click(within(card).getByRole('button', { name: 'Meld på' }));
-
-    await waitFor(() => expect(joinTask).toHaveBeenCalledWith('1', ME));
-    expect(await screen.findByText('Du er påmeldt oppgaven!')).toBeInTheDocument();
-    expect(getTasks).toHaveBeenCalledTimes(2);
   });
 });

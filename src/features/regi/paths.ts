@@ -1,8 +1,11 @@
 export const REGI_PATHS = {
   REGI: '/regi',
-  REGISJEF: '/regisjef',
-  REGIGODKJENNING: '/regisjef/godkjenning',
-  REGISTATUS: '/regisjef/status',
-  GI_REGI: '/regisjef/gi-regi',
-  REGILOGS: '/regisjef/logg',
+  OPPGAVER: '/regi/oppgaver',
+  TIMER: '/regi/timer',
+  GODKJENNING: '/regi/godkjenning',
+  STATUS: '/regi/status',
+  LOGG: '/regi/logg',
 };
+
+// Old Regisjef URLs, kept as redirects into the hub.
+export const LEGACY_REGISJEF_PATH = '/regisjef';

@@ -101,4 +101,17 @@ describe('TaskCard', () => {
 
     expect(screen.getByText('Snart frist')).toBeInTheDocument();
   });
+
+  it('lets a rejected task be sent in again', () => {
+    render(
+      <TaskCard
+        task={task({ participants: [participant(ME, 'rejected')] })}
+        currentUserId={ME}
+        onJoin={vi.fn()}
+        onSubmit={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole('button', { name: 'Send inn' })).toBeInTheDocument();
+  });
 });

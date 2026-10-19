@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useAuth } from '../../../app/providers/AuthContext';
 import {
   addTask,
@@ -26,7 +26,17 @@ import { useTaskManagementData } from './useTaskManagementData';
 
 type StatusMessage = { type: 'success' | 'error'; text: string };
 
-export const useTaskManagement = () => {
+type UseTaskManagementOptions = {
+  // Called after the user's own assignments change (join, leave, submit), e.g. to reload hours.
+  onAssignmentsChanged?: () => void;
+};
+
+export const useTaskManagement = ({ onAssignmentsChanged }: UseTaskManagementOptions = {}) => {
+  const onAssignmentsChangedRef = useRef(onAssignmentsChanged);
+  useLayoutEffect(() => {
+    onAssignmentsChangedRef.current = onAssignmentsChanged;
+  });
+
   const authData = useAuth();
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
@@ -112,6 +122,7 @@ export const useTaskManagement = () => {
     try {
       await joinTask(taskId, user.id);
       await loadData();
+      onAssignmentsChangedRef.current?.();
       setSelectedTask(null);
       showSuccessMessage('Du er nå påmeldt oppgaven!');
     } catch (err) {
@@ -126,6 +137,7 @@ export const useTaskManagement = () => {
     try {
       await leaveTask(taskId, user.id);
       await loadData();
+      onAssignmentsChangedRef.current?.();
       setSelectedTask(null);
       showSuccessMessage('Du er nå avmeldt oppgaven');
     } catch (err) {
@@ -140,6 +152,7 @@ export const useTaskManagement = () => {
     try {
       await submitTaskCompletion(taskId, user.id);
       await loadData();
+      onAssignmentsChangedRef.current?.();
       setSelectedTask(null);
       showSuccessMessage('Oppgaven er sendt inn til godkjenning!');
     } catch (err) {
@@ -239,6 +252,7 @@ export const useTaskManagement = () => {
     error,
     message,
     clearMessage: () => setMessage(null),
+    tasks,
     categories,
     selectedTask,
     setSelectedTask,

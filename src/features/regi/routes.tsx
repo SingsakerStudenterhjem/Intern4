@@ -1,26 +1,23 @@
-import WorkPage from './my-regi/pages/WorkPage';
-import WorkManagerPage from './pages/WorkManagerPage';
+import { Navigate, useLocation } from 'react-router-dom';
+import RegiHubPage from './hub/RegiHubPage';
 import type { FeatureRoute } from '../../shared/types/feature';
-import { regiManagerRoles } from './permissions';
-import { REGI_PATHS } from './paths';
+import { LEGACY_REGISJEF_PATH, REGI_PATHS } from './paths';
 
-// Every Regisjef tab has its own URL so tabs can be linked to and the back button works.
-const managerPaths = [
-  REGI_PATHS.REGISJEF,
-  REGI_PATHS.REGIGODKJENNING,
-  REGI_PATHS.REGISTATUS,
-  REGI_PATHS.GI_REGI,
-  REGI_PATHS.REGILOGS,
-];
+const LEGACY_TARGETS: Record<string, string> = {
+  [LEGACY_REGISJEF_PATH]: REGI_PATHS.GODKJENNING,
+  [`${LEGACY_REGISJEF_PATH}/godkjenning`]: REGI_PATHS.GODKJENNING,
+  [`${LEGACY_REGISJEF_PATH}/status`]: REGI_PATHS.STATUS,
+  [`${LEGACY_REGISJEF_PATH}/gi-regi`]: REGI_PATHS.STATUS,
+  [`${LEGACY_REGISJEF_PATH}/logg`]: REGI_PATHS.LOGG,
+};
 
+const LegacyRegisjefRedirect = () => {
+  const { pathname } = useLocation();
+  return <Navigate to={LEGACY_TARGETS[pathname.replace(/\/$/, '')] ?? REGI_PATHS.REGI} replace />;
+};
+
+// One splat route keeps the hub mounted while switching tabs, so loaded data is kept.
 export const regiRoutes: FeatureRoute[] = [
-  {
-    path: REGI_PATHS.REGI,
-    element: <WorkPage />,
-  },
-  ...managerPaths.map((path) => ({
-    path,
-    element: <WorkManagerPage />,
-    allowedRoles: regiManagerRoles,
-  })),
+  { path: `${REGI_PATHS.REGI}/*`, element: <RegiHubPage /> },
+  { path: `${LEGACY_REGISJEF_PATH}/*`, element: <LegacyRegisjefRedirect /> },
 ];

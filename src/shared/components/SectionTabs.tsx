@@ -4,6 +4,8 @@ type SectionTab = {
   key: string;
   label: string;
   count?: number;
+  // Draws a divider before the tab, e.g. between resident and manager tabs.
+  separated?: boolean;
 };
 
 type SectionTabsProps = {
@@ -22,7 +24,14 @@ export const SectionTabs = ({ tabs, activeKey, onChange, label }: SectionTabsPro
   >
     {tabs.map((tab) => {
       const active = tab.key === activeKey;
-      return (
+      return [
+        tab.separated && (
+          <span
+            key={`${tab.key}-separator`}
+            aria-hidden="true"
+            className="mx-1 my-2.5 w-px shrink-0 bg-border-strong"
+          />
+        ),
         <button
           key={tab.key}
           type="button"
@@ -47,8 +56,8 @@ export const SectionTabs = ({ tabs, activeKey, onChange, label }: SectionTabsPro
               {tab.count}
             </span>
           )}
-        </button>
-      );
+        </button>,
+      ];
     })}
   </div>
 );

@@ -49,7 +49,8 @@ export const TaskStatusAction = ({
     );
   }
 
-  if (participant?.status === 'joined' && workflow.canSubmitCompletion && onSubmit) {
+  // Joined tasks can be sent in, and rejected ones sent in again.
+  if (workflow.canSubmitCompletion && onSubmit) {
     return (
       <Button
         size={size}

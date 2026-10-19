@@ -55,7 +55,7 @@ describe('Navbar', () => {
 
     expect(screen.getByRole('link', { name: 'Hjem' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'Beboere' })).toHaveAttribute('href', '/beboere');
-    expect(screen.getByRole('button', { name: /regi/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Regi' })).toHaveAttribute('href', '/regi');
     expect(screen.getByRole('link', { name: 'Admin' })).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: /data bruker/i }));
@@ -82,6 +82,6 @@ describe('Navbar', () => {
 
     expect(screen.queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Beboere' })).toHaveAttribute('href', '/beboere');
-    expect(screen.getByRole('button', { name: /regi/i })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Regi' })).toHaveAttribute('href', '/regi');
   });
 });

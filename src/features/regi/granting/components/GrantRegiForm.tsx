@@ -39,8 +39,8 @@ type FormState = {
   type: string;
 };
 
-const emptyForm = (type = ''): FormState => ({
-  userId: '',
+const emptyForm = (type = '', userId = ''): FormState => ({
+  userId,
   title: '',
   description: '',
   date: today(),
@@ -48,11 +48,22 @@ const emptyForm = (type = ''): FormState => ({
   type,
 });
 
-const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
+type GrantRegiFormProps = {
+  onCreated?: () => void;
+  // Preselects a resident, e.g. when opened from their row in Registatus.
+  initialUserId?: string;
+  hideHeading?: boolean;
+};
+
+const GrantRegiForm: React.FC<GrantRegiFormProps> = ({
+  onCreated,
+  initialUserId = '',
+  hideHeading = false,
+}) => {
   const { user } = useAuth();
   const { categories, users, loading, message, setMessage, createGrantedLog } =
     useGrantRegiWorkflow();
-  const [form, setForm] = useState<FormState>(emptyForm);
+  const [form, setForm] = useState<FormState>(() => emptyForm('', initialUserId));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
@@ -124,12 +135,14 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-2xl space-y-4" noValidate>
-      <div>
-        <h2 className="text-lg font-semibold">Gi regitimer</h2>
-        <p className="text-sm text-muted">
-          Timene registreres og godkjennes med en gang, med deg som godkjenner.
-        </p>
-      </div>
+      {!hideHeading && (
+        <div>
+          <h2 className="text-lg font-semibold">Gi regitimer</h2>
+          <p className="text-sm text-muted">
+            Timene registreres og godkjennes med en gang, med deg som godkjenner.
+          </p>
+        </div>
+      )}
 
       {message && (
         <StatusMessage

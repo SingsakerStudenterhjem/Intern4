@@ -1,9 +1,11 @@
 import React, { useMemo, useState } from 'react';
+import { Plus } from 'lucide-react';
 import { useAuth } from '../../../../app/providers/AuthContext';
 import { canApproveWork } from '../../permissions';
 import { RegistatusRow, useRegistatus } from '../hooks/useRegistatus';
 import {
   Badge,
+  Button,
   DataTable,
   EmptyState,
   SearchInput,
@@ -62,7 +64,12 @@ const ProgressMeter = ({ row }: { row: RegistatusRow }) => {
   );
 };
 
-const Registatus: React.FC = () => {
+type RegistatusProps = {
+  // Opens "Gi regi" prefilled with this resident.
+  onGrant?: (row: RegistatusRow) => void;
+};
+
+const Registatus: React.FC<RegistatusProps> = ({ onGrant }) => {
   const { user, loading: authLoading } = useAuth();
   const { semesterLabel, filtered, loading, error, query, setQuery, load } = useRegistatus(
     user,
@@ -80,6 +87,19 @@ const Registatus: React.FC = () => {
     statusFilter === 'all'
       ? filtered
       : filtered.filter((row) => getRowStatus(row) === statusFilter);
+
+  const grantButton = (row: RegistatusRow) =>
+    onGrant ? (
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={() => onGrant(row)}
+        aria-label={`Gi timer til ${row.name}`}
+        icon={<Plus aria-hidden="true" className="h-4 w-4" />}
+      >
+        Gi timer
+      </Button>
+    ) : null;
 
   if (authLoading) return null;
   if (!user || !canApproveWork(user.role)) {
@@ -147,6 +167,7 @@ const Registatus: React.FC = () => {
               {getRowStatus(row) === 'missing' && (
                 <p className="text-xs text-muted">Gjenstår {formatHours(row.remainingHours)}</p>
               )}
+              {onGrant && <div className="pt-1">{grantButton(row)}</div>}
             </div>
           )}
           columns={[
@@ -169,6 +190,15 @@ const Registatus: React.FC = () => {
               render: (row) => formatHours(row.remainingHours),
             },
             { key: 'status', header: 'Status', render: (row) => <StatusBadge row={row} /> },
+            ...(onGrant
+              ? [
+                  {
+                    key: 'grant',
+                    header: <span className="sr-only">Handlinger</span>,
+                    render: grantButton,
+                  },
+                ]
+              : []),
           ]}
         />
       )}

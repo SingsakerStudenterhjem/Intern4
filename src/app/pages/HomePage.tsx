@@ -1,98 +1,63 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, CheckCircle2, ClipboardCheck, Hourglass, Target } from 'lucide-react';
-import { useAuth } from '../providers/AuthContext';
-import { getMyActiveTasks, getSuggestedTasks, useHomeData } from './useHomeData';
-import { summarizeSemesterRegi } from '../../features/regi/regiSummary';
-import { formatHours } from '../../shared/utils/date';
-import { PageLayout } from '../../shared/layouts';
 import {
-  ConfirmDialog,
-  EmptyState,
-  Skeleton,
-  StatTile,
-  StatusMessage,
-  buttonClasses,
-} from '../../shared/components';
-import { TaskCard } from '../../features/tasks/components/TaskCard';
-import TaskModal from '../../features/tasks/components/TaskModal';
-import { joinTask, leaveTask, submitTaskCompletion } from '../../server/dao/tasksDAO';
+  ArrowRight,
+  CheckCircle2,
+  ClipboardCheck,
+  Plus,
+  Search,
+  Send,
+  XCircle,
+} from 'lucide-react';
+import { useAuth } from '../providers/AuthContext';
+import { useHomeData } from './useHomeData';
+import { getRegiTodo, summarizeSemesterRegi } from '../../features/regi/regiSummary';
 import { canApproveWork } from '../../features/regi/permissions';
-import { TASK_PATHS } from '../../features/tasks/paths';
 import { REGI_PATHS } from '../../features/regi/paths';
-import { Task } from '../../shared/types/regi/tasks';
+import { PageLayout } from '../../shared/layouts';
+import { Card, Skeleton, StatusMessage, buttonClasses } from '../../shared/components';
+import { formatHours } from '../../shared/utils/date';
 import { getSemesterName } from '../../shared/utils/semester';
+import { cn } from '../../shared/utils/cn';
 
-const SectionHeading = ({ title, action }: { title: string; action?: ReactNode }) => (
-  <div className="mb-3 flex items-center justify-between gap-3">
-    <h2 className="text-lg font-semibold">{title}</h2>
-    {action}
-  </div>
+const TodoItem = ({
+  to,
+  icon,
+  title,
+  detail,
+}: {
+  to: string;
+  icon: ReactNode;
+  title: string;
+  detail?: string;
+}) => (
+  <li>
+    <Link
+      to={to}
+      className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-muted"
+    >
+      <span aria-hidden="true" className="shrink-0">
+        {icon}
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium">{title}</span>
+        {detail && <span className="block truncate text-sm text-muted">{detail}</span>}
+      </span>
+      <ArrowRight aria-hidden="true" className="h-4 w-4 shrink-0 text-subtle" />
+    </Link>
+  </li>
 );
 
 const HomePage = () => {
   const { user } = useAuth();
-  const { logs, tasks, categories, names, pendingApprovals, loading, error, reload } =
-    useHomeData(user);
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [submitCandidate, setSubmitCandidate] = useState<Task | null>(null);
-  const [busyTaskId, setBusyTaskId] = useState<string | null>(null);
-  const [message, setMessage] = useState<{ tone: 'success' | 'error'; text: string } | null>(null);
+  const { logs, tasks, pendingApprovals, loading, error } = useHomeData(user);
 
   const userId = user?.id ?? '';
   const summary = useMemo(() => summarizeSemesterRegi(logs, user?.role), [logs, user?.role]);
-  const myTasks = useMemo(() => getMyActiveTasks(tasks, userId), [tasks, userId]);
-  const suggestedTasks = useMemo(() => getSuggestedTasks(tasks, userId), [tasks, userId]);
-  const categoryColors = useMemo(
-    () => Object.fromEntries(categories.map((category) => [category.name, category.color])),
-    [categories]
-  );
-  const selectedTask = tasks.find((task) => task.id === selectedTaskId) ?? null;
+  const todo = useMemo(() => getRegiTodo(logs, tasks, userId), [logs, tasks, userId]);
+  const showApprovals = canApproveWork(user?.role) && !!pendingApprovals;
   const firstName = user?.name?.split(' ')[0];
-
-  const runTaskAction = async (
-    taskId: string,
-    action: () => Promise<unknown>,
-    successText: string
-  ) => {
-    setBusyTaskId(taskId);
-    setMessage(null);
-    try {
-      await action();
-      await reload();
-      setSelectedTaskId(null);
-      setMessage({ tone: 'success', text: successText });
-    } catch (actionError) {
-      setMessage({
-        tone: 'error',
-        text: actionError instanceof Error ? actionError.message : 'Noe gikk galt. Prøv igjen.',
-      });
-    } finally {
-      setBusyTaskId(null);
-    }
-  };
-
-  const join = (taskId: string) =>
-    void runTaskAction(taskId, () => joinTask(taskId, userId), 'Du er påmeldt oppgaven!');
-  const leave = (taskId: string) =>
-    void runTaskAction(taskId, () => leaveTask(taskId, userId), 'Du er meldt av oppgaven.');
-  const submit = (taskId: string) =>
-    void runTaskAction(
-      taskId,
-      () => submitTaskCompletion(taskId, userId),
-      'Oppgaven er sendt inn til godkjenning!'
-    );
-
-  const cardProps = (task: Task) => ({
-    task,
-    currentUserId: userId,
-    categoryColor: categoryColors[task.category],
-    contactName: task.contactPersonId ? names[task.contactPersonId] : undefined,
-    onOpen: (openTask: Task) => setSelectedTaskId(openTask.id),
-    onJoin: (joinTarget: Task) => join(joinTarget.id),
-    onSubmit: setSubmitCandidate,
-    busy: busyTaskId === task.id,
-  });
+  const progress = summary.required > 0 ? Math.min(summary.approved / summary.required, 1) : 1;
 
   return (
     <PageLayout
@@ -100,158 +65,110 @@ const HomePage = () => {
       description={`${getSemesterName()} · Her er det viktigste for deg akkurat nå.`}
     >
       {error && <StatusMessage tone="error">{error}</StatusMessage>}
-      {message && (
-        <StatusMessage tone={message.tone} onDismiss={() => setMessage(null)}>
-          {message.text}
-        </StatusMessage>
-      )}
-
-      <section>
-        <SectionHeading
-          title="Regi dette semesteret"
-          action={
-            <Link to={REGI_PATHS.REGI} className="text-sm font-medium text-primary hover:underline">
-              Min regi
-            </Link>
-          }
-        />
-        {loading ? (
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            {[0, 1, 2].map((index) => (
-              <Skeleton key={index} className="h-24 rounded-2xl sm:h-28" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-3 gap-2 sm:gap-3">
-            <StatTile
-              label="Godkjent"
-              value={formatHours(summary.approved)}
-              tone="success"
-              icon={<CheckCircle2 className="h-5 w-5" />}
-              progress={summary.required > 0 ? summary.approved / summary.required : undefined}
-              hint={summary.required > 0 ? `av ${formatHours(summary.required)}` : undefined}
-            />
-            <StatTile
-              label="Venter"
-              value={formatHours(summary.pending)}
-              tone="warning"
-              icon={<Hourglass className="h-5 w-5" />}
-            />
-            <StatTile
-              label="Gjenstår"
-              value={summary.required > 0 ? formatHours(summary.remaining) : 'Ingen krav'}
-              tone={summary.remaining === 0 ? 'success' : 'primary'}
-              icon={<Target className="h-5 w-5" />}
-              hint={
-                summary.required > 0 && summary.remaining === 0 ? 'Kravet er oppfylt' : undefined
-              }
-            />
-          </div>
-        )}
-      </section>
-
-      {canApproveWork(user?.role) && pendingApprovals !== null && (
-        <Link
-          to={REGI_PATHS.REGIGODKJENNING}
-          className="flex items-center justify-between gap-4 rounded-2xl border border-primary/25 bg-primary-subtle p-4 text-primary-subtle-fg transition-colors hover:border-primary/50"
-        >
-          <span className="flex items-center gap-3">
-            <ClipboardCheck aria-hidden="true" className="h-6 w-6 shrink-0" />
-            <span>
-              <span className="block font-semibold">
-                {pendingApprovals === 0
-                  ? 'Ingenting venter på godkjenning'
-                  : `${pendingApprovals} venter på godkjenning`}
-              </span>
-              <span className="block text-sm opacity-80">Gå til godkjenningslisten</span>
-            </span>
-          </span>
-          <ArrowRight aria-hidden="true" className="h-5 w-5 shrink-0" />
-        </Link>
-      )}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <section>
-          <SectionHeading title="Mine oppgaver" />
+        <Card title="Regi" description="Godkjente timer dette semesteret.">
           {loading ? (
-            <Skeleton className="h-36 rounded-2xl" />
-          ) : myTasks.length === 0 ? (
-            <EmptyState title="Du har ingen aktive oppgaver">
-              Meld deg på en ledig oppgave for å samle regitimer.
-            </EmptyState>
+            <Skeleton className="h-24" />
           ) : (
-            <ul className="space-y-3">
-              {myTasks.map((task) => (
-                <li key={task.id}>
-                  <TaskCard {...cardProps(task)} />
-                </li>
-              ))}
-            </ul>
+            <div className="space-y-4">
+              <div className="flex items-end justify-between gap-3">
+                <p className="text-3xl font-bold tabular-nums">
+                  {formatHours(summary.approved)}
+                  {summary.required > 0 && (
+                    <span className="text-lg font-medium text-subtle">
+                      {' '}
+                      / {formatHours(summary.required)}
+                    </span>
+                  )}
+                </p>
+                <p className="text-sm text-muted">
+                  {summary.required === 0
+                    ? 'Ingen krav'
+                    : summary.remaining === 0
+                      ? 'Kravet er oppfylt'
+                      : `${formatHours(summary.remaining)} igjen`}
+                </p>
+              </div>
+              {summary.required > 0 && (
+                <div
+                  role="meter"
+                  aria-label="Godkjente timer av kravet"
+                  aria-valuemin={0}
+                  aria-valuemax={summary.required}
+                  aria-valuenow={Math.min(summary.approved, summary.required)}
+                  className="h-2.5 overflow-hidden rounded-full bg-surface-muted"
+                >
+                  <div
+                    className={cn(
+                      'h-full rounded-full',
+                      progress >= 1 ? 'bg-success' : 'bg-primary'
+                    )}
+                    style={{ width: `${Math.round(progress * 100)}%` }}
+                  />
+                </div>
+              )}
+              {summary.pending > 0 && (
+                <p className="text-sm text-muted">
+                  {formatHours(summary.pending)} venter på godkjenning.
+                </p>
+              )}
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Link to={`${REGI_PATHS.REGI}?registrer=1`} className={buttonClasses()}>
+                  <Plus aria-hidden="true" className="h-4 w-4" />
+                  Registrer timer
+                </Link>
+                <Link to={REGI_PATHS.OPPGAVER} className={buttonClasses({ variant: 'secondary' })}>
+                  <Search aria-hidden="true" className="h-4 w-4" />
+                  Finn oppgave
+                </Link>
+              </div>
+            </div>
           )}
-        </section>
+        </Card>
 
-        <section>
-          <SectionHeading
-            title="Ledige oppgaver"
-            action={
-              <Link
-                to={TASK_PATHS.TASKS}
-                className={buttonClasses({
-                  variant: 'ghost',
-                  size: 'sm',
-                  className: 'text-primary',
-                })}
-              >
-                Se alle
-                <ArrowRight aria-hidden="true" className="h-4 w-4" />
-              </Link>
-            }
-          />
+        <Card title="Å gjøre" bodyClassName="p-0 sm:p-0">
           {loading ? (
-            <Skeleton className="h-36 rounded-2xl" />
-          ) : suggestedTasks.length === 0 ? (
-            <EmptyState title="Ingen ledige oppgaver akkurat nå">
-              Sjekk igjen senere, eller spør regisjefen.
-            </EmptyState>
+            <div className="p-4">
+              <Skeleton className="h-24" />
+            </div>
+          ) : todo.count === 0 && !showApprovals ? (
+            <p className="flex items-center gap-3 px-4 py-6 text-sm text-muted sm:px-5">
+              <CheckCircle2 aria-hidden="true" className="h-5 w-5 text-success" />
+              Ingenting venter på deg akkurat nå.
+            </p>
           ) : (
-            <ul className="space-y-3">
-              {suggestedTasks.map((task) => (
-                <li key={task.id}>
-                  <TaskCard {...cardProps(task)} />
-                </li>
+            <ul className="divide-y divide-border">
+              {showApprovals && (
+                <TodoItem
+                  to={REGI_PATHS.GODKJENNING}
+                  icon={<ClipboardCheck className="h-5 w-5 text-primary" />}
+                  title={`${pendingApprovals} venter på godkjenning`}
+                  detail="Gå til godkjenningslisten"
+                />
+              )}
+              {todo.tasksToSubmit.map((task) => (
+                <TodoItem
+                  key={task.id}
+                  to={REGI_PATHS.REGI}
+                  icon={<Send className="h-5 w-5 text-info" />}
+                  title={`Send inn «${task.title}»`}
+                  detail="Ferdig med oppgaven? Send den til godkjenning."
+                />
+              ))}
+              {todo.rejectedEntries.map((log) => (
+                <TodoItem
+                  key={log.id}
+                  to={REGI_PATHS.TIMER}
+                  icon={<XCircle className="h-5 w-5 text-danger" />}
+                  title={`«${log.title}» ble avslått`}
+                  detail={log.reviewerComment ?? 'Se registreringen'}
+                />
               ))}
             </ul>
           )}
-        </section>
+        </Card>
       </div>
-
-      {selectedTask && (
-        <TaskModal
-          task={selectedTask}
-          onClose={() => setSelectedTaskId(null)}
-          currentUserId={userId}
-          userRole={user?.role}
-          categoryColor={categoryColors[selectedTask.category]}
-          participantNames={names}
-          onJoinTask={join}
-          onLeaveTask={leave}
-          onCompleteTask={submit}
-        />
-      )}
-
-      <ConfirmDialog
-        open={!!submitCandidate}
-        title="Send inn til godkjenning?"
-        confirmLabel="Send inn"
-        onCancel={() => setSubmitCandidate(null)}
-        onConfirm={() => {
-          if (submitCandidate) submit(submitCandidate.id);
-          setSubmitCandidate(null);
-        }}
-      >
-        «{submitCandidate?.title}» ({submitCandidate?.hourEstimate} timer) sendes til regisjefen for
-        godkjenning.
-      </ConfirmDialog>
     </PageLayout>
   );
 };

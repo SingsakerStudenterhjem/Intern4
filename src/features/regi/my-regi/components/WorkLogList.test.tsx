@@ -149,4 +149,43 @@ describe('WorkLogList', () => {
     expect(deletePendingRegiLog).not.toHaveBeenCalled();
     expect(within(table()).getByText('Behold meg')).toBeInTheDocument();
   });
+
+  it('groups entries by semester with the approved total', () => {
+    render(
+      <WorkLogList
+        groupBySemester
+        onDelete={vi.fn()}
+        logs={[
+          createLog({
+            id: 'a',
+            title: 'Høstjobb',
+            status: 'approved',
+            hours: 3,
+            date: new Date(2026, 9, 1),
+          }),
+          createLog({
+            id: 'b',
+            title: 'Høstjobb 2',
+            status: 'pending',
+            hours: 1,
+            date: new Date(2026, 8, 1),
+          }),
+          createLog({
+            id: 'c',
+            title: 'Vårjobb',
+            status: 'approved',
+            hours: 2,
+            date: new Date(2026, 2, 1),
+          }),
+        ]}
+      />
+    );
+
+    const autumn = screen.getByRole('region', { name: 'Høst 2026' });
+    const spring = screen.getByRole('region', { name: 'Vår 2026' });
+    expect(within(autumn).getByText('3 t godkjent')).toBeInTheDocument();
+    expect(within(within(autumn).getByRole('table')).getAllByRole('row')).toHaveLength(3);
+    expect(within(spring).getByText('2 t godkjent')).toBeInTheDocument();
+    expect(autumn.compareDocumentPosition(spring) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
 });

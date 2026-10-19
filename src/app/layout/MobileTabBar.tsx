@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { ClipboardList, Clock, Home, LogOut, Menu, UserCircle } from 'lucide-react';
+import { ClipboardList, Home, LogOut, Menu, UserCircle, Users } from 'lucide-react';
 import { useAuth } from '../providers/AuthContext';
 import { ThemeSelector } from './ThemeSelector';
 import { useVisibleNavigation } from './useVisibleNavigation';
 import { logOut } from '../../server/dao/authentication';
 import { Modal } from '../../shared/components/Modal';
 import { cn } from '../../shared/utils/cn';
-import { TASK_PATHS } from '../../features/tasks/paths';
 import { REGI_PATHS } from '../../features/regi/paths';
 import { USER_PATHS } from '../../features/users/paths';
+import { RESIDENT_PATHS } from '../../features/residents/paths';
 import { APP_ROUTES } from '../constants/appRoutes';
 
 const tabClasses = (active: boolean) =>
@@ -50,13 +50,13 @@ const MobileTabBar = () => {
             <Home aria-hidden="true" className="h-6 w-6" />
             Hjem
           </NavLink>
-          <NavLink to={TASK_PATHS.TASKS} end className={({ isActive }) => tabClasses(isActive)}>
+          <NavLink to={REGI_PATHS.REGI} className={({ isActive }) => tabClasses(isActive)}>
             <ClipboardList aria-hidden="true" className="h-6 w-6" />
-            Oppgaver
+            Regi
           </NavLink>
-          <NavLink to={REGI_PATHS.REGI} end className={({ isActive }) => tabClasses(isActive)}>
-            <Clock aria-hidden="true" className="h-6 w-6" />
-            Min regi
+          <NavLink to={RESIDENT_PATHS.BEBOERE} className={({ isActive }) => tabClasses(isActive)}>
+            <Users aria-hidden="true" className="h-6 w-6" />
+            Beboere
           </NavLink>
           <button
             type="button"

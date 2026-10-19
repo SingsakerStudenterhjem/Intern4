@@ -62,4 +62,12 @@ describe('GrantRegiForm', () => {
 
     expect(await screen.findByText('Velg en beboer')).toBeInTheDocument();
   });
+
+  it('can be opened for a specific resident', async () => {
+    render(<GrantRegiForm initialUserId="22222222-2222-4222-8222-222222222222" hideHeading />);
+
+    await screen.findByRole('option', { name: /bjørn beboer/i });
+    expect(screen.getByLabelText(/beboer/i)).toHaveValue('22222222-2222-4222-8222-222222222222');
+    expect(screen.queryByRole('heading', { name: 'Gi regitimer' })).not.toBeInTheDocument();
+  });
 });
