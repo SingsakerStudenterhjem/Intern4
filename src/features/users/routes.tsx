@@ -1,6 +1,7 @@
 import ProfilePage from './pages/ProfilePage';
 import AddUserPage from './pages/AddUserPage';
 import type { FeatureRoute } from '../../shared/types/feature';
+import { roomManagementRoles } from './permissions';
 import { USER_PATHS } from './paths';
 
 export const userRoutes: FeatureRoute[] = [
@@ -11,5 +12,6 @@ export const userRoutes: FeatureRoute[] = [
   {
     path: USER_PATHS.LEGG_TIL_BEBOER,
     element: <AddUserPage />,
+    allowedRoles: roomManagementRoles,
   },
 ];

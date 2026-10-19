@@ -1,5 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { canManageRole, canManageUsers } from '../_shared/userManagement.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -47,9 +48,8 @@ Deno.serve(
     }
 
     const myRole = roleRow?.roles?.name as string | undefined;
-    const allowedRoles = ['Admin', 'Data Åpmand', 'Regisjef'];
 
-    if (!myRole || !allowedRoles.includes(myRole)) {
+    if (!canManageUsers(myRole)) {
       return new Response('Forbidden', { status: 403, headers: corsHeaders });
     }
 
@@ -64,16 +64,30 @@ Deno.serve(
 
     const adminClient = createClient(supabaseUrl, serviceKey);
 
-    // Prevent deletion of admin users
-    const { data: targetRole } = await adminClient
+    const { data: target, error: targetErr } = await adminClient
       .from('users')
       .select('roles(name)')
       .eq('id', body.userId)
       .maybeSingle();
 
-    const targetRoleName = (targetRole?.roles as { name?: string } | null | undefined)?.name;
+    if (targetErr) {
+      return new Response('Unable to look up user', { status: 500, headers: corsHeaders });
+    }
+
+    if (!target) {
+      return new Response('Fant ikke brukeren', { status: 404, headers: corsHeaders });
+    }
+
+    const targetRoleName = (target.roles as { name?: string } | null | undefined)?.name ?? '';
     if (targetRoleName === 'Admin') {
       return new Response('Kan ikke slette admin-brukere', { status: 403, headers: corsHeaders });
+    }
+
+    if (!canManageRole(myRole, targetRoleName)) {
+      return new Response(`Du kan ikke deaktivere brukere med rollen ${targetRoleName}`, {
+        status: 403,
+        headers: corsHeaders,
+      });
     }
 
     // Delete auth user first; ignore "not found" since user may only exist in the users table

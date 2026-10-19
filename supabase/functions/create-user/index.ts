@@ -5,6 +5,7 @@
 // Setup type definitions for built-in Supabase Runtime APIs
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { canManageRole, canManageUsers } from '../_shared/userManagement.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -131,13 +132,7 @@ Deno.serve(async (req) => {
 
   const myRole = roleRow?.roles?.name as string | undefined;
 
-  if (!myRole) {
-    return new Response('Forbidden', { status: 403, headers: corsHeaders });
-  }
-
-  const allowedRoles = ['Admin', 'Data Åpmand', 'Regisjef'];
-
-  if (!allowedRoles.includes(myRole)) {
+  if (!canManageUsers(myRole)) {
     return new Response('Forbidden', { status: 403, headers: corsHeaders });
   }
 
@@ -154,6 +149,13 @@ Deno.serve(async (req) => {
   const adminClient = createClient(supabaseUrl, serviceKey);
 
   const roleName = body.role ?? 'Halv/Halv';
+  if (!canManageRole(myRole, roleName)) {
+    return new Response(`Du kan ikke tildele rollen ${roleName}`, {
+      status: 403,
+      headers: corsHeaders,
+    });
+  }
+
   const { data: roleLookup, error: roleLookupErr } = await adminClient
     .from('roles')
     .select('id')
