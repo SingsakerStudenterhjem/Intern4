@@ -18,7 +18,7 @@ const participantStatusMessages = {
   joined: { tone: 'info', text: 'Du er påmeldt. Send inn når oppgaven er gjort.' },
   submitted: { tone: 'warning', text: 'Sendt inn – venter på godkjenning.' },
   approved: { tone: 'success', text: 'Godkjent som regi.' },
-  rejected: { tone: 'error', text: 'Avvist. Du kan sende inn på nytt.' },
+  rejected: { tone: 'error', text: 'Avslått. Du kan sende inn på nytt.' },
 } as const;
 
 const TaskModal: React.FC<TaskModalProps> = ({

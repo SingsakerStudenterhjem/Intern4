@@ -297,13 +297,29 @@ export async function getApprovedRegiHoursByUserSince(
   );
 }
 
-async function setApprovalState(assignmentId: string, approvedState: 1 | 2): Promise<void> {
-  const { error } = await supabase
+export const ALREADY_PROCESSED_MESSAGE = 'Registreringen er allerede behandlet av noen andre.';
+
+// Only pending rows are updated, so two managers acting on the same row can't overwrite
+// each other's decision, and a row deleted in the meantime is reported instead of ignored.
+async function decidePendingRegiLog(
+  assignmentId: string,
+  approvedState: 1 | 2,
+  decidedByUuid: string,
+  comment?: string
+): Promise<void> {
+  const { data, error } = await supabase
     .from('work_assignments')
-    .update({ approved_state: approvedState })
-    .eq('id', Number(assignmentId));
+    .update({
+      approved_state: approvedState,
+      approved_by_uuid: decidedByUuid,
+      approval_comment: comment?.trim() ? comment.trim() : null,
+    })
+    .eq('id', Number(assignmentId))
+    .eq('approved_state', 0)
+    .select('id');
 
   if (error) throw new Error(error.message);
+  if (!data || data.length === 0) throw new Error(ALREADY_PROCESSED_MESSAGE);
 }
 
 export async function approveRegiLog(
@@ -311,18 +327,13 @@ export async function approveRegiLog(
   approvedByUuid: string,
   approvalComment?: string
 ): Promise<void> {
-  const { error } = await supabase
-    .from('work_assignments')
-    .update({
-      approved_state: 1,
-      approved_by_uuid: approvedByUuid,
-      approval_comment: approvalComment?.trim() ? approvalComment.trim() : null,
-    })
-    .eq('id', assignmentId);
-
-  if (error) throw error;
+  await decidePendingRegiLog(assignmentId, 1, approvedByUuid, approvalComment);
 }
 
-export async function rejectRegiLog(assignmentId: string): Promise<void> {
-  await setApprovalState(assignmentId, 2);
+export async function rejectRegiLog(
+  assignmentId: string,
+  rejectedByUuid: string,
+  comment?: string
+): Promise<void> {
+  await decidePendingRegiLog(assignmentId, 2, rejectedByUuid, comment);
 }

@@ -65,12 +65,15 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
     }
   }, []);
 
+  // Depend on id and role, not the user object, which is recreated on every auth event.
+  const userId = user?.id;
+  const userRole = user?.role;
   useEffect(() => {
     if (authLoading) return;
-    if (!user) return;
-    if (!canApproveWork(user.role)) return;
+    if (!userId) return;
+    if (!canApproveWork(userRole)) return;
     void load();
-  }, [authLoading, load, user]);
+  }, [authLoading, load, userId, userRole]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();

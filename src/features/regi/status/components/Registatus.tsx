@@ -1,8 +1,66 @@
-import React from 'react';
-import { RefreshCw, Search } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
 import { useAuth } from '../../../../app/providers/AuthContext';
 import { canApproveWork } from '../../permissions';
-import { useRegistatus } from '../hooks/useRegistatus';
+import { RegistatusRow, useRegistatus } from '../hooks/useRegistatus';
+import {
+  Badge,
+  DataTable,
+  EmptyState,
+  SearchInput,
+  SegmentedControl,
+  Skeleton,
+  StatusMessage,
+} from '../../../../shared/components';
+import { formatHours } from '../../../../shared/utils/date';
+import { cn } from '../../../../shared/utils/cn';
+
+type RowStatus = 'missing' | 'done' | 'leave' | 'exempt';
+type StatusFilter = 'all' | RowStatus;
+
+export const getRowStatus = (row: RegistatusRow): RowStatus =>
+  row.onLeave
+    ? 'leave'
+    : row.requiredHours === 0
+      ? 'exempt'
+      : row.remainingHours > 0
+        ? 'missing'
+        : 'done';
+
+const StatusBadge = ({ row }: { row: RegistatusRow }) => {
+  const status = getRowStatus(row);
+  if (status === 'leave') return <Badge tone="warning">Permisjon</Badge>;
+  if (status === 'missing') return <Badge tone="danger">Mangler timer</Badge>;
+  if (status === 'exempt') return <Badge>Ingen krav</Badge>;
+  return <Badge tone="success">Oppfylt</Badge>;
+};
+
+const ProgressMeter = ({ row }: { row: RegistatusRow }) => {
+  if (row.requiredHours === 0) {
+    return <span className="text-sm text-subtle">{formatHours(row.approvedHours)} godkjent</span>;
+  }
+  const ratio = row.requiredHours > 0 ? Math.min(row.approvedHours / row.requiredHours, 1) : 1;
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        role="meter"
+        aria-label={`${row.name}: ${formatHours(row.approvedHours)} av ${formatHours(row.requiredHours)}`}
+        aria-valuemin={0}
+        aria-valuemax={row.requiredHours}
+        aria-valuenow={Math.min(row.approvedHours, row.requiredHours)}
+        className="h-2 w-24 overflow-hidden rounded-full bg-surface-muted"
+      >
+        <div
+          className={cn('h-full rounded-full', ratio >= 1 ? 'bg-success' : 'bg-primary')}
+          style={{ width: `${Math.round(ratio * 100)}%` }}
+        />
+      </div>
+      <span className="whitespace-nowrap text-sm tabular-nums">
+        {formatHours(row.approvedHours)}
+        <span className="text-subtle"> / {formatHours(row.requiredHours)}</span>
+      </span>
+    </div>
+  );
+};
 
 const Registatus: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
@@ -10,122 +68,110 @@ const Registatus: React.FC = () => {
     user,
     authLoading
   );
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+
+  const counts = useMemo(() => {
+    const result = { all: filtered.length, missing: 0, done: 0, leave: 0, exempt: 0 };
+    filtered.forEach((row) => (result[getRowStatus(row)] += 1));
+    return result;
+  }, [filtered]);
+
+  const rows =
+    statusFilter === 'all'
+      ? filtered
+      : filtered.filter((row) => getRowStatus(row) === statusFilter);
 
   if (authLoading) return null;
   if (!user || !canApproveWork(user.role)) {
-    return (
-      <div className="p-4 shadow-sm rounded-md bg-surface-muted text-sm text-muted">
-        Du har ikke tilgang til registatus.
-      </div>
-    );
+    return <StatusMessage tone="info">Du har ikke tilgang til registatus.</StatusMessage>;
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtle w-5 h-5" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Søk (navn, e-post, rolle)..."
-            className="w-full pl-10 pr-3 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring"
-          />
-        </div>
-
-        <button
-          onClick={load}
-          disabled={loading}
-          className="inline-flex items-center px-3 py-2 border border-input text-sm font-medium rounded-md text-muted bg-surface hover:bg-surface-muted disabled:opacity-50"
-        >
-          <RefreshCw className="w-4 h-4 mr-2" />
-          Oppdater
-        </button>
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
+        <SearchInput
+          value={query}
+          onChange={setQuery}
+          placeholder="Søk på navn, e-post eller rolle..."
+          label="Søk i registatus"
+          onRefresh={() => void load()}
+          refreshing={loading}
+          className="flex-1"
+        />
+        <SegmentedControl<StatusFilter>
+          label="Filtrer på status"
+          value={statusFilter}
+          onChange={setStatusFilter}
+          className="w-full overflow-x-auto lg:w-auto"
+          options={[
+            { value: 'all', label: `Alle (${counts.all})` },
+            { value: 'missing', label: `Mangler (${counts.missing})` },
+            { value: 'done', label: `Oppfylt (${counts.done})` },
+            { value: 'leave', label: `Permisjon (${counts.leave})` },
+          ]}
+        />
       </div>
 
-      {error && (
-        <div className="p-3 bg-danger-subtle border border-danger-border rounded-md">
-          <p className="text-sm text-danger">{error}</p>
+      {error && <StatusMessage tone="error">{error}</StatusMessage>}
+
+      <p className="text-sm text-muted">
+        Godkjente timer siden semesterstart <span className="font-medium">{semesterLabel}</span>.
+      </p>
+
+      {loading ? (
+        <div aria-busy="true" className="space-y-3">
+          <span className="sr-only">Laster...</span>
+          {[0, 1, 2, 3].map((index) => (
+            <Skeleton key={index} className="h-20 rounded-2xl md:h-12" />
+          ))}
         </div>
+      ) : (
+        <DataTable
+          rows={rows}
+          getRowKey={(row) => row.id}
+          emptyMessage={
+            <EmptyState title="Ingen nåværende beboere funnet.">
+              Prøv et annet søk eller filter.
+            </EmptyState>
+          }
+          renderCard={(row) => (
+            <div className="space-y-2">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-semibold">{row.name}</p>
+                  <p className="text-xs text-subtle">{row.role ?? 'Uten rolle'}</p>
+                </div>
+                <StatusBadge row={row} />
+              </div>
+              <ProgressMeter row={row} />
+              {getRowStatus(row) === 'missing' && (
+                <p className="text-xs text-muted">Gjenstår {formatHours(row.remainingHours)}</p>
+              )}
+            </div>
+          )}
+          columns={[
+            {
+              key: 'name',
+              header: 'Navn',
+              render: (row) => (
+                <>
+                  <div className="font-medium">{row.name}</div>
+                  <div className="text-xs text-subtle">{row.email}</div>
+                </>
+              ),
+            },
+            { key: 'role', header: 'Rolle', render: (row) => row.role ?? 'Uten rolle' },
+            { key: 'progress', header: 'Godkjent', render: (row) => <ProgressMeter row={row} /> },
+            {
+              key: 'remaining',
+              header: 'Gjenstår',
+              className: 'whitespace-nowrap tabular-nums',
+              render: (row) => formatHours(row.remainingHours),
+            },
+            { key: 'status', header: 'Status', render: (row) => <StatusBadge row={row} /> },
+          ]}
+        />
       )}
-
-      <div className="p-3 shadow-sm rounded-md bg-surface-muted text-sm text-muted">
-        Nåværende beboere: <span className="font-semibold">{filtered.length}</span> • Semesterstart:{' '}
-        <span className="font-semibold">{semesterLabel}</span>
-      </div>
-
-      <div className="max-h-[60vh] md:max-h-[65vh] overflow-auto border border-border rounded-xl bg-surface shadow-sm">
-        <table className="min-w-full text-sm">
-          <thead className="bg-surface-muted sticky top-0">
-            <tr>
-              <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
-                Navn
-              </th>
-              <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
-                Rolle
-              </th>
-              <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
-                Godkjent
-              </th>
-              <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
-                Krav
-              </th>
-              <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
-                Gjenstår
-              </th>
-              <th className="text-left px-4 py-2 text-xs font-medium text-muted uppercase tracking-wide">
-                Status
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {loading && (
-              <tr>
-                <td className="p-3 text-muted" colSpan={6}>
-                  Laster...
-                </td>
-              </tr>
-            )}
-
-            {!loading &&
-              filtered.map((row) => (
-                <tr key={row.id} className="hover:bg-surface-muted transition-colors">
-                  <td className="px-4 py-3">
-                    <div className="font-medium">{row.name}</div>
-                    <div className="text-xs text-subtle">{row.email}</div>
-                  </td>
-                  <td className="px-4 py-3">{row.role ?? 'Uten rolle'}</td>
-                  <td className="px-4 py-3">{row.approvedHours.toFixed(2)} t</td>
-                  <td className="px-4 py-3">{row.requiredHours.toFixed(0)} t</td>
-                  <td className="px-4 py-3">{row.remainingHours.toFixed(2)} t</td>
-                  <td className="px-4 py-3 whitespace-nowrap">
-                    {row.onLeave ? (
-                      <span className="inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-semibold rounded-full bg-warning-subtle text-warning-subtle-fg">
-                        Permisjon
-                      </span>
-                    ) : row.remainingHours > 0 ? (
-                      <span className="inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-semibold rounded-full bg-danger-subtle text-danger-subtle-fg">
-                        Mangler timer
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center whitespace-nowrap px-2.5 py-1 text-xs font-semibold rounded-full bg-success-subtle text-success-subtle-fg">
-                        Oppfylt
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-
-            {!loading && filtered.length === 0 && (
-              <tr>
-                <td className="p-3 text-muted" colSpan={6}>
-                  Ingen nåværende beboere funnet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
     </div>
   );
 };
