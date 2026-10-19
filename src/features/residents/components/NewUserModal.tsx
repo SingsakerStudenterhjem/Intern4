@@ -17,7 +17,7 @@ import {
   prepareNewUserInput,
   validateNewUserInput,
   validateUserField,
-} from '../userLifecycle';
+} from '../../users/userLifecycle';
 
 export type CreatedUser = { name: string; email: string; initialPassword?: string };
 

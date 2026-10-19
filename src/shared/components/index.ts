@@ -1,3 +1,4 @@
+export { Avatar, getInitials } from './Avatar';
 export { Badge, CategoryBadge, TaskAssignmentBadge, WorkStatusBadge } from './Badge';
 export type { BadgeTone } from './Badge';
 export { Button, buttonClasses } from './Button';
