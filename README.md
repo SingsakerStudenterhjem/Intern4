@@ -217,5 +217,7 @@ functions, start Supabase off the VPN or proxy.
 An interrupted first `supabase start` can leave the database with only some migrations applied.
 Run `npx supabase migration up --local`.
 
-**Password reset links point at the wrong port locally.**
-`site_url` in `supabase/config.toml` must match the dev server (`http://localhost:5173`).
+**Password reset links point at the wrong page locally.**
+`site_url` and `additional_redirect_urls` in `supabase/config.toml` must match the dev server
+(`http://localhost:5173`). Restart Supabase (`npx supabase stop`, then start it again) after
+changing `config.toml`.
