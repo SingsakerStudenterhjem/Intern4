@@ -89,10 +89,14 @@ describe('ResidentDirectoryPage', () => {
     expect(screen.getByRole('columnheader', { name: 'Studie' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Født' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Rolle' })).toBeInTheDocument();
-    expect(screen.getByText('Test Beboer En')).toBeInTheDocument();
-    expect(screen.getByText('101')).toBeInTheDocument();
-    expect(screen.getByText('40000001')).toBeInTheDocument();
-    expect(screen.getByText('4. Bioteknologi (NTNU)')).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    expect(within(table).getByText('Test Beboer En')).toBeInTheDocument();
+    expect(within(table).getByText('101')).toBeInTheDocument();
+    expect(within(table).getByRole('link', { name: '400 00 001' })).toHaveAttribute(
+      'href',
+      'tel:40000001'
+    );
+    expect(within(table).getByText('4. Bioteknologi (NTNU)')).toBeInTheDocument();
   });
 
   it('filters current residents by search query', async () => {
@@ -101,11 +105,11 @@ describe('ResidentDirectoryPage', () => {
 
     renderPage('/beboere');
 
-    await screen.findByText('Test Beboer En');
+    await screen.findAllByText('Test Beboer En');
     await user.type(screen.getByPlaceholderText(/søk etter navn/i), 'Fysikk');
 
     expect(screen.queryByText('Test Beboer En')).not.toBeInTheDocument();
-    expect(screen.getByText('Demo Beboer To')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).getByText('Demo Beboer To')).toBeInTheDocument();
   });
 
   it('renders old residents from former residents', async () => {
@@ -117,9 +121,10 @@ describe('ResidentDirectoryPage', () => {
     expect(getResidentDirectoryUsers).toHaveBeenCalledWith(false);
     expect(await screen.findByRole('columnheader', { name: 'Adresse' })).toBeInTheDocument();
     expect(await screen.findByRole('columnheader', { name: 'Postnummer' })).toBeInTheDocument();
-    expect(screen.getByText('Tidligere Testperson')).toBeInTheDocument();
-    expect(screen.getByText('Arkivveien 12')).toBeInTheDocument();
-    expect(screen.getByText('7999')).toBeInTheDocument();
+    const table = screen.getByRole('table');
+    expect(within(table).getByText('Tidligere Testperson')).toBeInTheDocument();
+    expect(within(table).getByText('Arkivveien 12')).toBeInTheDocument();
+    expect(within(table).getByText('7999')).toBeInTheDocument();
   });
 
   it('renders statistics for current residents', async () => {
@@ -183,5 +188,68 @@ describe('ResidentDirectoryPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Ingen gamle beboere funnet.')).toBeInTheDocument();
     });
+  });
+
+  it('gives each resident call, SMS and e-mail shortcuts', async () => {
+    vi.mocked(getResidentDirectoryUsers).mockResolvedValue(activeResidents);
+
+    renderPage('/beboere');
+
+    expect(await screen.findByRole('link', { name: 'Ring Test Beboer En' })).toHaveAttribute(
+      'href',
+      'tel:40000001'
+    );
+    expect(screen.getByRole('link', { name: 'Send SMS til Test Beboer En' })).toHaveAttribute(
+      'href',
+      'sms:40000001'
+    );
+    expect(screen.getByRole('link', { name: 'Send e-post til Test Beboer En' })).toHaveAttribute(
+      'href',
+      'mailto:test.beboer.en@example.test'
+    );
+  });
+
+  it('switches between tabs and loads the matching residents', async () => {
+    const user = userEvent.setup();
+    vi.mocked(getResidentDirectoryUsers).mockImplementation(async (active) =>
+      active ? activeResidents : oldResidents
+    );
+
+    renderPage('/beboere');
+    await screen.findByRole('heading', { name: 'Beboerliste' });
+
+    await user.click(screen.getByRole('tab', { name: 'Gamle beboere' }));
+
+    expect(await screen.findByRole('heading', { name: 'Gamle beboere' })).toBeInTheDocument();
+    expect(getResidentDirectoryUsers).toHaveBeenLastCalledWith(false);
+    expect(
+      await within(await screen.findByRole('table')).findByText('Tidligere Testperson')
+    ).toBeInTheDocument();
+    expect(screen.queryByRole('tab', { name: 'Beboerkart' })).not.toBeInTheDocument();
+  });
+
+  it('ignores a slow response from the previous tab', async () => {
+    const user = userEvent.setup();
+    let resolveActive: (value: typeof activeResidents) => void = () => undefined;
+    vi.mocked(getResidentDirectoryUsers).mockImplementation((active) =>
+      active
+        ? new Promise((resolve) => {
+            resolveActive = resolve;
+          })
+        : Promise.resolve(oldResidents)
+    );
+
+    renderPage('/beboere');
+    await user.click(screen.getByRole('tab', { name: 'Gamle beboere' }));
+    await within(await screen.findByRole('table')).findByText('Tidligere Testperson');
+
+    resolveActive(activeResidents);
+
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('table')).getByText('Tidligere Testperson')
+      ).toBeInTheDocument()
+    );
+    expect(screen.queryByText('Test Beboer En')).not.toBeInTheDocument();
   });
 });

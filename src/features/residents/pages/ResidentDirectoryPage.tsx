@@ -1,24 +1,20 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Search } from 'lucide-react';
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  LabelList,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Mail, MessageSquare, Phone } from 'lucide-react';
 import { getResidentDirectoryUsers } from '../../../server/dao/userDAO';
-import { useChartColors } from '../../../app/providers/ThemeProvider';
 import { PageLayout } from '../../../shared/layouts';
 import { ResidentDirectoryUser } from '../../../shared/types/user';
 import { formatDate } from '../../../shared/utils/date';
+import { formatPhoneDisplay, toPhoneHref } from '../../../shared/utils/phone';
+import {
+  Badge,
+  DataTable,
+  EmptyState,
+  SearchInput,
+  SectionTabs,
+  Skeleton,
+  StatusMessage,
+} from '../../../shared/components';
 import { RESIDENT_PATHS } from '../paths';
 import {
   buildStatistics,
@@ -27,340 +23,126 @@ import {
   formatRoom,
   formatStudy,
 } from '../residentDirectory';
-import type { ChartDatum } from '../residentDirectory';
+import { StatisticsDashboard } from '../components/ResidentStatistics';
 
-type ChartTooltipPayload = {
-  payload?: ChartDatum;
-};
+const TABS = [
+  { key: 'list', label: 'Beboerliste', path: RESIDENT_PATHS.BEBOERE },
+  { key: 'stats', label: 'Statistikk', path: RESIDENT_PATHS.BEBOER_STATISTIKK },
+  { key: 'old', label: 'Gamle beboere', path: RESIDENT_PATHS.GAMLE_BEBOERE },
+] as const;
 
-type ChartTooltipProps = {
-  active?: boolean;
-  label?: string;
-  payload?: ChartTooltipPayload[];
-};
+const initials = (name: string) =>
+  name
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join('');
 
-const formatDecimal = (value: number | null, suffix = ''): string => {
-  if (value === null) return '-';
-  return `${value.toFixed(1)}${suffix}`;
-};
+const contactButtonClasses =
+  'inline-flex h-11 w-11 items-center justify-center rounded-xl border border-border bg-surface text-primary transition-colors hover:bg-primary-subtle';
 
-const formatDatum = (item: ChartDatum): string =>
-  `${item.label}: ${item.value} (${item.percentage} %)`;
-
-const ChartTooltip = ({ active, payload, label }: ChartTooltipProps) => {
-  const item = payload?.[0]?.payload;
-
-  if (!active || !item) return null;
-
-  return (
-    <div className="rounded-md border border-border bg-surface px-3 py-2 text-sm shadow-sm">
-      <p className="font-medium text-fg">{label ?? item.label}</p>
-      <p className="text-muted">
-        {item.value} beboere, {item.percentage} %
-      </p>
-    </div>
-  );
-};
-
-type SummaryCardProps = {
-  title: string;
-  value: string;
-  detail: string;
-  className?: string;
-};
-
-const SummaryCard = ({ title, value, detail, className = '' }: SummaryCardProps) => (
-  <section className={`rounded-lg border border-border bg-surface p-3 shadow-sm ${className}`}>
-    <h2 className="text-xs font-medium text-muted">{title}</h2>
-    <p className="mt-1 text-lg font-semibold leading-tight text-fg">{value}</p>
-    <p className="mt-1 text-xs leading-snug text-subtle">{detail}</p>
-  </section>
-);
-
-type ChartCardProps = {
-  title: string;
-  description: string;
-  children: React.ReactNode;
-  data: ChartDatum[];
-};
-
-const ChartCard = ({ title, description, children, data }: ChartCardProps) => (
-  <section className="rounded-lg border border-border bg-surface p-3 shadow-sm">
-    <div className="mb-2">
-      <h2 className="text-base font-semibold text-fg">{title}</h2>
-      <p className="mt-0.5 text-xs leading-snug text-muted">{description}</p>
-    </div>
-    {children}
-    <ul className="mt-2 grid grid-cols-1 gap-x-3 gap-y-1 text-xs sm:grid-cols-2">
-      {data
-        .filter((item) => item.value > 0)
-        .map((item) => (
-          <li
-            key={item.label}
-            className="flex min-w-0 items-center justify-between gap-2 text-muted"
-            aria-label={formatDatum(item)}
-          >
-            <span className="truncate" title={item.label}>
-              {item.label}
-            </span>
-            <span className="shrink-0 font-medium text-fg">
-              {item.value} ({item.percentage} %)
-            </span>
-          </li>
-        ))}
-    </ul>
-  </section>
-);
-
-type VerticalDistributionChartProps = {
-  title: string;
-  description: string;
-  data: ChartDatum[];
-};
-
-const VerticalDistributionChart = ({
-  title,
-  description,
-  data,
-}: VerticalDistributionChartProps) => {
-  const colors = useChartColors();
-
-  return (
-    <ChartCard title={title} description={description} data={data}>
-      <div className="h-40 sm:h-44" aria-label={`${title} diagram`}>
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 14, right: 4, left: -28, bottom: -4 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={colors.grid} />
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: colors.axis, fontSize: 11 }}
-            />
-            <YAxis
-              allowDecimals={false}
-              tickLine={false}
-              axisLine={false}
-              tick={{ fill: colors.axis, fontSize: 11 }}
-            />
-            <Tooltip cursor={{ fill: colors.cursor }} content={<ChartTooltip />} />
-            <Bar dataKey="value" radius={[6, 6, 0, 0]} fill={colors.series[0]} aria-label={title}>
-              {data.map((item, index) => (
-                <Cell key={item.label} fill={colors.series[index % colors.series.length]} />
-              ))}
-              <LabelList dataKey="value" position="top" className="fill-muted text-xs" />
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </ChartCard>
-  );
-};
-
-const StudyYearChart = ({ data }: { data: ChartDatum[] }) => {
-  const visibleData = data.filter((item) => item.value > 0);
-  const colors = useChartColors();
-
-  return (
-    <ChartCard title="Studieår" description="Hvor i studieløpet dagens beboere er." data={data}>
-      <div className="h-40 sm:h-44" aria-label="Studieår diagram">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Tooltip content={<ChartTooltip />} />
-            <Pie
-              data={visibleData}
-              dataKey="value"
-              nameKey="label"
-              cx="50%"
-              cy="50%"
-              innerRadius={34}
-              outerRadius={58}
-              paddingAngle={2}
-            >
-              {visibleData.map((item, index) => (
-                <Cell key={item.label} fill={colors.series[index % colors.series.length]} />
-              ))}
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-    </ChartCard>
-  );
-};
-
-const CourseChart = ({ data }: { data: ChartDatum[] }) => {
-  const chartHeight = Math.min(Math.max(data.length * 28, 150), 240);
-  const colors = useChartColors();
-
-  return (
-    <ChartCard
-      title="Studieprogram"
-      description="De vanligste studiene i huset, med små grupper samlet som Annet."
-      data={data}
-    >
-      <div className="overflow-x-auto">
-        <div
-          className="min-w-[300px]"
-          style={{ height: chartHeight }}
-          aria-label="Studieprogram diagram"
+const ContactActions = ({ resident }: { resident: ResidentDirectoryUser }) => (
+  <div className="flex gap-2">
+    {resident.phone && (
+      <>
+        <a
+          href={`tel:${toPhoneHref(resident.phone)}`}
+          aria-label={`Ring ${resident.name}`}
+          className={contactButtonClasses}
         >
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              layout="vertical"
-              margin={{ top: 4, right: 24, left: 0, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke={colors.grid} />
-              <XAxis
-                type="number"
-                allowDecimals={false}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: colors.axis, fontSize: 11 }}
-              />
-              <YAxis
-                type="category"
-                dataKey="label"
-                width={112}
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: colors.axis, fontSize: 11 }}
-              />
-              <Tooltip cursor={{ fill: colors.cursor }} content={<ChartTooltip />} />
-              <Bar dataKey="value" radius={[0, 6, 6, 0]} fill={colors.series[1]}>
-                {data.map((item, index) => (
-                  <Cell key={item.label} fill={colors.series[index % colors.series.length]} />
-                ))}
-                <LabelList dataKey="value" position="right" className="fill-muted text-xs" />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <Phone aria-hidden="true" className="h-5 w-5" />
+        </a>
+        <a
+          href={`sms:${toPhoneHref(resident.phone)}`}
+          aria-label={`Send SMS til ${resident.name}`}
+          className={contactButtonClasses}
+        >
+          <MessageSquare aria-hidden="true" className="h-5 w-5" />
+        </a>
+      </>
+    )}
+    {resident.email && (
+      <a
+        href={`mailto:${resident.email}`}
+        aria-label={`Send e-post til ${resident.name}`}
+        className={contactButtonClasses}
+      >
+        <Mail aria-hidden="true" className="h-5 w-5" />
+      </a>
+    )}
+  </div>
+);
+
+const ResidentCard = ({ resident }: { resident: ResidentDirectoryUser }) => (
+  <div className="space-y-3">
+    <div className="flex items-start gap-3">
+      <span
+        aria-hidden="true"
+        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-sm font-semibold text-primary-subtle-fg"
+      >
+        {initials(resident.name)}
+      </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <p className="font-semibold">{resident.name}</p>
+          {formatRoom(resident.roomNumber) !== '-' && (
+            <Badge tone="primary">Rom {formatRoom(resident.roomNumber)}</Badge>
+          )}
         </div>
-      </div>
-    </ChartCard>
-  );
-};
-
-type StatisticsDashboardProps = {
-  statistics: ReturnType<typeof buildStatistics>;
-};
-
-const StatisticsDashboard = ({ statistics }: StatisticsDashboardProps) => {
-  return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <SummaryCard
-          title="Nåværende beboere"
-          value={String(statistics.summary.totalResidents)}
-          detail="Med i dagens beboerliste"
-        />
-        <SummaryCard
-          title="Snittalder"
-          value={formatDecimal(statistics.summary.averageAge, ' år')}
-          detail="Basert på registrert fødselsdato"
-        />
-        <SummaryCard
-          title="Snitt studieår"
-          value={formatDecimal(statistics.summary.averageStudyYear)}
-          detail="Beboere med 1.-5. studieår"
-        />
-        <SummaryCard
-          title="Snitt botid"
-          value={formatDecimal(statistics.summary.averageSemesters, ' semestre')}
-          detail="Fra registrert innflytting"
-        />
-        <SummaryCard
-          title="Vanligste studie"
-          value={statistics.summary.mostCommonStudy ?? '-'}
-          detail="Største registrerte studiegruppe"
-          className="col-span-2 lg:col-span-1"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-        <VerticalDistributionChart
-          title="Aldersfordeling"
-          description="Gir et raskt bilde av aldersspennet blant nåværende beboere."
-          data={statistics.ageGroups}
-        />
-        <StudyYearChart data={statistics.studyYears} />
-        <VerticalDistributionChart
-          title="Botid"
-          description="Antall semestre beboerne har vært registrert på huset."
-          data={statistics.semesters}
-        />
-        <CourseChart data={statistics.courses} />
+        {formatStudy(resident) !== '-' && (
+          <p className="mt-0.5 text-sm text-muted">{formatStudy(resident)}</p>
+        )}
+        {resident.phone && (
+          <p className="text-sm text-subtle">{formatPhoneDisplay(resident.phone)}</p>
+        )}
       </div>
     </div>
-  );
-};
-
-type ResidentTabProps = {
-  to?: string;
-  active?: boolean;
-  disabled?: boolean;
-  children: React.ReactNode;
-};
-
-const ResidentTab = ({ to, active = false, disabled = false, children }: ResidentTabProps) => {
-  const baseClass =
-    'inline-flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors';
-
-  if (disabled || !to) {
-    return (
-      <span
-        className={`${baseClass} cursor-not-allowed bg-surface-muted text-subtle`}
-        aria-disabled="true"
-      >
-        {children}
-      </span>
-    );
-  }
-
-  return (
-    <Link
-      to={to}
-      className={`${baseClass} ${
-        active
-          ? 'bg-primary-subtle text-primary'
-          : 'text-muted hover:bg-surface-muted hover:text-fg'
-      }`}
-    >
-      {children}
-    </Link>
-  );
-};
+    <ContactActions resident={resident} />
+  </div>
+);
 
 const ResidentDirectoryPage: React.FC = () => {
   const location = useLocation();
-  const showOldResidents = location.pathname === RESIDENT_PATHS.GAMLE_BEBOERE;
-  const showStatistics = location.pathname === RESIDENT_PATHS.BEBOER_STATISTIKK;
+  const navigate = useNavigate();
+  const activeTab = TABS.find((tab) => tab.path === location.pathname)?.key ?? 'list';
+  const showOldResidents = activeTab === 'old';
+  const showStatistics = activeTab === 'stats';
   const [residents, setResidents] = useState<ResidentDirectoryUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
 
-  const loadResidents = useCallback(async (): Promise<void> => {
-    try {
-      setLoading(true);
-      setError(null);
-      const data = await getResidentDirectoryUsers(!showOldResidents);
-      setResidents(data);
-    } catch (err) {
-      console.error(err);
-      setError('Kunne ikke laste beboere.');
-    } finally {
-      setLoading(false);
-    }
-  }, [showOldResidents]);
+  // isCurrent lets a slower request from a previous tab be ignored after switching tabs.
+  const loadResidents = useCallback(
+    async (isCurrent: () => boolean = () => true): Promise<void> => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await getResidentDirectoryUsers(!showOldResidents);
+        if (isCurrent()) setResidents(data);
+      } catch (err) {
+        console.error(err);
+        if (isCurrent()) setError('Kunne ikke laste beboere.');
+      } finally {
+        if (isCurrent()) setLoading(false);
+      }
+    },
+    [showOldResidents]
+  );
 
   useEffect(() => {
-    void loadResidents();
+    let current = true;
+    void loadResidents(() => current);
+    return () => {
+      current = false;
+    };
   }, [loadResidents]);
 
-  const filteredResidents = useMemo(() => {
-    return filterResidents(residents, query, showOldResidents);
-  }, [query, residents, showOldResidents]);
+  const filteredResidents = useMemo(
+    () => filterResidents(residents, query, showOldResidents),
+    [query, residents, showOldResidents]
+  );
 
   const statistics = useMemo(() => buildStatistics(residents), [residents]);
 
@@ -371,192 +153,144 @@ const ResidentDirectoryPage: React.FC = () => {
       ? 'Oversikt over tidligere beboere og registrert adresseinformasjon.'
       : 'Kontaktinformasjon og basisinfo for nåværende beboere.';
 
+  const loadingState = (
+    <div aria-label="Laster beboere" aria-busy="true" className="space-y-3">
+      {[0, 1, 2, 3].map((index) => (
+        <Skeleton key={index} className="h-28 rounded-2xl md:h-12" />
+      ))}
+    </div>
+  );
+
   return (
-    <PageLayout
-      title={title}
-      description={description}
-      headerContent={
-        <div className="flex flex-wrap items-center gap-2 pt-3">
-          <ResidentTab to={RESIDENT_PATHS.BEBOERE} active={!showOldResidents && !showStatistics}>
-            Beboerliste
-          </ResidentTab>
-          <ResidentTab to={RESIDENT_PATHS.BEBOER_STATISTIKK} active={showStatistics}>
-            Statistikk
-          </ResidentTab>
-          <ResidentTab disabled>Beboerkart</ResidentTab>
-          <ResidentTab to={RESIDENT_PATHS.GAMLE_BEBOERE} active={showOldResidents}>
-            Gamle beboere
-          </ResidentTab>
-        </div>
-      }
-    >
+    <PageLayout title={title} description={description}>
+      <SectionTabs
+        label="Beboere"
+        tabs={TABS.map(({ key, label }) => ({ key, label }))}
+        activeKey={activeTab}
+        onChange={(key) => navigate(TABS.find((tab) => tab.key === key)!.path)}
+      />
+
+      {error && <StatusMessage tone="error">{error}</StatusMessage>}
+
       {showStatistics ? (
-        <>
-          {error && (
-            <div className="mb-6 p-4 bg-danger-subtle border border-danger-border rounded-md">
-              <p className="text-sm text-danger">{error}</p>
-            </div>
-          )}
+        loading ? (
+          loadingState
+        ) : residents.length === 0 ? (
+          <EmptyState title="Ingen beboere funnet." />
+        ) : (
+          <StatisticsDashboard statistics={statistics} />
+        )
+      ) : (
+        <div className="space-y-4">
+          <SearchInput
+            value={query}
+            onChange={setQuery}
+            label="Søk etter beboere"
+            placeholder={
+              showOldResidents
+                ? 'Søk etter navn, adresse eller postnummer...'
+                : 'Søk etter navn, rom, telefon, e-post, studie eller rolle...'
+            }
+          />
 
           {loading ? (
-            <div className="bg-surface rounded-lg shadow flex justify-center py-12">
-              <div
-                className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
-                aria-label="Laster beboere"
-              ></div>
-            </div>
-          ) : residents.length === 0 ? (
-            <div className="bg-surface rounded-lg shadow px-6 py-8 text-center text-subtle">
-              Ingen beboere funnet.
-            </div>
+            loadingState
+          ) : showOldResidents ? (
+            <DataTable
+              rows={filteredResidents}
+              getRowKey={(resident) => resident.id}
+              emptyMessage="Ingen gamle beboere funnet."
+              renderCard={(resident) => (
+                <div>
+                  <p className="font-semibold">{resident.name}</p>
+                  <p className="text-sm text-muted">
+                    {formatAddress(resident)}
+                    {resident.address.postalCode && ` · ${resident.address.postalCode}`}
+                  </p>
+                </div>
+              )}
+              columns={[
+                { key: 'name', header: 'Navn', render: (resident) => resident.name },
+                {
+                  key: 'address',
+                  header: 'Adresse',
+                  render: (resident) => formatAddress(resident),
+                },
+                {
+                  key: 'postalCode',
+                  header: 'Postnummer',
+                  render: (resident) => resident.address.postalCode || '-',
+                },
+              ]}
+            />
           ) : (
-            <StatisticsDashboard statistics={statistics} />
+            <DataTable
+              rows={filteredResidents}
+              getRowKey={(resident) => resident.id}
+              emptyMessage="Ingen beboere funnet."
+              renderCard={(resident) => <ResidentCard resident={resident} />}
+              columns={[
+                {
+                  key: 'name',
+                  header: 'Navn',
+                  className: 'font-medium whitespace-nowrap',
+                  render: (resident) => resident.name,
+                },
+                {
+                  key: 'room',
+                  header: 'Rom',
+                  render: (resident) => formatRoom(resident.roomNumber),
+                },
+                {
+                  key: 'phone',
+                  header: 'Telefon',
+                  className: 'whitespace-nowrap',
+                  render: (resident) =>
+                    resident.phone ? (
+                      <a
+                        href={`tel:${toPhoneHref(resident.phone)}`}
+                        className="text-primary hover:underline"
+                      >
+                        {formatPhoneDisplay(resident.phone)}
+                      </a>
+                    ) : (
+                      '-'
+                    ),
+                },
+                {
+                  key: 'email',
+                  header: 'E-post',
+                  render: (resident) =>
+                    resident.email ? (
+                      <a href={`mailto:${resident.email}`} className="text-primary hover:underline">
+                        {resident.email}
+                      </a>
+                    ) : (
+                      '-'
+                    ),
+                },
+                { key: 'study', header: 'Studie', render: (resident) => formatStudy(resident) },
+                {
+                  key: 'born',
+                  header: 'Født',
+                  className: 'whitespace-nowrap',
+                  render: (resident) => formatDate(resident.birthDate),
+                },
+                {
+                  key: 'role',
+                  header: 'Rolle',
+                  render: (resident) => <Badge>{resident.role ?? 'Ingen rolle'}</Badge>,
+                },
+              ]}
+            />
           )}
-        </>
-      ) : (
-        <div className="bg-surface rounded-lg shadow">
-          <div className="p-6 border-b border-border">
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtle w-5 h-5" />
-                <input
-                  type="text"
-                  placeholder={
-                    showOldResidents
-                      ? 'Søk etter navn, adresse eller postnummer...'
-                      : 'Søk etter navn, rom, telefon, e-post, studie eller rolle...'
-                  }
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
-                />
-              </div>
-            </div>
-          </div>
 
-          {error && (
-            <div className="m-6 p-4 bg-danger-subtle border border-danger-border rounded-md">
-              <p className="text-sm text-danger">{error}</p>
-            </div>
+          {!loading && (
+            <p className="text-sm text-subtle">
+              Viser {filteredResidents.length} av {residents.length}{' '}
+              {showOldResidents ? 'gamle beboere' : 'beboere'}
+            </p>
           )}
-
-          <div className="overflow-x-auto">
-            {loading ? (
-              <div className="flex justify-center py-12">
-                <div
-                  className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"
-                  aria-label="Laster beboere"
-                ></div>
-              </div>
-            ) : showOldResidents ? (
-              <table className="min-w-full divide-y divide-border">
-                <thead className="bg-surface-muted">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      Navn
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      Adresse
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      Postnummer
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-surface divide-y divide-border">
-                  {filteredResidents.length === 0 ? (
-                    <tr>
-                      <td colSpan={3} className="px-6 py-8 text-center text-subtle">
-                        Ingen gamle beboere funnet.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredResidents.map((resident) => (
-                      <tr key={resident.id} className="hover:bg-surface-muted">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-fg">
-                          {resident.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-                          {formatAddress(resident)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-                          {resident.address.postalCode || '-'}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            ) : (
-              <table className="min-w-full divide-y divide-border">
-                <thead className="bg-surface-muted">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      Navn
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      Rom
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      Telefon
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      E-post
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      Studie
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      Født
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-subtle uppercase tracking-wider">
-                      Rolle
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-surface divide-y divide-border">
-                  {filteredResidents.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-8 text-center text-subtle">
-                        Ingen beboere funnet.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredResidents.map((resident) => (
-                      <tr key={resident.id} className="hover:bg-surface-muted">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-fg">
-                          {resident.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-                          {formatRoom(resident.roomNumber)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-                          {resident.phone || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-primary">
-                          {resident.email || '-'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-                          {formatStudy(resident)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-                          {formatDate(resident.birthDate)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
-                          {resident.role ?? 'Ingen rolle'}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          <div className="px-6 py-3 border-t border-border text-sm text-subtle">
-            Viser {filteredResidents.length} av {residents.length}{' '}
-            {showOldResidents ? 'gamle beboere' : 'beboere'}
-          </div>
         </div>
       )}
     </PageLayout>
