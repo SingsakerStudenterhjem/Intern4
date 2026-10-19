@@ -56,6 +56,8 @@ export const ImagePreviewGrid: React.FC<ImagePreviewGridProps> = ({ paths = [], 
               <img
                 src={url}
                 alt={`Opplastet bilde ${index + 1}`}
+                loading="lazy"
+                decoding="async"
                 className="h-28 w-full object-cover"
               />
             </a>

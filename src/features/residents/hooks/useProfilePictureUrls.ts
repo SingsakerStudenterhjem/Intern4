@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { createSignedImageUrls } from '../../../server/storage';
+import { getSignedImageUrlMap } from '../../../server/storage';
 
 type WithPicture = { id: string; profilePicture?: string | null };
 
@@ -7,7 +7,10 @@ type WithPicture = { id: string; profilePicture?: string | null };
 export const useProfilePictureUrls = (people: WithPicture[]): Record<string, string> => {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const withPictures = useMemo(
-    () => people.filter((person): person is Required<WithPicture> => !!person.profilePicture),
+    () =>
+      people.filter(
+        (person): person is { id: string; profilePicture: string } => !!person.profilePicture
+      ),
     [people]
   );
   const key = withPictures.map((person) => `${person.id}:${person.profilePicture}`).join('|');
@@ -15,11 +18,15 @@ export const useProfilePictureUrls = (people: WithPicture[]): Record<string, str
   useEffect(() => {
     if (withPictures.length === 0) return;
     let current = true;
-    createSignedImageUrls(withPictures.map((person) => person.profilePicture as string))
+    getSignedImageUrlMap(withPictures.map((person) => person.profilePicture))
       .then((signed) => {
         if (!current) return;
         setUrls(
-          Object.fromEntries(withPictures.map((person, index) => [person.id, signed[index]]))
+          Object.fromEntries(
+            withPictures
+              .filter((person) => signed[person.profilePicture])
+              .map((person) => [person.id, signed[person.profilePicture]])
+          )
         );
       })
       .catch((error) => console.error('Kunne ikke laste profilbilder', error));

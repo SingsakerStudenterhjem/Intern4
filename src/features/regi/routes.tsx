@@ -1,7 +1,9 @@
+import { lazy } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
-import RegiHubPage from './hub/RegiHubPage';
 import type { FeatureRoute } from '../../shared/types/feature';
 import { LEGACY_REGISJEF_PATH, REGI_PATHS } from './paths';
+
+const RegiHubPage = lazy(() => import('./hub/RegiHubPage'));
 
 const LEGACY_TARGETS: Record<string, string> = {
   [LEGACY_REGISJEF_PATH]: REGI_PATHS.GODKJENNING,

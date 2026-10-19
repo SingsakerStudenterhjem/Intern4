@@ -15,28 +15,36 @@ export const useTaskManagementData = () => {
   const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loadParticipantNames = useCallback(async (tasksData: Task[]): Promise<void> => {
-    const allParticipantIds = new Set<string>();
-    tasksData.forEach((task) => {
-      task.participants.forEach((participant) => allParticipantIds.add(participant.userId));
-      if (task.contactPersonId) {
-        allParticipantIds.add(task.contactPersonId);
+  // Names of active users come with the contact-person list; only former residents still
+  // on old tasks need a separate lookup.
+  const loadParticipantNames = useCallback(
+    async (tasksData: Task[], knownNames: ParticipantNames): Promise<void> => {
+      const allParticipantIds = new Set<string>();
+      tasksData.forEach((task) => {
+        task.participants.forEach((participant) => allParticipantIds.add(participant.userId));
+        if (task.contactPersonId) {
+          allParticipantIds.add(task.contactPersonId);
+        }
+      });
+
+      const ids = Array.from(allParticipantIds);
+      const unknownIds = ids.filter((userId) => !knownNames[userId]);
+      let names: ParticipantNames = knownNames;
+      if (unknownIds.length > 0) {
+        try {
+          names = { ...knownNames, ...(await getUserNames(unknownIds)) };
+        } catch (namesError) {
+          console.error(namesError);
+        }
       }
-    });
+      const nameMap = Object.fromEntries(
+        ids.map((userId) => [userId, names[userId] || 'Ukjent bruker'])
+      ) as ParticipantNames;
 
-    const ids = Array.from(allParticipantIds);
-    let names: ParticipantNames = {};
-    try {
-      names = await getUserNames(ids);
-    } catch (namesError) {
-      console.error(namesError);
-    }
-    const nameMap = Object.fromEntries(
-      ids.map((userId) => [userId, names[userId] || 'Ukjent bruker'])
-    ) as ParticipantNames;
-
-    setParticipantNames(nameMap);
-  }, []);
+      setParticipantNames(nameMap);
+    },
+    []
+  );
 
   const loadData = useCallback(async (): Promise<void> => {
     try {
@@ -60,7 +68,10 @@ export const useTaskManagementData = () => {
       );
 
       if (tasksData.length > 0) {
-        await loadParticipantNames(tasksData);
+        await loadParticipantNames(
+          tasksData,
+          Object.fromEntries(activeUsers.map((activeUser) => [activeUser.id, activeUser.name]))
+        );
       } else {
         setParticipantNames({});
       }

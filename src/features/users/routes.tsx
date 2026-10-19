@@ -1,9 +1,11 @@
+import { lazy } from 'react';
 import { Navigate } from 'react-router-dom';
-import ProfilePage from './pages/ProfilePage';
 import type { FeatureRoute } from '../../shared/types/feature';
 import { roomManagementRoles } from './permissions';
 import { USER_PATHS } from './paths';
 import { RESIDENT_PATHS } from '../residents/paths';
+
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
 
 export const userRoutes: FeatureRoute[] = [
   {

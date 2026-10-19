@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, lazy, useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { RotateCcw, UserPlus } from 'lucide-react';
 import { getResidentDirectoryUsers, reactivateUser } from '../../../server/dao/userDAO';
@@ -31,13 +31,19 @@ import {
   formatStudy,
   sortResidents,
 } from '../residentDirectory';
-import { StatisticsDashboard } from '../components/ResidentStatistics';
 import ContactActions from '../components/ContactActions';
 import NewUserModal, { CreatedUser } from '../components/NewUserModal';
 import CreatedUserDialog from '../components/CreatedUserDialog';
 import { useProfilePictureUrls } from '../hooks/useProfilePictureUrls';
 import { useUserAdminLookups } from '../hooks/useUserAdminLookups';
 import { canAccessRoomManagement } from '../../users/permissions';
+
+// The charts library is large, so it only loads when Statistikk is opened.
+const StatisticsDashboard = lazy(() =>
+  import('../components/ResidentStatistics').then((module) => ({
+    default: module.StatisticsDashboard,
+  }))
+);
 
 const TABS = [
   { key: 'list', label: 'Beboerliste', path: RESIDENT_PATHS.BEBOERE },
@@ -253,7 +259,9 @@ const ResidentDirectoryPage: React.FC = () => {
         ) : residents.length === 0 ? (
           <EmptyState title="Ingen beboere funnet." />
         ) : (
-          <StatisticsDashboard statistics={statistics} />
+          <Suspense fallback={loadingState}>
+            <StatisticsDashboard statistics={statistics} />
+          </Suspense>
         )
       ) : (
         <div className="space-y-4">

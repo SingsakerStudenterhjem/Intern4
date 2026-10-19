@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
@@ -61,17 +62,22 @@ vi.mock('../../../server/storage', () => ({
 
 const LocationProbe = () => <div data-testid="location">{useLocation().pathname}</div>;
 
-const renderAt = (path: string) =>
+// The hub is lazy-loaded, so wait for its tabs before asserting.
+const renderAt = async (path: string) => {
   render(
     <MemoryRouter initialEntries={[path]}>
-      <Routes>
-        {regiRoutes.map((route) => (
-          <Route key={route.path} path={route.path} element={route.element} />
-        ))}
-      </Routes>
+      <Suspense fallback={null}>
+        <Routes>
+          {regiRoutes.map((route) => (
+            <Route key={route.path} path={route.path} element={route.element} />
+          ))}
+        </Routes>
+      </Suspense>
       <LocationProbe />
     </MemoryRouter>
   );
+  await screen.findByRole('tablist', {}, { timeout: 5000 });
+};
 
 const asRole = (role: string) =>
   mockUseAuth.mockReturnValue({ user: { id: ME, name: 'Test Person', role }, loading: false });
@@ -116,15 +122,15 @@ describe('RegiHubPage', () => {
 
   it('shows residents only their own tabs and keeps them out of manager tabs', async () => {
     asRole('Halv/Halv');
-    renderAt('/regi');
+    await renderAt('/regi');
 
     expect(tabNames()).toEqual(['Oversikt', 'Oppgaver', 'Mine timer']);
     expect(getPendingRegiApprovals).not.toHaveBeenCalled();
   });
 
-  it('redirects residents away from manager URLs', () => {
+  it('redirects residents away from manager URLs', async () => {
     asRole('Halv/Halv');
-    renderAt('/regi/godkjenning');
+    await renderAt('/regi/godkjenning');
 
     expect(screen.getByTestId('location')).toHaveTextContent(/^\/regi$/);
     expect(screen.getByRole('tab', { name: 'Oversikt' })).toHaveAttribute('aria-selected', 'true');
@@ -132,7 +138,7 @@ describe('RegiHubPage', () => {
 
   it('gives regi managers the extra tabs with the pending count', async () => {
     asRole('Regisjef');
-    renderAt('/regi/godkjenning');
+    await renderAt('/regi/godkjenning');
 
     expect(tabNames()).toEqual([
       'Oversikt',
@@ -147,9 +153,9 @@ describe('RegiHubPage', () => {
     expect(await within(tab).findByText('2')).toBeInTheDocument();
   });
 
-  it('sends old Regisjef links to the new tabs', () => {
+  it('sends old Regisjef links to the new tabs', async () => {
     asRole('Regisjef');
-    renderAt('/regisjef/logg');
+    await renderAt('/regisjef/logg');
 
     expect(screen.getByTestId('location')).toHaveTextContent('/regi/logg');
     expect(screen.getByRole('tab', { name: 'Logg' })).toHaveAttribute('aria-selected', 'true');
@@ -157,7 +163,7 @@ describe('RegiHubPage', () => {
 
   it('opens the register sheet from ?registrer=1', async () => {
     asRole('Halv/Halv');
-    renderAt('/regi?registrer=1');
+    await renderAt('/regi?registrer=1');
 
     expect(await screen.findByRole('dialog', { name: 'Registrer timer' })).toBeInTheDocument();
   });
@@ -165,7 +171,7 @@ describe('RegiHubPage', () => {
   it('opens Gi regi prefilled from a Status row', async () => {
     const user = userEvent.setup();
     asRole('Regisjef');
-    renderAt('/regi/status');
+    await renderAt('/regi/status');
 
     const table = await screen.findByRole('table');
     await user.click(within(table).getByRole('button', { name: 'Gi timer til Bjørn Beboer' }));
@@ -179,7 +185,7 @@ describe('RegiHubPage', () => {
     asRole('Halv/Halv');
     vi.mocked(getTasks).mockResolvedValue([joinedTask]);
     vi.mocked(submitTaskCompletion).mockResolvedValue(undefined);
-    renderAt('/regi');
+    await renderAt('/regi');
 
     const card = (await screen.findAllByText('Male gang'))[0].closest('article') as HTMLElement;
     await user.click(within(card).getByRole('button', { name: 'Send inn' }));

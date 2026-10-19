@@ -276,7 +276,7 @@ const WorkLogForm: React.FC<WorkLogFormProps> = ({
         >
           <ImagePlus aria-hidden="true" className="h-7 w-7 text-primary" />
           <span className="text-sm font-medium">Ta bilde eller velg fra galleriet</span>
-          <span className="text-xs text-subtle">eller dra bilder hit · maks 5 MB per bilde</span>
+          <span className="text-xs text-subtle">eller dra bilder hit · maks 20 MB per bilde</span>
           <input
             ref={fileInputRef}
             id="work-log-images"
