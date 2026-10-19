@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../../../server/dao/authentication';
 import { AUTH_PATHS } from '../paths';
+import { Button, Field, Input, StatusMessage } from '../../../shared/components';
 
 const COOLDOWN_SECONDS = 60;
 
@@ -59,59 +60,57 @@ const ForgotPasswordForm = () => {
 
   if (sent) {
     return (
-      <div>
-        <div className="bg-success-subtle border border-success-border rounded p-4 mb-4">
-          <p className="text-success-subtle-fg text-sm">
-            Hvis det finnes en konto med denne e-postadressen, vil du motta en e-post med en lenke
-            for å tilbakestille passordet ditt.
-          </p>
-        </div>
+      <div className="space-y-4">
+        <StatusMessage tone="success">
+          Hvis det finnes en konto med denne e-postadressen, vil du motta en e-post med en lenke for
+          å tilbakestille passordet ditt.
+        </StatusMessage>
 
-        {error && <div className="text-danger mb-4 text-sm">{error}</div>}
+        {error && <StatusMessage tone="error">{error}</StatusMessage>}
 
-        <div className="flex items-center justify-between">
-          <Link to={AUTH_PATHS.LOGIN} className="text-sm text-primary hover:underline">
+        <div className="flex items-center justify-between gap-3">
+          <Link to={AUTH_PATHS.LOGIN} className="text-sm font-medium text-primary hover:underline">
             Tilbake til innlogging
           </Link>
-          <button
-            type="button"
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleResend}
-            disabled={countdown > 0 || loading}
-            className="text-sm text-primary hover:underline disabled:text-subtle disabled:no-underline disabled:cursor-not-allowed"
+            disabled={countdown > 0}
+            loading={loading}
           >
             {countdown > 0 ? `Send på nytt (${countdown}s)` : 'Send på nytt'}
-          </button>
+          </Button>
         </div>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      {error && <div className="text-danger mb-4">{error}</div>}
+    <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      {error && <StatusMessage tone="error">{error}</StatusMessage>}
 
-      <div className="mb-4">
-        <label className="block mb-1">E-post</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          disabled={loading}
-          placeholder="epost"
-          className="w-full border border-input rounded px-3 py-2 disabled:opacity-50"
-        />
-      </div>
+      <Field label="E-post">
+        {(field) => (
+          <Input
+            {...field}
+            type="email"
+            autoComplete="email"
+            inputMode="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
+            placeholder="navn@eksempel.no"
+          />
+        )}
+      </Field>
 
-      <button
-        type="submit"
-        disabled={loading || !email}
-        className="w-full py-2 rounded bg-primary text-primary-fg disabled:opacity-50"
-      >
-        {loading ? 'Sender...' : 'Send tilbakestillingslenke'}
-      </button>
+      <Button type="submit" size="lg" fullWidth loading={loading} disabled={!email}>
+        Send tilbakestillingslenke
+      </Button>
 
-      <div className="mt-4 text-center">
-        <Link to={AUTH_PATHS.LOGIN} className="text-sm text-primary hover:underline">
+      <div className="text-center">
+        <Link to={AUTH_PATHS.LOGIN} className="text-sm font-medium text-primary hover:underline">
           Tilbake til innlogging
         </Link>
       </div>

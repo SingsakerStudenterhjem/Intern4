@@ -8,6 +8,7 @@ export { EmptyState } from './EmptyState';
 export { Checkbox, Field, Input, Select, Textarea, controlClasses } from './Field';
 export { ImagePreviewGrid } from './ImagePreviewGrid';
 export { Modal } from './Modal';
+export { PasswordInput } from './PasswordInput';
 export { PeriodSelect } from './PeriodSelect';
 export { SearchInput } from './SearchInput';
 export { SectionTabs } from './SectionTabs';

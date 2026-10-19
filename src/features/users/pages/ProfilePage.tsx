@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { useAuth } from '../../../app/providers/AuthContext';
+import { ThemeSelector } from '../../../app/layout/ThemeSelector';
 import { supabase } from '../../../server/supabaseClient';
 import { getSchools, getStudies, getUser, updateUser } from '../../../server/dao/userDAO';
 import { resetPassword } from '../../../server/dao/authentication';
@@ -13,6 +14,27 @@ import {
 import { PageLayout } from '../../../shared/layouts';
 import { getDefaultLookupId, LookupOption } from '../../../shared/types/lookup';
 import { normalizePhoneNumber, validatePhoneNumber } from '../../../shared/utils/phone';
+import {
+  Badge,
+  Button,
+  Card,
+  Field,
+  Input,
+  PasswordInput,
+  SectionTabs,
+  Select,
+  Skeleton,
+  Spinner,
+  StatusMessage,
+} from '../../../shared/components';
+
+type ProfileTab = 'profil' | 'passord' | 'utseende';
+
+const PROFILE_TABS: { key: ProfileTab; label: string }[] = [
+  { key: 'profil', label: 'Profil' },
+  { key: 'passord', label: 'Passord' },
+  { key: 'utseende', label: 'Utseende' },
+];
 
 type GeneralInfoFormState = {
   firstName: string;
@@ -26,38 +48,6 @@ type GeneralInfoFormState = {
   city: string;
   schoolId: string;
   studyId: string;
-};
-
-type ProfileSectionCardProps = {
-  title: string;
-  description?: string;
-  children?: React.ReactNode;
-  className?: string;
-};
-
-const ProfileSectionCard: React.FC<ProfileSectionCardProps> = ({
-  title,
-  description,
-  children,
-  className = '',
-}) => {
-  return (
-    <section className={`rounded-xl border border-border bg-surface p-4 shadow-sm ${className}`}>
-      <div className="mb-2.5">
-        <h2 className="text-lg font-semibold text-fg">{title}</h2>
-        {description && <p className="mt-1 text-sm text-muted">{description}</p>}
-      </div>
-      {children}
-    </section>
-  );
-};
-
-const StubBadge: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return (
-    <span className="inline-flex items-center rounded-full bg-surface-muted px-2.5 py-1 text-xs font-medium text-muted">
-      {children}
-    </span>
-  );
 };
 
 const emptyGeneralInfoForm = (): GeneralInfoFormState => ({
@@ -115,51 +105,6 @@ const formatDateForInput = (value: unknown): string => {
   return '';
 };
 
-const FieldLabel: React.FC<{ htmlFor: string; children: React.ReactNode; required?: boolean }> = ({
-  htmlFor,
-  children,
-  required = false,
-}) => {
-  return (
-    <label htmlFor={htmlFor} className="mb-1 block text-sm font-medium text-muted">
-      {children}
-      {required && <span className="text-danger"> *</span>}
-    </label>
-  );
-};
-
-const TextInput: React.FC<
-  React.InputHTMLAttributes<HTMLInputElement> & {
-    error?: string;
-  }
-> = ({ error, className = '', ...props }) => {
-  return (
-    <input
-      {...props}
-      className={`w-full rounded-xl border px-3.5 py-3 text-sm shadow-sm transition focus:outline-none focus:ring-2 focus:ring-ring ${
-        error
-          ? 'border-danger-border focus:border-danger-border'
-          : 'border-border focus:border-ring'
-      } ${className}`}
-    />
-  );
-};
-
-const SelectInput: React.FC<React.SelectHTMLAttributes<HTMLSelectElement>> = ({
-  className = '',
-  children,
-  ...props
-}) => {
-  return (
-    <select
-      {...props}
-      className={`w-full rounded-xl border border-border px-3.5 py-3 text-sm shadow-sm transition focus:border-ring focus:outline-none focus:ring-2 focus:ring-ring ${className}`}
-    >
-      {children}
-    </select>
-  );
-};
-
 const ProfilePage: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
   const [profileLoading, setProfileLoading] = useState(true);
@@ -174,8 +119,7 @@ const ProfilePage: React.FC = () => {
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [savingPassword, setSavingPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [activeTab, setActiveTab] = useState<ProfileTab>('profil');
   const [profilePicturePath, setProfilePicturePath] = useState('');
   const [profilePictureUrl, setProfilePictureUrl] = useState<string | null>(null);
   const [savingProfilePicture, setSavingProfilePicture] = useState(false);
@@ -243,7 +187,10 @@ const ProfilePage: React.FC = () => {
 
     if (authLoading) return;
     void loadProfile();
-  }, [authLoading, user]);
+    // Depend on the id, not the user object: it is recreated on every auth event (such as a
+    // token refresh), and reloading would overwrite unsaved edits.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user?.id]);
 
   const fullName = useMemo(
     () =>
@@ -402,434 +349,297 @@ const ProfilePage: React.FC = () => {
     return null;
   }
 
+  const initials =
+    fullName
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase())
+      .join('') || '?';
+
   return (
-    <PageLayout
-      title="Profil"
-      description="Oppdater kontaktinformasjon, kontoopplysninger og personlige innstillinger for Internsiden."
-    >
-      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1.45fr)_minmax(21rem,0.95fr)]">
-        <div className="space-y-4">
-          <ProfileSectionCard
-            title="Generell info"
-            description="Navn, kontaktinformasjon og studieopplysninger."
-          >
+    <PageLayout title="Profil" description="Kontaktinformasjon, passord og utseende.">
+      <Card>
+        <div className="flex flex-col items-center gap-4 text-center sm:flex-row sm:text-left">
+          <div className="relative shrink-0">
+            <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-full bg-primary-subtle text-2xl font-semibold text-primary-subtle-fg ring-4 ring-surface">
+              {profilePictureUrl ? (
+                <img
+                  src={profilePictureUrl}
+                  alt="Profilbilde"
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <span aria-hidden="true">{initials}</span>
+              )}
+            </div>
+            <label
+              htmlFor="profile-picture"
+              title="Bytt profilbilde"
+              className="absolute -bottom-1 -right-1 flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-primary text-primary-fg shadow-md ring-4 ring-surface hover:bg-primary-hover"
+            >
+              {savingProfilePicture ? (
+                <Spinner label="Laster opp..." className="h-4 w-4" />
+              ) : (
+                <Camera aria-hidden="true" className="h-4 w-4" />
+              )}
+            </label>
+            <input
+              id="profile-picture"
+              type="file"
+              accept="image/*"
+              aria-label="Last opp bilde"
+              className="sr-only"
+              onChange={handleProfilePictureChange}
+              disabled={savingProfilePicture}
+            />
+          </div>
+          <div className="min-w-0 space-y-1">
             {profileLoading ? (
-              <div className="rounded-xl border border-dashed border-input bg-surface-muted p-4 text-sm text-muted">
-                Laster profilinformasjon...
-              </div>
+              <>
+                <Skeleton className="h-6 w-48" />
+                <Skeleton className="h-4 w-40" />
+              </>
             ) : (
-              <form className="space-y-2.5" onSubmit={handleGeneralInfoSubmit}>
-                <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-3">
-                  <div>
-                    <FieldLabel htmlFor="firstName">Fornavn</FieldLabel>
-                    <TextInput
-                      id="firstName"
+              <>
+                <h2 className="text-xl font-semibold">{fullName || user?.name || 'Profil'}</h2>
+                <p className="truncate text-sm text-muted">{form.email || user?.email}</p>
+                {user?.role && <Badge tone="primary">{user.role}</Badge>}
+              </>
+            )}
+          </div>
+        </div>
+        {(profilePictureError || profilePictureSuccess) && (
+          <div className="mt-4">
+            {profilePictureError && (
+              <StatusMessage tone="error" onDismiss={() => setProfilePictureError(null)}>
+                {profilePictureError}
+              </StatusMessage>
+            )}
+            {profilePictureSuccess && (
+              <StatusMessage tone="success" onDismiss={() => setProfilePictureSuccess(null)}>
+                {profilePictureSuccess}
+              </StatusMessage>
+            )}
+          </div>
+        )}
+      </Card>
+
+      <SectionTabs
+        label="Profilinnstillinger"
+        tabs={PROFILE_TABS}
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as ProfileTab)}
+      />
+
+      {activeTab === 'profil' && (
+        <Card title="Generell info" description="Navn, kontaktinformasjon og studieopplysninger.">
+          {profileLoading ? (
+            <div aria-busy="true" className="space-y-3">
+              <span className="sr-only">Laster profilinformasjon...</span>
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+              <Skeleton className="h-10" />
+            </div>
+          ) : (
+            <form className="space-y-5" onSubmit={handleGeneralInfoSubmit} noValidate>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Field label="Fornavn">
+                  {(field) => (
+                    <Input
+                      {...field}
+                      autoComplete="given-name"
                       value={form.firstName}
                       onChange={(event) => setField('firstName', event.target.value)}
-                      placeholder="Fornavn"
                     />
-                  </div>
-                  <div>
-                    <FieldLabel htmlFor="middleName">Mellomnavn</FieldLabel>
-                    <TextInput
-                      id="middleName"
+                  )}
+                </Field>
+                <Field label="Mellomnavn">
+                  {(field) => (
+                    <Input
+                      {...field}
+                      autoComplete="additional-name"
                       value={form.middleName}
                       onChange={(event) => setField('middleName', event.target.value)}
-                      placeholder="Mellomnavn"
                     />
-                  </div>
-                  <div>
-                    <FieldLabel htmlFor="lastName">Etternavn</FieldLabel>
-                    <TextInput
-                      id="lastName"
+                  )}
+                </Field>
+                <Field label="Etternavn">
+                  {(field) => (
+                    <Input
+                      {...field}
+                      autoComplete="family-name"
                       value={form.lastName}
                       onChange={(event) => setField('lastName', event.target.value)}
-                      placeholder="Etternavn"
                     />
-                  </div>
-                </div>
+                  )}
+                </Field>
+              </div>
 
-                <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-6">
-                  <div className="md:col-span-2">
-                    <FieldLabel htmlFor="email">E-post</FieldLabel>
-                    <TextInput
-                      id="email"
-                      value={form.email}
-                      readOnly
-                      disabled
-                      className="bg-surface-muted text-subtle"
-                    />
-                    <p className="mt-1 text-xs text-subtle">E-post kan ikke endres her ennå.</p>
-                  </div>
-                  <div className="md:col-span-2">
-                    <FieldLabel htmlFor="phone">Telefon</FieldLabel>
-                    <TextInput
-                      id="phone"
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <Field label="E-post" hint="Kan ikke endres her ennå.">
+                  {(field) => <Input {...field} value={form.email} readOnly disabled />}
+                </Field>
+                <Field label="Telefon">
+                  {(field) => (
+                    <Input
+                      {...field}
+                      type="tel"
+                      autoComplete="tel"
                       value={form.phone}
                       onChange={(event) => setField('phone', event.target.value)}
-                      placeholder="Telefonnummer"
                     />
-                  </div>
-                  <div className="md:col-span-2">
-                    <FieldLabel htmlFor="birthDate">Fødselsdato</FieldLabel>
-                    <TextInput
-                      id="birthDate"
+                  )}
+                </Field>
+                <Field label="Fødselsdato">
+                  {(field) => (
+                    <Input
+                      {...field}
                       type="date"
                       value={form.birthDate}
                       onChange={(event) => setField('birthDate', event.target.value)}
                     />
-                  </div>
-                </div>
+                  )}
+                </Field>
+              </div>
 
-                <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-6">
-                  <div className="md:col-span-3">
-                    <FieldLabel htmlFor="street">Adresse</FieldLabel>
-                    <TextInput
-                      id="street"
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1.5fr)]">
+                <Field label="Adresse">
+                  {(field) => (
+                    <Input
+                      {...field}
+                      autoComplete="street-address"
                       value={form.street}
                       onChange={(event) => setField('street', event.target.value)}
-                      placeholder="Gateadresse"
                     />
-                  </div>
-                  <div className="md:col-span-1">
-                    <FieldLabel htmlFor="postalCode">Postnummer</FieldLabel>
-                    <TextInput
-                      id="postalCode"
+                  )}
+                </Field>
+                <Field label="Postnummer">
+                  {(field) => (
+                    <Input
+                      {...field}
+                      inputMode="numeric"
+                      autoComplete="postal-code"
                       value={form.postalCode}
                       onChange={(event) => setField('postalCode', event.target.value)}
-                      placeholder="Postnr"
                     />
-                  </div>
-                  <div className="md:col-span-2">
-                    <FieldLabel htmlFor="city">By</FieldLabel>
-                    <TextInput
-                      id="city"
+                  )}
+                </Field>
+                <Field label="By">
+                  {(field) => (
+                    <Input
+                      {...field}
+                      autoComplete="address-level2"
                       value={form.city}
                       onChange={(event) => setField('city', event.target.value)}
-                      placeholder="By"
                     />
-                  </div>
-                </div>
+                  )}
+                </Field>
+              </div>
 
-                <div className="grid gap-x-3 gap-y-2.5 md:grid-cols-6">
-                  <div className="md:col-span-2">
-                    <FieldLabel htmlFor="studyPlace">Skole / studiested</FieldLabel>
-                    <SelectInput
-                      id="studyPlace"
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <Field label="Skole / studiested">
+                  {(field) => (
+                    <Select
+                      {...field}
                       value={form.schoolId}
                       onChange={(event) => setField('schoolId', event.target.value)}
-                      disabled={savingGeneralInfo || profileLoading}
+                      disabled={savingGeneralInfo}
                     >
                       {schools.map((school) => (
                         <option key={school.id} value={school.id}>
                           {school.name}
                         </option>
                       ))}
-                    </SelectInput>
-                  </div>
-                  <div className="md:col-span-2">
-                    <FieldLabel htmlFor="study">Studie</FieldLabel>
-                    <SelectInput
-                      id="study"
+                    </Select>
+                  )}
+                </Field>
+                <Field label="Studie">
+                  {(field) => (
+                    <Select
+                      {...field}
                       value={form.studyId}
                       onChange={(event) => setField('studyId', event.target.value)}
-                      disabled={savingGeneralInfo || profileLoading}
+                      disabled={savingGeneralInfo}
                     >
                       {studies.map((study) => (
                         <option key={study.id} value={study.id}>
                           {study.name}
                         </option>
                       ))}
-                    </SelectInput>
-                  </div>
-                  <div className="flex items-end md:col-span-2 md:justify-end">
-                    <button
-                      type="submit"
-                      disabled={savingGeneralInfo || profileLoading}
-                      className="inline-flex min-w-42 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-fg shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                      {savingGeneralInfo ? 'Lagrer...' : 'Lagre endringer'}
-                    </button>
-                  </div>
-                </div>
-
-                {formError && (
-                  <div className="rounded-xl border border-danger-border bg-danger-subtle px-4 py-3 text-sm text-danger">
-                    {formError}
-                  </div>
-                )}
-
-                {formSuccess && (
-                  <div className="rounded-xl border border-success-border bg-success-subtle px-4 py-3 text-sm text-success">
-                    {formSuccess}
-                  </div>
-                )}
-              </form>
-            )}
-          </ProfileSectionCard>
-
-          <ProfileSectionCard
-            title="Endre passord"
-            description="Bytt passordet du bruker for å logge inn."
-          >
-            <form className="space-y-2.5" onSubmit={handlePasswordSubmit}>
-              <div className="rounded-xl border border-warning-border bg-warning-subtle px-4 py-3 text-sm text-warning-subtle-fg">
-                Bruk et sterkt passord. Dagens innloggingsflyt krever minst 6 tegn.
-              </div>
-
-              <div className="grid gap-y-2.5">
-                <div>
-                  <FieldLabel htmlFor="newPassword" required>
-                    Nytt passord
-                  </FieldLabel>
-                  <div className="relative">
-                    <TextInput
-                      id="newPassword"
-                      type={showNewPassword ? 'text' : 'password'}
-                      value={newPassword}
-                      onChange={(event) => {
-                        setNewPassword(event.target.value);
-                        setPasswordError(null);
-                        setPasswordSuccess(null);
-                      }}
-                      placeholder="Nytt passord"
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPassword((value) => !value)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-muted"
-                      aria-label={showNewPassword ? 'Skjul nytt passord' : 'Vis nytt passord'}
-                    >
-                      {showNewPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <FieldLabel htmlFor="confirmPassword" required>
-                    Gjenta passord
-                  </FieldLabel>
-                  <div className="relative">
-                    <TextInput
-                      id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      value={confirmPassword}
-                      onChange={(event) => {
-                        setConfirmPassword(event.target.value);
-                        setPasswordError(null);
-                        setPasswordSuccess(null);
-                      }}
-                      placeholder="Gjenta passord"
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword((value) => !value)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle hover:text-muted"
-                      aria-label={
-                        showConfirmPassword ? 'Skjul bekreftet passord' : 'Vis bekreftet passord'
-                      }
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4" />
-                      ) : (
-                        <Eye className="h-4 w-4" />
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex justify-end">
-                  <button
-                    type="submit"
-                    disabled={savingPassword || !newPassword || !confirmPassword}
-                    className="inline-flex min-w-42 items-center justify-center rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-fg shadow-sm transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {savingPassword ? 'Oppdaterer...' : 'Oppdater passord'}
-                  </button>
-                </div>
-              </div>
-
-              {passwordError && (
-                <div className="rounded-xl border border-danger-border bg-danger-subtle px-4 py-3 text-sm text-danger">
-                  {passwordError}
-                </div>
-              )}
-
-              {passwordSuccess && (
-                <div className="rounded-xl border border-success-border bg-success-subtle px-4 py-3 text-sm text-success">
-                  {passwordSuccess}
-                </div>
-              )}
-            </form>
-          </ProfileSectionCard>
-        </div>
-
-        <div className="space-y-4">
-          <ProfileSectionCard
-            title="Profilbilde"
-            description="Last opp bildet som vises på profilen din."
-          >
-            <div className="space-y-2.5">
-              <div className="h-32 overflow-hidden rounded-xl border border-border bg-linear-to-br from-surface-muted to-canvas">
-                <div className="flex h-full items-center justify-center">
-                  {profilePictureUrl ? (
-                    <img
-                      src={profilePictureUrl}
-                      alt="Profilbilde"
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-surface text-lg font-semibold text-subtle shadow-sm">
-                      {fullName
-                        .split(' ')
-                        .filter(Boolean)
-                        .slice(0, 2)
-                        .map((part) => part[0]?.toUpperCase())
-                        .join('') || 'PI'}
-                    </div>
+                    </Select>
                   )}
-                </div>
+                </Field>
               </div>
 
-              <input
-                id="profile-picture"
-                type="file"
-                accept="image/*"
-                className="sr-only"
-                onChange={handleProfilePictureChange}
-                disabled={savingProfilePicture}
-              />
-              <label
-                htmlFor="profile-picture"
-                className="inline-flex cursor-pointer items-center rounded-xl bg-primary px-4 py-3 text-sm font-medium text-primary-fg shadow-sm transition hover:bg-primary-hover aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
-                aria-disabled={savingProfilePicture}
-              >
-                {savingProfilePicture ? 'Laster opp...' : 'Last opp bilde'}
-              </label>
+              {formError && <StatusMessage tone="error">{formError}</StatusMessage>}
+              {formSuccess && <StatusMessage tone="success">{formSuccess}</StatusMessage>}
 
-              {profilePictureError && (
-                <div className="rounded-xl border border-danger-border bg-danger-subtle px-4 py-3 text-sm text-danger">
-                  {profilePictureError}
-                </div>
+              <div className="flex justify-end">
+                <Button type="submit" loading={savingGeneralInfo} className="w-full sm:w-auto">
+                  Lagre endringer
+                </Button>
+              </div>
+            </form>
+          )}
+        </Card>
+      )}
+
+      {activeTab === 'passord' && (
+        <Card title="Endre passord" description="Bytt passordet du bruker for å logge inn.">
+          <form className="max-w-md space-y-4" onSubmit={handlePasswordSubmit} noValidate>
+            <Field label="Nytt passord" required hint="Minst 6 tegn.">
+              {(field) => (
+                <PasswordInput
+                  {...field}
+                  autoComplete="new-password"
+                  value={newPassword}
+                  onChange={(event) => {
+                    setNewPassword(event.target.value);
+                    setPasswordError(null);
+                    setPasswordSuccess(null);
+                  }}
+                />
               )}
-
-              {profilePictureSuccess && (
-                <div className="rounded-xl border border-success-border bg-success-subtle px-4 py-3 text-sm text-success">
-                  {profilePictureSuccess}
-                </div>
+            </Field>
+            <Field label="Gjenta passord" required>
+              {(field) => (
+                <PasswordInput
+                  {...field}
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(event) => {
+                    setConfirmPassword(event.target.value);
+                    setPasswordError(null);
+                    setPasswordSuccess(null);
+                  }}
+                />
               )}
-            </div>
-          </ProfileSectionCard>
+            </Field>
 
-          <ProfileSectionCard
-            title="Preferanser"
-            description="Pinkoder og personlige valg fra gamle Internsida."
-          >
-            <div className="space-y-2.5">
-              <StubBadge>Kommer senere</StubBadge>
-              <div className="space-y-2 rounded-xl border border-border bg-surface-muted p-3.5">
-                <label className="flex items-center justify-between gap-3 text-sm text-muted">
-                  <span>Stå på krysselista i resepsjonen</span>
-                  <input type="checkbox" disabled className="h-4 w-4 rounded border-input" />
-                </label>
-                <label className="flex items-center justify-between gap-3 text-sm text-muted">
-                  <span>Stå på krysselista i vinkjelleren</span>
-                  <input type="checkbox" disabled className="h-4 w-4 rounded border-input" />
-                </label>
-                <div className="grid gap-2.5 sm:grid-cols-2">
-                  <div className="min-w-0">
-                    <FieldLabel htmlFor="pinStub">Pinkode</FieldLabel>
-                    <TextInput
-                      id="pinStub"
-                      value="1234"
-                      readOnly
-                      disabled
-                      className="bg-surface text-subtle"
-                    />
-                  </div>
-                  <div className="min-w-0">
-                    <FieldLabel htmlFor="winePinStub">Pinkode til vinkjeller</FieldLabel>
-                    <TextInput
-                      id="winePinStub"
-                      value="1234"
-                      readOnly
-                      disabled
-                      className="bg-surface text-subtle"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ProfileSectionCard>
+            {passwordError && <StatusMessage tone="error">{passwordError}</StatusMessage>}
+            {passwordSuccess && <StatusMessage tone="success">{passwordSuccess}</StatusMessage>}
 
-          <ProfileSectionCard title="Varsler" description="Velg hvilke varsler du vil motta.">
-            <div className="space-y-2.5">
-              <StubBadge>Kommer senere</StubBadge>
-              <div className="space-y-2 rounded-xl border border-border bg-surface-muted p-3.5">
-                {[
-                  'Når du har blitt tildelt en vakt',
-                  'Når det er 24 timer igjen til å sitte vakt',
-                  'Når noen vil bytte eller gi bort en vakt',
-                  'Når kosesjef har planlagt et utleie',
-                ].map((label) => (
-                  <label
-                    key={label}
-                    className="flex items-center justify-between gap-3 rounded-lg bg-surface px-3 py-3 text-sm text-muted"
-                  >
-                    <span>{label}</span>
-                    <input type="checkbox" disabled className="h-4 w-4 rounded border-input" />
-                  </label>
-                ))}
-              </div>
-            </div>
-          </ProfileSectionCard>
+            <Button
+              type="submit"
+              loading={savingPassword}
+              disabled={!newPassword || !confirmPassword}
+              className="w-full sm:w-auto"
+            >
+              Oppdater passord
+            </Button>
+          </form>
+        </Card>
+      )}
 
-          <ProfileSectionCard
-            title="E-postlister"
-            description="Administrer medlemskap i interne e-postlister."
-          >
-            <div className="space-y-2.5">
-              <StubBadge>Kommer senere</StubBadge>
-              <div className="overflow-hidden rounded-xl border border-border">
-                <div className="grid grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))] bg-surface-muted text-xs font-semibold uppercase tracking-wide text-subtle">
-                  <div className="px-3 py-3">E-post</div>
-                  <div className="px-3 py-3">Alle</div>
-                  <div className="px-3 py-3">Gutter</div>
-                  <div className="px-3 py-3">Slå av</div>
-                </div>
-                <div className="grid grid-cols-[minmax(0,1.3fr)_repeat(3,minmax(0,0.7fr))] items-center bg-surface text-sm text-muted">
-                  <div className="px-3 py-3">{form.email || user?.email || 'Din e-post'}</div>
-                  <div className="px-3 py-3">
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-success-subtle text-success">
-                      ✓
-                    </span>
-                  </div>
-                  <div className="px-3 py-3">
-                    <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-success-subtle text-success">
-                      ✓
-                    </span>
-                  </div>
-                  <div className="px-3 py-3">
-                    <button
-                      type="button"
-                      disabled
-                      className="rounded-lg bg-surface-muted px-3 py-2 text-xs font-medium text-subtle"
-                    >
-                      Fjern
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </ProfileSectionCard>
-        </div>
-      </div>
+      {activeTab === 'utseende' && (
+        <Card
+          title="Utseende"
+          description="Velg lyst eller mørkt tema, eller følg innstillingen på enheten din. Valget lagres på denne enheten."
+        >
+          <ThemeSelector className="max-w-md" />
+        </Card>
+      )}
     </PageLayout>
   );
 };
