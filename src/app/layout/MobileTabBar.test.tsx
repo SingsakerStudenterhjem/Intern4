@@ -52,16 +52,35 @@ describe('MobileTabBar', () => {
     expect(within(tabBar).getByRole('link', { name: 'Oppgaver' })).not.toHaveAttribute(
       'aria-current'
     );
+    expect(within(tabBar).getByRole('link', { name: 'Hjem' })).not.toHaveAttribute('aria-current');
+    expect(within(tabBar).queryByRole('link', { name: 'Beboere' })).not.toBeInTheDocument();
 
     await user.click(within(tabBar).getByRole('button', { name: 'Meny' }));
 
     const menu = screen.getByRole('dialog', { name: 'Meny' });
     expect(within(menu).getByRole('link', { name: 'Profil' })).toHaveAttribute('href', '/profil');
+    expect(within(menu).getByRole('link', { name: 'Beboere' })).toHaveAttribute('href', '/beboere');
     expect(within(menu).queryByRole('link', { name: 'Regisjef' })).not.toBeInTheDocument();
     expect(within(menu).queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument();
 
     await user.click(within(menu).getByRole('link', { name: 'Profil' }));
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
+
+  it('marks Hjem as current only on the home page', () => {
+    mockUseAuth.mockReturnValue({
+      user: { id: '1', name: 'Vanlig Bruker', email: 'bruker@example.com', role: 'Halv/Halv' },
+    });
+    renderTabBar('/');
+
+    const tabBar = screen.getByRole('navigation', { name: 'Hovedmeny' });
+    expect(within(tabBar).getByRole('link', { name: 'Hjem' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(within(tabBar).getByRole('link', { name: 'Min regi' })).not.toHaveAttribute(
+      'aria-current'
+    );
   });
 
   it('shows manager links to regi managers and logs out', async () => {

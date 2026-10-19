@@ -39,6 +39,7 @@ export const useTaskManagement = () => {
     participantNames,
     contactPeople,
     loading,
+    refreshing,
     error,
     clearError,
     loadData,
@@ -195,6 +196,7 @@ export const useTaskManagement = () => {
     } catch (err) {
       console.error('Error adding category:', err);
       showErrorMessage('Kunne ikke opprette kategori');
+      throw err instanceof Error ? err : new Error('Kunne ikke opprette kategori');
     }
   };
 
@@ -209,6 +211,7 @@ export const useTaskManagement = () => {
     } catch (err) {
       console.error('Error updating category:', err);
       showErrorMessage('Kunne ikke oppdatere kategori');
+      throw err instanceof Error ? err : new Error('Kunne ikke oppdatere kategori');
     }
   };
 
@@ -220,6 +223,7 @@ export const useTaskManagement = () => {
     } catch (err) {
       console.error('Error deleting category:', err);
       showErrorMessage('Kunne ikke slette kategori');
+      throw err instanceof Error ? err : new Error('Kunne ikke slette kategori');
     }
   };
 
@@ -231,8 +235,10 @@ export const useTaskManagement = () => {
     user,
     authLoading,
     loading,
+    refreshing,
     error,
     message,
+    clearMessage: () => setMessage(null),
     categories,
     selectedTask,
     setSelectedTask,

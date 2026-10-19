@@ -5,6 +5,7 @@ import { logIn } from '../../../server/dao/authentication';
 import { useAuth } from '../../../app/providers/AuthContext';
 import { useEffect } from 'react';
 import { AUTH_PATHS } from '../paths';
+import { APP_ROUTES } from '../../../app/constants/appRoutes';
 
 const LoginForm = () => {
   const router = useNavigate();
@@ -19,7 +20,7 @@ const LoginForm = () => {
 
   useEffect(() => {
     if (user) {
-      router('/dashboard');
+      router(APP_ROUTES.HOME);
     }
   }, [user, router]);
 

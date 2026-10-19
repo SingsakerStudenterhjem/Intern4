@@ -4,6 +4,7 @@ import { canApproveWork } from '../../permissions';
 import { getApprovedRegiHoursByUserSince } from '../../../../server/dao/regiDAO';
 import { getActiveUsersWithRole } from '../../../../server/dao/userDAO';
 import { AuthUser } from '../../../auth/hooks/useAuth';
+import { getSemesterStart } from '../../../../shared/utils/semester';
 
 export type RegistatusRow = {
   id: string;
@@ -15,15 +16,6 @@ export type RegistatusRow = {
   remainingHours: number;
   onLeave: boolean;
 };
-
-const getSemesterStart = (): Date => {
-  const now = new Date();
-  const year = now.getFullYear();
-  return now.getMonth() < 7 ? new Date(year, 0, 1) : new Date(year, 7, 1);
-};
-
-export const semesterStart = getSemesterStart();
-export const semesterLabel = semesterStart.toLocaleDateString('no-NO');
 
 export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
   const [rows, setRows] = useState<RegistatusRow[]>([]);
@@ -38,7 +30,7 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
 
       const [activeUsers, hoursMap] = await Promise.all([
         getActiveUsersWithRole(),
-        getApprovedRegiHoursByUserSince(semesterStart),
+        getApprovedRegiHoursByUserSince(getSemesterStart()),
       ]);
 
       const nextRows = activeUsers.map((activeUser) => {
@@ -93,6 +85,7 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
   }, [query, rows]);
 
   return {
+    semesterLabel: getSemesterStart().toLocaleDateString('no-NO'),
     filtered,
     loading,
     error,

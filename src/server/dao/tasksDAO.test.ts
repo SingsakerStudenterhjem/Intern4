@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { getTasksByUser, joinTask, leaveTask, submitTaskCompletion } from './tasksDAO';
+import { addTask, getTasksByUser, joinTask, leaveTask, submitTaskCompletion } from './tasksDAO';
 import { supabase } from '../supabaseClient';
 
 vi.mock('../supabaseClient', () => ({
@@ -221,5 +221,30 @@ describe('tasksDAO', () => {
     );
     expect(tasksBuilder.in).toHaveBeenCalledWith('id', [1, 2]);
     expect(result.map((task) => task.id)).toEqual(['1', '2']);
+  });
+
+  it('stores the deadline as the Oslo calendar date', async () => {
+    const insertTask = mockFn(async () => ({ error: null }));
+    const itemBuilder = {
+      insert: mockFn(() => itemBuilder),
+      select: mockFn(() => itemBuilder),
+      single: mockFn(async () => ({ data: { id: 7 }, error: null })),
+    };
+
+    vi.mocked(supabase.from)
+      .mockImplementationOnce(() => createMaybeSingleBuilder({ id: 1 }))
+      .mockImplementationOnce(() => asSupabaseBuilder(itemBuilder))
+      .mockImplementationOnce(() => asSupabaseBuilder({ insert: insertTask }));
+
+    await addTask({
+      title: 'Male gang',
+      category: 'Vedlikehold',
+      // 00:30 in Oslo on 29 October is still 28 October in UTC.
+      deadline: new Date('2026-10-28T23:30:00.000Z'),
+      hourEstimate: 2,
+      maxParticipants: 1,
+    });
+
+    expect(insertTask).toHaveBeenCalledWith(expect.objectContaining({ deadline: '2026-10-29' }));
   });
 });

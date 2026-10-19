@@ -44,18 +44,21 @@ export const StatTile = ({
   className,
 }: StatTileProps) => (
   <div
-    className={cn('rounded-2xl border border-border bg-surface p-4 text-fg shadow-sm', className)}
+    className={cn(
+      'rounded-2xl border border-border bg-surface p-3 text-fg shadow-sm sm:p-4',
+      className
+    )}
   >
     <div className="flex items-start justify-between gap-3">
       <div className="min-w-0">
-        <p className="text-sm font-medium text-muted">{label}</p>
-        <p className="mt-1 text-2xl font-semibold tabular-nums">{value}</p>
+        <p className="text-xs font-medium text-muted sm:text-sm">{label}</p>
+        <p className="mt-1 text-xl font-semibold tabular-nums sm:text-2xl">{value}</p>
       </div>
       {icon && (
         <div
           aria-hidden="true"
           className={cn(
-            'flex h-10 w-10 shrink-0 items-center justify-center rounded-xl',
+            'hidden h-10 w-10 shrink-0 items-center justify-center rounded-xl sm:flex',
             iconToneClasses[tone]
           )}
         >

@@ -144,7 +144,7 @@ export async function addTask(data: TaskCreationData): Promise<string> {
 
   const { error: e3 } = await supabase.from('work_tasks').insert({
     id: item.id,
-    deadline: data.deadline ?? null,
+    deadline: data.deadline ? formatDateColumnValue(data.deadline) : null,
     time_estimate: data.hourEstimate,
     contact_person_uuid: data.contactPersonId ?? null,
     max_participants: data.maxParticipants,
@@ -250,7 +250,7 @@ export async function updateTask(taskId: string, data: Partial<TaskCreationData>
   }
 
   const patchTask: TaskPatch = {
-    deadline: data.deadline,
+    deadline: data.deadline ? formatDateColumnValue(data.deadline) : undefined,
     time_estimate: data.hourEstimate,
     contact_person_uuid: data.contactPersonId,
     max_participants: data.maxParticipants,

@@ -17,6 +17,9 @@ type DataTableProps<T> = {
   renderCard?: (row: T) => ReactNode;
   onRowClick?: (row: T) => void;
   getRowLabel?: (row: T) => string;
+  // renderCard returns a complete card with its own surface and buttons, so it gets no
+  // wrapper (a wrapping <button> around nested buttons would be invalid HTML).
+  bareCards?: boolean;
 };
 
 const activateOnKey = (event: KeyboardEvent, action: () => void) => {
@@ -34,12 +37,16 @@ export const DataTable = <T,>({
   renderCard,
   onRowClick,
   getRowLabel,
+  bareCards = false,
 }: DataTableProps<T>) => {
   if (rows.length === 0) {
-    return (
+    // Strings get the default box; elements such as <EmptyState> render as given.
+    return typeof emptyMessage === 'string' ? (
       <div className="rounded-2xl border border-dashed border-border-strong bg-surface px-4 py-8 text-center text-sm text-muted">
         {emptyMessage}
       </div>
+    ) : (
+      <>{emptyMessage}</>
     );
   }
 
@@ -49,7 +56,9 @@ export const DataTable = <T,>({
         <ul className="space-y-3 md:hidden">
           {rows.map((row) => (
             <li key={getRowKey(row)}>
-              {onRowClick ? (
+              {bareCards ? (
+                renderCard(row)
+              ) : onRowClick ? (
                 <button
                   type="button"
                   onClick={() => onRowClick(row)}

@@ -6,7 +6,7 @@ import {
   RegiLogWithUser,
 } from '../../shared/types/regi';
 import { deleteImages } from '../storage';
-import { getUser } from './userDAO';
+import { getUserLookups } from './userDAO';
 import { formatDateColumnValue } from '../../shared/utils/date';
 import {
   getImagePaths,
@@ -73,27 +73,18 @@ async function getRegiUserMap(
     new Set(userIds.filter((id): id is string => Boolean(id)).map((id) => String(id)))
   );
 
-  const userRows = await Promise.all(
-    uniqueUserIds.map(async (uid) => {
-      try {
-        const user = await getUser(uid);
-        return {
-          uid,
-          name: user?.name ?? 'Ukjent',
-          email: user?.email ?? '',
-        };
-      } catch {
-        return { uid, name: 'Ukjent', email: '' };
-      }
-    })
-  );
+  let lookups: Record<string, RegiUserLookup> = {};
+  try {
+    lookups = await getUserLookups(uniqueUserIds);
+  } catch (error) {
+    console.error(error);
+  }
 
-  return userRows.reduce(
-    (acc, user) => {
-      acc[user.uid] = { name: user.name, email: user.email };
-      return acc;
-    },
-    {} as Record<string, RegiUserLookup>
+  return Object.fromEntries(
+    uniqueUserIds.map((uid) => [
+      uid,
+      { name: lookups[uid]?.name || 'Ukjent', email: lookups[uid]?.email ?? '' },
+    ])
   );
 }
 

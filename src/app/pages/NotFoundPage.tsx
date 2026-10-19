@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { TASK_PATHS } from '../../features/tasks/paths';
+import { APP_ROUTES } from '../constants/appRoutes';
 
 const NotFoundPage = () => {
   return (
@@ -8,8 +8,8 @@ const NotFoundPage = () => {
         <h1 className="text-4xl font-bold mb-4">404</h1>
         <h2 className="text-xl font-semibold mb-2">Siden ble ikke funnet</h2>
         <p className="text-muted mb-6">Beklager, siden du leter etter eksisterer ikke.</p>
-        <Link to={TASK_PATHS.DASHBOARD} className="text-primary hover:underline">
-          Tilbake til Dashboard
+        <Link to={APP_ROUTES.HOME} className="text-primary hover:underline">
+          Tilbake til forsiden
         </Link>
       </div>
     </div>

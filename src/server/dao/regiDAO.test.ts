@@ -10,7 +10,7 @@ import {
 } from './regiDAO';
 import { supabase } from '../supabaseClient';
 import { deleteImages } from '../storage';
-import { getUser } from './userDAO';
+import { getUserLookups } from './userDAO';
 
 vi.mock('../supabaseClient', () => ({
   supabase: {
@@ -19,7 +19,7 @@ vi.mock('../supabaseClient', () => ({
 }));
 
 vi.mock('./userDAO', () => ({
-  getUser: vi.fn(),
+  getUserLookups: vi.fn(),
 }));
 
 vi.mock('../storage', () => ({
@@ -275,18 +275,14 @@ describe('regiDAO', () => {
     ];
 
     vi.mocked(supabase.from).mockImplementationOnce(() => createOrderedBuilder(rows));
-    vi.mocked(getUser).mockResolvedValue({
-      id: '11111111-1111-1111-1111-111111111111',
-      name: 'Kari Regi',
-      email: 'kari@example.com',
-      role: 'Full Regi',
-      isActive: true,
+    vi.mocked(getUserLookups).mockResolvedValue({
+      '11111111-1111-1111-1111-111111111111': { name: 'Kari Regi', email: 'kari@example.com' },
     });
 
     const result = await getPendingRegiApprovals();
 
-    expect(getUser).toHaveBeenCalledTimes(1);
-    expect(getUser).toHaveBeenCalledWith('11111111-1111-1111-1111-111111111111');
+    expect(getUserLookups).toHaveBeenCalledTimes(1);
+    expect(getUserLookups).toHaveBeenCalledWith(['11111111-1111-1111-1111-111111111111']);
     expect(result).toHaveLength(2);
     expect(result[0].userName).toBe('Kari Regi');
     expect(result[1].userEmail).toBe('kari@example.com');

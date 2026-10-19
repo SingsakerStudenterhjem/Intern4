@@ -132,6 +132,33 @@ export async function getUser(uid: string): Promise<User | undefined> {
   return data ? toAppUser(data as UserRow) : undefined;
 }
 
+export type UserLookup = { name: string; email: string };
+
+// Looks up many users in one query; ids without a matching row are left out.
+export async function getUserLookups(ids: string[]): Promise<Record<string, UserLookup>> {
+  const uniqueIds = Array.from(new Set(ids.filter(Boolean)));
+  if (uniqueIds.length === 0) return {};
+
+  const { data, error } = await supabase
+    .from('users')
+    .select('id, name, email')
+    .in('id', uniqueIds);
+  if (error) throw new Error(error.message);
+
+  return ((data ?? []) as Array<{ id: string; name: string | null; email: string | null }>).reduce(
+    (acc, row) => {
+      acc[row.id] = { name: row.name ?? '', email: row.email ?? '' };
+      return acc;
+    },
+    {} as Record<string, UserLookup>
+  );
+}
+
+export async function getUserNames(ids: string[]): Promise<Record<string, string>> {
+  const lookups = await getUserLookups(ids);
+  return Object.fromEntries(Object.entries(lookups).map(([id, user]) => [id, user.name]));
+}
+
 export async function updateUser(uid: string, data: UpdateUserInput): Promise<void> {
   const payload: UserUpdatePayload = {
     name: data.name,

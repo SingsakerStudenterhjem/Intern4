@@ -2,11 +2,14 @@ import React from 'react';
 import { RefreshCw, Search } from 'lucide-react';
 import { useAuth } from '../../../../app/providers/AuthContext';
 import { canApproveWork } from '../../permissions';
-import { semesterLabel, useRegistatus } from '../hooks/useRegistatus';
+import { useRegistatus } from '../hooks/useRegistatus';
 
 const Registatus: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
-  const { filtered, loading, error, query, setQuery, load } = useRegistatus(user, authLoading);
+  const { semesterLabel, filtered, loading, error, query, setQuery, load } = useRegistatus(
+    user,
+    authLoading
+  );
 
   if (authLoading) return null;
   if (!user || !canApproveWork(user.role)) {

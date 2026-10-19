@@ -1,19 +1,46 @@
-import React from 'react';
-import { Plus, Search, Settings } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { ChevronLeft, ChevronRight, Plus, Settings } from 'lucide-react';
 import TasksTable from '../components/TasksTable';
 import TaskModal from '../components/TaskModal';
 import TaskCreationModal from '../components/TaskCreationModal';
 import CategoryManagement from '../components/CategoryManagement';
 import { useTaskManagement } from '../hooks/useTaskManagement';
 import { PageLayout } from '../../../shared/layouts';
+import {
+  Button,
+  ConfirmDialog,
+  SearchInput,
+  SegmentedControl,
+  Skeleton,
+  Spinner,
+  StatusMessage,
+} from '../../../shared/components';
+import { Task } from '../../../shared/types/regi/tasks';
+import { cn } from '../../../shared/utils/cn';
+
+const FILTER_OPTIONS = [
+  { value: 'available', label: 'Ledige' },
+  { value: 'myTasks', label: 'Mine' },
+  { value: 'all', label: 'Alle' },
+];
+
+const chipClasses = (active: boolean) =>
+  cn(
+    'inline-flex min-h-9 shrink-0 items-center gap-2 rounded-full border px-3 text-sm font-medium transition-colors pointer-coarse:min-h-10',
+    active
+      ? 'border-primary bg-primary-subtle text-primary-subtle-fg'
+      : 'border-border bg-surface text-muted hover:border-border-strong hover:text-fg'
+  );
 
 const WorkTasksPage: React.FC = () => {
   const {
     user,
     authLoading,
     loading,
+    refreshing,
     error,
     message,
+    clearMessage,
     categories,
     selectedTask,
     setSelectedTask,
@@ -54,60 +81,181 @@ const WorkTasksPage: React.FC = () => {
     totalPages,
     nextPage,
     prevPage,
-    categories: availableCategories,
     filteredTasks,
   } = taskList;
 
-  if (loading || authLoading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  const [busyTaskId, setBusyTaskId] = useState<string | null>(null);
+  const [submitCandidate, setSubmitCandidate] = useState<Task | null>(null);
+
+  const categoryColors = useMemo(
+    () => Object.fromEntries(categories.map((item) => [item.name, item.color])),
+    [categories]
+  );
+
+  const joinFromList = async (taskId: string) => {
+    setBusyTaskId(taskId);
+    try {
+      await handleJoinTask(taskId);
+    } finally {
+      setBusyTaskId(null);
+    }
+  };
+
+  const confirmSubmit = async () => {
+    if (!submitCandidate) return;
+    const taskId = submitCandidate.id;
+    setSubmitCandidate(null);
+    setBusyTaskId(taskId);
+    try {
+      await handleCompleteTask(taskId);
+    } finally {
+      setBusyTaskId(null);
+    }
+  };
+
+  const isInitialLoad = loading || authLoading;
 
   return (
     <PageLayout
       title="Oppgaver"
-      description="Se tilgjengelige oppgaver og meld deg på dem du ønsker å utføre."
+      description="Finn en oppgave, meld deg på og send den inn når den er gjort."
       actions={
         <>
+          {refreshing && !isInitialLoad && (
+            <Spinner label="Oppdaterer..." className="text-subtle" />
+          )}
           {canManageTaskCategories && (
-            <button
+            <Button
+              variant="secondary"
+              icon={<Settings aria-hidden="true" className="h-4 w-4" />}
               onClick={toggleCategoryManagement}
-              className="inline-flex items-center px-4 py-2 border border-input text-sm font-medium rounded-md text-muted bg-surface hover:bg-surface-muted focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
             >
-              <Settings className="w-4 h-4 mr-2" />
-              Administrer kategorier
-            </button>
+              Kategorier
+            </Button>
           )}
           {canCreateTasks && (
-            <button
+            <Button
+              icon={<Plus aria-hidden="true" className="h-4 w-4" />}
               onClick={handleOpenCreateTask}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-primary-fg bg-primary hover:bg-primary-hover focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ring"
             >
-              <Plus className="w-4 h-4 mr-2" />
               Ny oppgave
-            </button>
+            </Button>
           )}
         </>
       }
     >
-      {error && (
-        <div className="mb-6 p-4 bg-danger-subtle border border-danger-border rounded-md">
-          <p className="text-sm text-danger">{error}</p>
-        </div>
+      {error && <StatusMessage tone="error">{error}</StatusMessage>}
+      {message && (
+        <StatusMessage
+          tone={message.type === 'success' ? 'success' : 'error'}
+          onDismiss={clearMessage}
+        >
+          {message.text}
+        </StatusMessage>
       )}
 
-      {message && (
+      <div className="space-y-3">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <SearchInput
+            value={query}
+            onChange={setQuery}
+            placeholder="Søk etter oppgaver, kategorier eller kontaktperson..."
+            label="Søk etter oppgaver"
+            className="flex-1"
+          />
+          <SegmentedControl
+            label="Vis oppgaver"
+            options={FILTER_OPTIONS}
+            value={filter}
+            onChange={setFilter}
+            className="w-full md:w-auto"
+          />
+        </div>
+
         <div
-          className={`mb-6 p-4 border rounded-md ${
-            message.type === 'success'
-              ? 'bg-success-subtle border-success-border text-success'
-              : 'bg-danger-subtle border-danger-border text-danger'
-          }`}
+          role="group"
+          aria-label="Filtrer på kategori"
+          className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:px-0"
         >
-          <p className="text-sm">{message.text}</p>
+          <button
+            type="button"
+            aria-pressed={category === 'all'}
+            onClick={() => setCategory('all')}
+            className={chipClasses(category === 'all')}
+          >
+            Alle kategorier
+          </button>
+          {categories.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              aria-pressed={category === item.name}
+              onClick={() => setCategory(category === item.name ? 'all' : item.name)}
+              className={chipClasses(category === item.name)}
+            >
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: item.color }}
+              />
+              {item.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {isInitialLoad ? (
+        <div aria-busy="true" className="grid grid-cols-1 gap-3 md:grid-cols-1">
+          {Array.from({ length: 4 }, (_, index) => (
+            <Skeleton key={index} className="h-32 rounded-2xl md:h-14" />
+          ))}
+        </div>
+      ) : (
+        <div className="space-y-4">
+          <TasksTable
+            tasks={paginatedTasks}
+            categories={categories}
+            onRowClick={setSelectedTask}
+            onJoinTask={(taskId) => void joinFromList(taskId)}
+            onSubmitTask={setSubmitCandidate}
+            busyTaskId={busyTaskId}
+            currentUserId={user?.id}
+            participantNames={participantNames}
+          />
+
+          {totalPages > 1 && (
+            <nav
+              aria-label="Sider"
+              className="flex flex-col items-center justify-between gap-3 sm:flex-row"
+            >
+              <p className="text-sm text-muted">
+                Viser {paginatedTasks.length} av {filteredTasks.length} oppgaver
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  icon={<ChevronLeft aria-hidden="true" className="h-4 w-4" />}
+                  onClick={prevPage}
+                  disabled={currentPage === 1}
+                >
+                  Forrige
+                </Button>
+                <span className="px-2 text-sm tabular-nums text-muted">
+                  Side {currentPage} av {totalPages}
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={nextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Neste
+                  <ChevronRight aria-hidden="true" className="h-4 w-4" />
+                </Button>
+              </div>
+            </nav>
+          )}
         </div>
       )}
 
@@ -122,128 +270,13 @@ const WorkTasksPage: React.FC = () => {
         />
       )}
 
-      <div className="bg-surface rounded-lg shadow">
-        <div className="p-6 border-b border-border">
-          <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-subtle w-5 h-5" />
-              <input
-                type="text"
-                placeholder="Søk etter oppgaver..."
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
-              />
-            </div>
-
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="border border-input rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
-            >
-              <option value="all">Alle kategorier</option>
-              {availableCategories
-                .filter((c) => c !== 'all')
-                .map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-            </select>
-
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  id="available"
-                  name="filter"
-                  value="available"
-                  checked={filter === 'available'}
-                  onChange={(e) => setFilter(e.target.value)}
-                  className="h-4 w-4 text-primary focus:ring-ring border-input"
-                />
-                <label htmlFor="available" className="ml-2 text-sm text-muted">
-                  Ledige
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  id="myTasks"
-                  name="filter"
-                  value="myTasks"
-                  checked={filter === 'myTasks'}
-                  onChange={(e) => setFilter(e.target.value)}
-                  className="h-4 w-4 text-primary focus:ring-ring border-input"
-                />
-                <label htmlFor="myTasks" className="ml-2 text-sm text-muted">
-                  Mine
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="radio"
-                  id="all"
-                  name="filter"
-                  value="all"
-                  checked={filter === 'all'}
-                  onChange={(e) => setFilter(e.target.value)}
-                  className="h-4 w-4 text-primary focus:ring-ring border-input"
-                />
-                <label htmlFor="all" className="ml-2 text-sm text-muted">
-                  Alle
-                </label>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="p-6">
-          <TasksTable
-            tasks={paginatedTasks}
-            onRowClick={setSelectedTask}
-            onJoinTask={handleJoinTask}
-            currentUserId={user?.id}
-            participantNames={participantNames}
-          />
-
-          {totalPages > 1 && (
-            <div className="mt-6 flex justify-between items-center">
-              <div>
-                <p className="text-sm text-muted">
-                  Viser {paginatedTasks.length} av {filteredTasks.length} oppgaver
-                </p>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={prevPage}
-                  disabled={currentPage === 1}
-                  className="px-3 py-2 text-sm font-medium text-subtle bg-surface border border-input rounded-md hover:bg-surface-muted disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Forrige
-                </button>
-                <span className="px-3 py-2 text-sm text-muted">
-                  Side {currentPage} av {totalPages}
-                </span>
-                <button
-                  onClick={nextPage}
-                  disabled={currentPage === totalPages}
-                  className="px-3 py-2 text-sm font-medium text-subtle bg-surface border border-input rounded-md hover:bg-surface-muted disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Neste
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {selectedTask && (
         <TaskModal
           task={selectedTask}
           onClose={() => setSelectedTask(null)}
           currentUserId={user?.id}
           userRole={user?.role}
+          categoryColor={categoryColors[selectedTask.category]}
           onJoinTask={handleJoinTask}
           onLeaveTask={handleLeaveTask}
           onCompleteTask={handleCompleteTask}
@@ -265,6 +298,17 @@ const WorkTasksPage: React.FC = () => {
           contactPeople={contactPeople}
         />
       )}
+
+      <ConfirmDialog
+        open={!!submitCandidate}
+        title="Send inn til godkjenning?"
+        confirmLabel="Send inn"
+        onCancel={() => setSubmitCandidate(null)}
+        onConfirm={() => void confirmSubmit()}
+      >
+        «{submitCandidate?.title}» ({submitCandidate?.hourEstimate} timer) sendes til regisjefen for
+        godkjenning.
+      </ConfirmDialog>
     </PageLayout>
   );
 };

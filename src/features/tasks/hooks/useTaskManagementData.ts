@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getCategories } from '../../../server/dao/categoriesDAO';
 import { getTasks } from '../../../server/dao/tasksDAO';
-import { getActiveUsersWithRole, getUser } from '../../../server/dao/userDAO';
+import { getActiveUsersWithRole, getUserNames } from '../../../server/dao/userDAO';
 import { Category, Task } from '../../../shared/types/regi/tasks';
 import { ParticipantNames, TaskContactPersonOption } from '../components/types';
 
@@ -10,7 +10,9 @@ export const useTaskManagementData = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [participantNames, setParticipantNames] = useState<ParticipantNames>({});
   const [contactPeople, setContactPeople] = useState<TaskContactPersonOption[]>([]);
+  // `loading` covers only the first load; later reloads set `refreshing` so the page stays visible.
   const [loading, setLoading] = useState<boolean>(true);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   const loadParticipantNames = useCallback(async (tasksData: Task[]): Promise<void> => {
@@ -22,27 +24,23 @@ export const useTaskManagementData = () => {
       }
     });
 
-    const namePromises = Array.from(allParticipantIds).map(async (userId) => {
-      try {
-        const userData = await getUser(userId);
-        return { userId, name: userData?.name || 'Ukjent bruker' };
-      } catch {
-        return { userId, name: 'Ukjent bruker' };
-      }
-    });
-
-    const names = await Promise.all(namePromises);
-    const nameMap = names.reduce((acc, { userId, name }) => {
-      acc[userId] = name;
-      return acc;
-    }, {} as ParticipantNames);
+    const ids = Array.from(allParticipantIds);
+    let names: ParticipantNames = {};
+    try {
+      names = await getUserNames(ids);
+    } catch (namesError) {
+      console.error(namesError);
+    }
+    const nameMap = Object.fromEntries(
+      ids.map((userId) => [userId, names[userId] || 'Ukjent bruker'])
+    ) as ParticipantNames;
 
     setParticipantNames(nameMap);
   }, []);
 
   const loadData = useCallback(async (): Promise<void> => {
     try {
-      setLoading(true);
+      setRefreshing(true);
       setError(null);
 
       const [tasksData, categoriesData, activeUsers] = await Promise.all([
@@ -71,6 +69,7 @@ export const useTaskManagementData = () => {
       setError('Kunne ikke laste data. Prøv å oppdatere siden.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }, [loadParticipantNames]);
 
@@ -130,6 +129,7 @@ export const useTaskManagementData = () => {
     participantNames,
     contactPeople,
     loading,
+    refreshing,
     error,
     clearError,
     loadData,

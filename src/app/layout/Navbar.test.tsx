@@ -53,7 +53,7 @@ describe('Navbar', () => {
 
     renderNavbar();
 
-    expect(screen.getByRole('link', { name: 'Dashboard' })).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: 'Hjem' })).toHaveAttribute('href', '/');
     expect(screen.getByRole('link', { name: 'Beboere' })).toHaveAttribute('href', '/beboere');
     expect(screen.getByRole('button', { name: /regi/i })).toBeInTheDocument();
     expect(screen.getByRole('link', { name: 'Admin' })).toBeInTheDocument();

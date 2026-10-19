@@ -4,7 +4,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { supabase } from '../../../server/supabaseClient';
 import { resetPassword } from '../../../server/dao/authentication';
 import { AUTH_PATHS } from '../paths';
-import { TASK_PATHS } from '../../tasks/paths';
+import { APP_ROUTES } from '../../../app/constants/appRoutes';
 import { useAuth } from '../../../app/providers/AuthContext';
 
 const ResetPasswordForm = () => {
@@ -89,7 +89,7 @@ const ResetPasswordForm = () => {
       return;
     }
 
-    navigate(TASK_PATHS.DASHBOARD);
+    navigate(APP_ROUTES.HOME);
   };
 
   return (
