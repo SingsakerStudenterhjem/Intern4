@@ -31,6 +31,9 @@ type TasksPanelProps = {
   onOpen: (task: Task) => void;
   onJoin: (taskId: string) => void;
   onSubmit: (task: Task) => void;
+  // Set while only recent tasks are loaded; shows "Vis eldre oppgaver" under Alle.
+  onShowOlder?: () => void;
+  loadingOlder?: boolean;
 };
 
 // Filters, list and pagination for tasks. Dialogs live in TaskDialogs.
@@ -44,6 +47,8 @@ const TasksPanel: React.FC<TasksPanelProps> = ({
   onOpen,
   onJoin,
   onSubmit,
+  onShowOlder,
+  loadingOlder = false,
 }) => {
   const {
     query,
@@ -163,6 +168,17 @@ const TasksPanel: React.FC<TasksPanelProps> = ({
                 </Button>
               </div>
             </nav>
+          )}
+
+          {filter === 'all' && onShowOlder && (
+            <div className="flex flex-col items-center gap-2 pt-2 text-center">
+              <p className="text-sm text-muted">
+                Viser oppgaver fra dette semesteret og oppgaver som fortsatt er åpne.
+              </p>
+              <Button variant="secondary" size="sm" onClick={onShowOlder} loading={loadingOlder}>
+                Vis eldre oppgaver
+              </Button>
+            </div>
           )}
         </div>
       )}

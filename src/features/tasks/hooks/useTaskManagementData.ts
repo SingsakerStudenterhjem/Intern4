@@ -4,9 +4,12 @@ import { getTasks } from '../../../server/dao/tasksDAO';
 import { getActiveUsersWithRole, getUserNames } from '../../../server/dao/userDAO';
 import { Category, Task } from '../../../shared/types/regi/tasks';
 import { ParticipantNames, TaskContactPersonOption } from '../components/types';
+import { getSemesterStart } from '../../../shared/utils/semester';
 
-export const useTaskManagementData = () => {
+export const useTaskManagementData = (userId?: string) => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  // By default only this semester's and still-open tasks are loaded; see getTasks.
+  const [includeOlder, setIncludeOlder] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [participantNames, setParticipantNames] = useState<ParticipantNames>({});
   const [contactPeople, setContactPeople] = useState<TaskContactPersonOption[]>([]);
@@ -52,7 +55,7 @@ export const useTaskManagementData = () => {
       setError(null);
 
       const [tasksData, categoriesData, activeUsers] = await Promise.all([
-        getTasks(),
+        getTasks(includeOlder ? undefined : { since: getSemesterStart(), userId }),
         getCategories(),
         getActiveUsersWithRole(),
       ]);
@@ -82,13 +85,14 @@ export const useTaskManagementData = () => {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [loadParticipantNames]);
+  }, [loadParticipantNames, includeOlder, userId]);
 
   useEffect(() => {
     void loadData();
   }, [loadData]);
 
   const clearError = useCallback(() => setError(null), []);
+  const showOlderTasks = useCallback(() => setIncludeOlder(true), []);
 
   const sortCategories = useCallback(
     (nextCategories: Category[]): Category[] =>
@@ -144,6 +148,8 @@ export const useTaskManagementData = () => {
     error,
     clearError,
     loadData,
+    includeOlder,
+    showOlderTasks,
     addCategoryToState,
     updateCategoryInState,
     removeCategoryFromState,

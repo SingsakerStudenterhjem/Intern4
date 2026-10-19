@@ -22,6 +22,7 @@ vi.mock('../../../server/dao/regiDAO', () => ({
   rejectRegiLog: vi.fn(),
   getApprovedRegiHoursByUserSince: vi.fn().mockResolvedValue({}),
   getAllRegiLogs: vi.fn().mockResolvedValue([]),
+  getEarliestRegiDate: vi.fn().mockResolvedValue(null),
   addRegiLog: vi.fn(),
 }));
 vi.mock('../../../server/dao/tasksDAO', () => ({
@@ -178,6 +179,23 @@ describe('RegiHubPage', () => {
 
     const sheet = screen.getByRole('dialog', { name: 'Gi regi' });
     await waitFor(() => expect(within(sheet).getByLabelText(/beboer/i)).toHaveValue(RESIDENT));
+  });
+
+  it('loads recent tasks first and older ones on request', async () => {
+    const user = userEvent.setup();
+    asRole('Halv/Halv');
+    await renderAt('/regi/oppgaver');
+
+    await waitFor(() =>
+      expect(getTasks).toHaveBeenCalledWith({ since: expect.any(Date), userId: ME })
+    );
+    await user.click(screen.getByRole('radio', { name: 'Alle' }));
+    await user.click(await screen.findByRole('button', { name: 'Vis eldre oppgaver' }));
+
+    await waitFor(() => expect(getTasks).toHaveBeenLastCalledWith(undefined));
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Vis eldre oppgaver' })).not.toBeInTheDocument()
+    );
   });
 
   it('reloads hours after a task is sent in from the overview', async () => {

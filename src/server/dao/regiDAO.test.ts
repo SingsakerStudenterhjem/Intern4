@@ -4,6 +4,7 @@ import {
   addRegiLog,
   approveRegiLog,
   deletePendingRegiLog,
+  getAllRegiLogs,
   getPendingRegiApprovals,
   getApprovedRegiHoursByUserSince,
   getRegiLogsByUser,
@@ -556,5 +557,25 @@ describe('regiDAO', () => {
       'user_uuid, hours_used, performed_at, approved_state'
     );
     expect(hoursBuilder.gte).toHaveBeenCalledWith('performed_at', '2026-08-01');
+  });
+
+  it('limits the regi log to one semester when given a range', async () => {
+    vi.mocked(getUserLookups).mockResolvedValue({});
+    let orderCalls = 0;
+    const builder: { select: MockFn; gte: MockFn; lt: MockFn; order: MockFn } = {
+      select: mockFn(() => builder),
+      gte: mockFn(() => builder),
+      lt: mockFn(() => builder),
+      order: mockFn(() => {
+        orderCalls += 1;
+        return orderCalls > 1 ? Promise.resolve({ data: [], error: null }) : builder;
+      }),
+    };
+    vi.mocked(supabase.from).mockReturnValue(asSupabaseBuilder(builder));
+
+    await getAllRegiLogs({ start: new Date(2026, 7, 1), end: new Date(2027, 0, 1) });
+
+    expect(builder.gte).toHaveBeenCalledWith('performed_at', '2026-08-01');
+    expect(builder.lt).toHaveBeenCalledWith('performed_at', '2027-01-01');
   });
 });

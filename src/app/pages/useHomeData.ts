@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { getPendingRegiApprovals, getRegiLogsByUser } from '../../server/dao/regiDAO';
 import { getTasks } from '../../server/dao/tasksDAO';
 import { canApproveWork } from '../../features/regi/permissions';
+import { getSemesterStart } from '../../shared/utils/semester';
 import { RegiLogWithId } from '../../shared/types/regi';
 import { Task } from '../../shared/types/regi/tasks';
 import type { AuthUser } from '../../features/auth/hooks/useAuth';
@@ -28,7 +29,7 @@ export const useHomeData = (user: AuthUser) => {
       setError(null);
       const [logs, tasks, pending] = await Promise.all([
         getRegiLogsByUser(userId),
-        getTasks(),
+        getTasks({ since: getSemesterStart(), userId }),
         isManager ? getPendingRegiApprovals() : Promise.resolve(null),
       ]);
 

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { MessageSquare } from 'lucide-react';
 import { RegiLogWithUser, WorkStatus } from '../../../../shared/types/regi';
-import { getAllRegiLogs } from '../../../../server/dao/regiDAO';
+import { getAllRegiLogs, getEarliestRegiDate } from '../../../../server/dao/regiDAO';
 import { useAuth } from '../../../../app/providers/AuthContext';
 import { canApproveWork } from '../../permissions';
 import {
@@ -11,11 +11,13 @@ import {
   EmptyState,
   SearchInput,
   SegmentedControl,
+  Select,
   Skeleton,
   StatusMessage,
   WorkStatusBadge,
 } from '../../../../shared/components';
 import { formatDate, formatHours } from '../../../../shared/utils/date';
+import { Semester, getSemester, listSemesters } from '../../../../shared/utils/semester';
 
 type StatusFilter = 'all' | WorkStatus;
 
@@ -43,19 +45,23 @@ const RegiLogsPanel: React.FC<{ categoryColors?: Record<string, string> }> = ({
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState<StatusFilter>('all');
+  // One semester at a time keeps the list from growing with every year.
+  const [semesters, setSemesters] = useState<Semester[]>(() => [getSemester()]);
+  const [semesterKey, setSemesterKey] = useState(() => getSemester().key);
+  const semester = semesters.find((item) => item.key === semesterKey) ?? semesters[0];
 
   const load = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
-      setLogs(await getAllRegiLogs());
+      setLogs(await getAllRegiLogs({ start: semester.start, end: semester.end }));
     } catch (e) {
       console.error(e);
       setError('Kunne ikke laste regilogger.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [semester.start, semester.end]);
 
   const userId = user?.id;
   const userRole = user?.role;
@@ -63,6 +69,15 @@ const RegiLogsPanel: React.FC<{ categoryColors?: Record<string, string> }> = ({
     if (!userId || !canApproveWork(userRole)) return;
     void load();
   }, [load, userId, userRole]);
+
+  useEffect(() => {
+    if (!userId || !canApproveWork(userRole)) return;
+    getEarliestRegiDate()
+      .then((earliest) => {
+        if (earliest) setSemesters(listSemesters(earliest));
+      })
+      .catch((loadError) => console.error(loadError));
+  }, [userId, userRole]);
 
   const searched = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -103,6 +118,19 @@ const RegiLogsPanel: React.FC<{ categoryColors?: Record<string, string> }> = ({
           refreshing={loading}
           className="flex-1"
         />
+        <div className="w-full sm:w-44">
+          <Select
+            aria-label="Semester"
+            value={semester.key}
+            onChange={(event) => setSemesterKey(event.target.value)}
+          >
+            {semesters.map((item) => (
+              <option key={item.key} value={item.key}>
+                {item.name}
+              </option>
+            ))}
+          </Select>
+        </div>
         <SegmentedControl<StatusFilter>
           label="Filtrer på status"
           value={status}
@@ -130,7 +158,7 @@ const RegiLogsPanel: React.FC<{ categoryColors?: Record<string, string> }> = ({
         <DataTable
           rows={rows}
           getRowKey={(log) => log.id}
-          emptyMessage={<EmptyState title="Ingen regilogger funnet." />}
+          emptyMessage={<EmptyState title={`Ingen regilogger funnet for ${semester.name}.`} />}
           renderCard={(log) => (
             <div className="space-y-2">
               <div className="flex items-start justify-between gap-3">

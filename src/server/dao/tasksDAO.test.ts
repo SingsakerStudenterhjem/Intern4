@@ -1,5 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { addTask, getTasksByUser, joinTask, leaveTask, submitTaskCompletion } from './tasksDAO';
+import {
+  addTask,
+  getTasks,
+  getTasksByUser,
+  joinTask,
+  leaveTask,
+  submitTaskCompletion,
+} from './tasksDAO';
 import { supabase } from '../supabaseClient';
 
 vi.mock('../supabaseClient', () => ({
@@ -66,6 +73,18 @@ function createInOrderBuilder(data: unknown[]) {
     order: mockFn(async () => ({ data, error: null })),
   };
 
+  return asSupabaseBuilder(builder);
+}
+
+// Every method returns the builder, and awaiting it resolves to `result`.
+function createChainBuilder(result: { data: unknown; error: unknown }, methods: string[]) {
+  const builder: Record<string, MockFn> = {};
+  methods.forEach((method) => {
+    builder[method] = mockFn(() => builder);
+  });
+  Object.assign(builder, {
+    then: (resolve: (value: unknown) => unknown) => Promise.resolve(result).then(resolve),
+  });
   return asSupabaseBuilder(builder);
 }
 
@@ -246,5 +265,57 @@ describe('tasksDAO', () => {
     });
 
     expect(insertTask).toHaveBeenCalledWith(expect.objectContaining({ deadline: '2026-10-29' }));
+  });
+
+  it('loads every task when no recent window is given', async () => {
+    const tasksBuilder = createChainBuilder({ data: [createTaskRow()], error: null }, [
+      'select',
+      'or',
+      'order',
+    ]);
+    vi.mocked(supabase.from).mockImplementationOnce(() => tasksBuilder);
+
+    await expect(getTasks()).resolves.toHaveLength(1);
+    expect(tasksBuilder.or).not.toHaveBeenCalled();
+  });
+
+  it('loads recent and open tasks plus older tasks the user still has to send in', async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-10-19T12:00:00.000Z'));
+    const userId = '11111111-1111-1111-1111-111111111111';
+    const tasksBuilder = createChainBuilder(
+      {
+        data: [
+          createTaskRow({ id: 2, deadline: null }),
+          createTaskRow({ id: 1, deadline: '2026-11-01' }),
+        ],
+        error: null,
+      },
+      ['select', 'or', 'order']
+    );
+    const assignmentsBuilder = createChainBuilder(
+      { data: [{ work_id: 1 }, { work_id: 7 }], error: null },
+      ['select', 'eq', 'is']
+    );
+    const olderBuilder = createChainBuilder(
+      { data: [createTaskRow({ id: 7, deadline: '2026-03-01' })], error: null },
+      ['select', 'in']
+    );
+    vi.mocked(supabase.from)
+      .mockImplementationOnce(() => tasksBuilder)
+      .mockImplementationOnce(() => assignmentsBuilder)
+      .mockImplementationOnce(() => olderBuilder);
+
+    const since = new Date('2026-07-31T22:00:00.000Z');
+    const result = await getTasks({ since, userId });
+
+    expect(tasksBuilder.or).toHaveBeenCalledWith(
+      'created_at.gte.2026-07-31T22:00:00.000Z,deadline.is.null,deadline.gte.2026-10-19'
+    );
+    expect(assignmentsBuilder.eq).toHaveBeenCalledWith('user_uuid', userId);
+    expect(assignmentsBuilder.is).toHaveBeenCalledWith('hours_used', null);
+    expect(olderBuilder.in).toHaveBeenCalledWith('id', [7]);
+    // Sorted by deadline, tasks without one last.
+    expect(result.map((task) => task.id)).toEqual(['7', '1', '2']);
   });
 });

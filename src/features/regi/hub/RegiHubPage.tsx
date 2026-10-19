@@ -157,6 +157,8 @@ const RegiHub = ({ activeTab }: { activeTab: (typeof TABS)[number] }) => {
             onOpen={tasks.setSelectedTask}
             onJoin={taskActions.join}
             onSubmit={taskActions.requestSubmit}
+            onShowOlder={tasks.includeOlder ? undefined : tasks.showOlderTasks}
+            loadingOlder={tasks.refreshing}
           />
         )}
         {activeTab.key === 'timer' && (

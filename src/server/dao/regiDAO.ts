@@ -243,12 +243,23 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
   });
 }
 
-export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
-  const { data, error } = await supabase
+// Registrations performed in [range.start, range.end); without a range, all of them.
+export async function getAllRegiLogs(range?: {
+  start: Date;
+  end: Date;
+}): Promise<RegiLogWithUser[]> {
+  let query = supabase
     .from('work_assignments')
     .select(
       'id, user_uuid, hours_used, created_at, performed_at, approved_state, approval_comment, approved_by_uuid, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
-    )
+    );
+  if (range) {
+    query = query
+      .gte('performed_at', formatDateColumnValue(range.start))
+      .lt('performed_at', formatDateColumnValue(range.end));
+  }
+
+  const { data, error } = await query
     .order('performed_at', { ascending: false })
     .order('created_at', { ascending: false });
 
@@ -267,6 +278,22 @@ export async function getAllRegiLogs(): Promise<RegiLogWithUser[]> {
 
     return toRegiLogWithUser(row, owner, approver);
   });
+}
+
+// Date of the oldest registration, for listing which semesters have any.
+export async function getEarliestRegiDate(): Promise<Date | null> {
+  const { data, error } = await supabase
+    .from('work_assignments')
+    .select('performed_at')
+    .order('performed_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  if (!data?.performed_at) return null;
+  // A date column ("2026-10-19"); read it as a local date so it lands in the right semester.
+  const [year, month, day] = String(data.performed_at).slice(0, 10).split('-').map(Number);
+  return new Date(year, month - 1, day);
 }
 
 export async function getApprovedRegiHoursByUserSince(

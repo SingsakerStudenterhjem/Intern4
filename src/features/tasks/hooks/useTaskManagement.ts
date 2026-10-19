@@ -53,10 +53,12 @@ export const useTaskManagement = ({ onAssignmentsChanged }: UseTaskManagementOpt
     error,
     clearError,
     loadData,
+    includeOlder,
+    showOlderTasks,
     addCategoryToState,
     updateCategoryInState,
     removeCategoryFromState,
-  } = useTaskManagementData();
+  } = useTaskManagementData(authData?.user?.id);
 
   const user = authData?.user ?? null;
   const authLoading = authData?.loading || false;
@@ -266,6 +268,8 @@ export const useTaskManagement = ({ onAssignmentsChanged }: UseTaskManagementOpt
     canDeleteTasks,
     getCategoryUsageCount,
     taskList,
+    includeOlder,
+    showOlderTasks,
     handleCreateTask,
     handleUpdateTask,
     handleJoinTask,
