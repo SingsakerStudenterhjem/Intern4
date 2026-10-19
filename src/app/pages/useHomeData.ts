@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getRequiredRegiHoursForRole } from '../constants/regiRequirements';
 import { getPendingRegiApprovals, getRegiLogsByUser } from '../../server/dao/regiDAO';
 import { getTasks } from '../../server/dao/tasksDAO';
 import { getCategories } from '../../server/dao/categoriesDAO';
@@ -12,39 +11,7 @@ import {
   canUserJoinTask,
   getCurrentUserTaskParticipant,
 } from '../../shared/types/regi/tasks';
-import { getSemesterStart } from '../../shared/utils/semester';
 import type { AuthUser } from '../../features/auth/hooks/useAuth';
-
-export type RegiSummary = {
-  approved: number;
-  pending: number;
-  required: number;
-  remaining: number;
-};
-
-// Only work performed this semester counts towards this semester's requirement.
-export const summarizeSemesterRegi = (
-  logs: RegiLogWithId[],
-  role: string | undefined,
-  now: Date = new Date()
-): RegiSummary => {
-  const start = getSemesterStart(now);
-  const thisSemester = logs.filter((log) => log.date >= start);
-  const sum = (status: RegiLogWithId['status']) =>
-    thisSemester
-      .filter((log) => log.status === status)
-      .reduce((total, log) => total + log.hours, 0);
-
-  const approved = sum('approved');
-  const required = getRequiredRegiHoursForRole(role);
-
-  return {
-    approved,
-    pending: sum('pending'),
-    required,
-    remaining: Math.max(required - approved, 0),
-  };
-};
 
 const MY_TASK_ORDER = { rejected: 0, joined: 1, submitted: 2, approved: 3 } as const;
 

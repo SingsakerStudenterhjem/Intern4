@@ -2,12 +2,9 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, CheckCircle2, ClipboardCheck, Hourglass, Target } from 'lucide-react';
 import { useAuth } from '../providers/AuthContext';
-import {
-  getMyActiveTasks,
-  getSuggestedTasks,
-  summarizeSemesterRegi,
-  useHomeData,
-} from './useHomeData';
+import { getMyActiveTasks, getSuggestedTasks, useHomeData } from './useHomeData';
+import { summarizeSemesterRegi } from '../../features/regi/regiSummary';
+import { formatHours } from '../../shared/utils/date';
 import { PageLayout } from '../../shared/layouts';
 import {
   ConfirmDialog,
@@ -25,9 +22,6 @@ import { TASK_PATHS } from '../../features/tasks/paths';
 import { REGI_PATHS } from '../../features/regi/paths';
 import { Task } from '../../shared/types/regi/tasks';
 import { getSemesterName } from '../../shared/utils/semester';
-
-const formatHours = (hours: number) =>
-  `${hours.toLocaleString('no-NO', { maximumFractionDigits: 1 })} t`;
 
 const SectionHeading = ({ title, action }: { title: string; action?: ReactNode }) => (
   <div className="mb-3 flex items-center justify-between gap-3">

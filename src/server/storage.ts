@@ -41,10 +41,12 @@ export async function uploadImages(
   folder: string,
   files: File[]
 ): Promise<string[]> {
+  // Validate everything first so a bad file can't leave earlier uploads orphaned.
+  files.forEach(validateImageFile);
+
   const paths: string[] = [];
 
   for (const file of files) {
-    validateImageFile(file);
     const path = createImagePath(userId, folder, file);
     const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(path, file, {
       cacheControl: '3600',

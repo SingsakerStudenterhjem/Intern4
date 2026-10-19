@@ -74,6 +74,17 @@ describe('storage image helpers', () => {
     expect(removeMock).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects invalid files before uploading anything', async () => {
+    await expect(
+      uploadImages('user-1', 'regi', [
+        new File(['one'], 'one.png', { type: 'image/png' }),
+        new File(['two'], 'notes.txt', { type: 'text/plain' }),
+      ])
+    ).rejects.toThrow('notes.txt er ikke et bilde.');
+
+    expect(uploadMock).not.toHaveBeenCalled();
+  });
+
   it('throws when deleting images fails', async () => {
     removeMock.mockResolvedValueOnce({ data: null, error: new Error('delete failed') });
 

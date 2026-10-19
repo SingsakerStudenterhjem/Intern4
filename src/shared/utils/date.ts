@@ -30,7 +30,7 @@ export const formatDate = (value: DateLike, fallback = '-'): string =>
   toDate(value)?.toLocaleDateString('no-NO') ?? fallback;
 
 export const formatDateTime = (value: DateLike, fallback = '-'): string =>
-  toDate(value)?.toLocaleString('no-NO') ?? fallback;
+  toDate(value)?.toLocaleString('no-NO', { dateStyle: 'short', timeStyle: 'short' }) ?? fallback;
 
 export const APP_TIME_ZONE = 'Europe/Oslo';
 
@@ -62,3 +62,7 @@ export const formatDateColumnValue = (date: Date): string => {
 
   return `${parts.year}-${parts.month}-${parts.day}`;
 };
+
+// "2,5 t" – Norwegian decimal comma, at most two decimals.
+export const formatHours = (hours: number): string =>
+  `${hours.toLocaleString('no-NO', { maximumFractionDigits: 2 })} t`;

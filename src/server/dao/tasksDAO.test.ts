@@ -225,7 +225,7 @@ describe('tasksDAO', () => {
 
   it('stores the deadline as the Oslo calendar date', async () => {
     const insertTask = mockFn(async () => ({ error: null }));
-    const itemBuilder = {
+    const itemBuilder: { insert: MockFn; select: MockFn; single: MockFn } = {
       insert: mockFn(() => itemBuilder),
       select: mockFn(() => itemBuilder),
       single: mockFn(async () => ({ data: { id: 7 }, error: null })),
