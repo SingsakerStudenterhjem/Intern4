@@ -8,6 +8,7 @@ import {
   TaskCreationData,
   TaskParticipant,
 } from '../../shared/types/regi/tasks';
+import { uploadImages } from '../storage';
 
 type SupabaseJoin<T> = T | T[] | null | undefined;
 
@@ -121,7 +122,9 @@ async function getAssignmentRow(taskId: string, userId: string) {
   return data;
 }
 
-export async function addTask(data: TaskCreationData): Promise<string> {
+export async function addTask(data: TaskCreationData, files: File[] = []): Promise<string> {
+  const imagePaths = await uploadImages('tasks', 'task', files);
+
   const { data: cat, error: e1 } = await supabase
     .from('work_categories')
     .select('id')
@@ -148,6 +151,7 @@ export async function addTask(data: TaskCreationData): Promise<string> {
     time_estimate: data.hourEstimate,
     contact_person_uuid: data.contactPersonId ?? null,
     max_participants: data.maxParticipants,
+    image_paths: imagePaths,
   });
   if (e3) throw new Error(`Could not add task: ${e3.message}`);
 

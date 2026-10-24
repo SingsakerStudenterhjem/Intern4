@@ -76,9 +76,9 @@ export const useTaskManagement = () => {
     return () => window.clearTimeout(timeout);
   }, [message]);
 
-  const handleCreateTask = async (taskData: TaskCreationData): Promise<void> => {
+  const handleCreateTask = async (taskData: TaskCreationData, files: File[]): Promise<void> => {
     try {
-      await addTask(taskData);
+      await addTask(taskData, files);
       await loadData();
       setIsCreateModalOpen(false);
       showSuccessMessage('Oppgave opprettet!');

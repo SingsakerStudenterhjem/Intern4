@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { Calendar, Clock, Search, User, Users, X } from 'lucide-react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { Calendar, Clock, Search, User, Users, X, File } from 'lucide-react';
 import {
   safeParseTaskFormData,
   TaskCreationData,
@@ -7,6 +7,7 @@ import {
   validateTaskCreationData,
 } from '../../../shared/types/regi/tasks';
 import { FormErrors, TaskCreationModalProps } from './types';
+import { getFileKey } from '../../regi/my-regi/components/WorkLogForm';
 
 const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
   isOpen,
@@ -29,8 +30,10 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
     maxParticipants: '1',
   });
   const [errors, setErrors] = useState<FormErrors>({});
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [contactPersonQuery, setContactPersonQuery] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
 
   const toDateTimeLocalValue = (value?: string | null): string => {
     if (!value) return '';
@@ -40,6 +43,28 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
 
     const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
     return localDate.toISOString().slice(0, 16);
+  };
+
+  const syncFiles = (nextFiles: File[]) => {
+    setFiles(nextFiles);
+
+    if (!fileInputRef.current) return;
+    fileInputRef.current.value = '';
+  };
+
+  const addFiles = (selectedFiles: File[]) => {
+    if (selectedFiles.length === 0) return;
+
+    const existingFileKeys = new Set(files.map(getFileKey));
+    const nextFiles = [...files];
+
+    selectedFiles.forEach((file) => {
+      if (!existingFileKeys.has(getFileKey(file))) {
+        nextFiles.push(file);
+      }
+    });
+
+    syncFiles(nextFiles);
   };
 
   useEffect(() => {
@@ -136,7 +161,11 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
       if (editingTask && onUpdateTask) {
         await onUpdateTask(editingTask.id, validatedData);
       } else {
-        await onCreateTask(validatedData);
+        await onCreateTask(validatedData, files);
+      }
+      setFiles([]);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
       }
       onClose();
     } catch (error) {
@@ -446,6 +475,49 @@ const TaskCreationModal: React.FC<TaskCreationModalProps> = ({
               <p className="mt-1 text-sm text-red-600" role="alert">
                 {errors.maxParticipants}
               </p>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              <File className="w-4 h-4 inline mr-1" />
+              Filer (valgfritt)
+            </label>
+            <input
+              ref={fileInputRef}
+              id="work-log-images"
+              type="file"
+              multiple
+              accept="image/*"
+              onChange={(e) => addFiles(Array.from(e.target.files || []))}
+              className="sr-only"
+            />
+            <label
+              htmlFor="work-log-images"
+              className="inline-flex cursor-pointer items-center rounded-md bg-blue-50 px-4 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500 focus-within:ring-offset-2"
+            >
+              Velg bilder
+            </label>
+            {files.length > 0 && (
+              <ul className="mt-3 space-y-2">
+                {files.map((file, index) => (
+                  <li
+                    key={`${file.name}-${file.lastModified}`}
+                    className="flex items-center justify-between rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700"
+                  >
+                    <span className="truncate pr-3">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => syncFiles(files.filter((_, fileIndex) => fileIndex !== index))}
+                      className="inline-flex h-7 w-7 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-1"
+                      aria-label={`Fjern ${file.name}`}
+                      title="Fjern bilde"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
             )}
           </div>
 

@@ -41,7 +41,7 @@ export type TaskModalProps = {
 export type TaskCreationModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onCreateTask: (taskData: TaskCreationData) => Promise<void>;
+  onCreateTask: (taskData: TaskCreationData, files: File[]) => Promise<void>;
   onUpdateTask?: (taskId: string, taskData: TaskCreationData) => Promise<void>;
   categories: Category[];
   currentUser: TaskEditorUser | null;

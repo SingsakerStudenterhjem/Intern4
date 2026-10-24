@@ -28,6 +28,7 @@ export function validateImageFile(file: File): void {
 export function createImagePath(userId: string, folder: string, file: File): string {
   const safeFolder = sanitizePathPart(folder) || 'images';
   const safeName = sanitizePathPart(file.name.replace(/\.[^.]+$/, '')) || 'image';
+  console.log(safeFolder, safeName);
   const uniquePart =
     typeof crypto !== 'undefined' && 'randomUUID' in crypto
       ? crypto.randomUUID()
@@ -46,6 +47,7 @@ export async function uploadImages(
   for (const file of files) {
     validateImageFile(file);
     const path = createImagePath(userId, folder, file);
+    console.log(path);
     const { error } = await supabase.storage.from(IMAGE_BUCKET).upload(path, file, {
       cacheControl: '3600',
       contentType: file.type,

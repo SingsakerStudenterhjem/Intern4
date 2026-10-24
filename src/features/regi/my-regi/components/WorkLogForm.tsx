@@ -14,7 +14,7 @@ const FormSchema = z.object({
   images: z.array(z.instanceof(File)).optional(),
 });
 
-const getFileKey = (file: File) => `${file.name}-${file.size}-${file.lastModified}`;
+export const getFileKey = (file: File) => `${file.name}-${file.size}-${file.lastModified}`;
 
 const WorkLogForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
   const { user } = useAuth();
