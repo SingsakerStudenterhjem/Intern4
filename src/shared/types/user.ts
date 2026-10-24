@@ -21,6 +21,7 @@ const UserSchema = z.object({
   seniority: z.number().int(),
   roomNumber: z.number().int(),
   role: z.string(),
+  role_id: z.number().int(),
   onLeave: z.boolean(),
   isActive: z.boolean(),
   createdAt: z.date(),
@@ -40,6 +41,7 @@ export const NewUserInputSchema = z.object({
   seniority: UserSchema.shape.seniority.default(0),
   roomNumber: UserSchema.shape.roomNumber.default(0),
   role: UserSchema.shape.role,
+  role_id: UserSchema.shape.role_id.default(5),
   onLeave: UserSchema.shape.onLeave.default(false),
   isActive: UserSchema.shape.isActive.default(true),
 });
@@ -55,6 +57,7 @@ export const UpdateUserInputSchema = z.object({
   schoolId: UserSchema.shape.schoolId.optional(),
   studyId: UserSchema.shape.studyId.optional(),
   role: UserSchema.shape.role.optional(),
+  role_id: UserSchema.shape.role_id.optional(),
   profilePicture: UserSchema.shape.profilePicture.optional(),
   seniority: UserSchema.shape.seniority.optional(),
   roomNumber: UserSchema.shape.roomNumber.optional(),

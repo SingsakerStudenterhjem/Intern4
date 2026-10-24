@@ -3,6 +3,16 @@ import { z } from 'zod';
 import { useAuth } from '../../../app/providers/AuthContext';
 import { WorkTypeSchema } from '../../../shared/types/regi';
 import { useGrantRegiWorkflow } from '../hooks/useGrantRegiWorkflow';
+import { getUser } from '../../../server/dao/userDAO';
+import {
+  deleteRegiPenalty,
+  editRegiPenalty,
+  getApprovedRegiHoursByUserSince,
+  getPenaltiesOfUser,
+  getTotalPenaltyHoursByUser,
+} from '../../../server/dao/regiDAO';
+import { semesterStart } from '../hooks/useRegistatus';
+import { getRequiredRegiHoursForRole } from '../../../app/constants/regiRequirements';
 
 const getErrorMessage = (error: unknown, fallback: string): string =>
   error instanceof Error ? error.message : fallback;
@@ -100,6 +110,27 @@ const GrantRegiForm: React.FC<{ onCreated?: () => void }> = ({ onCreated }) => {
         hours: '',
         type: categories[0]?.name ?? '',
       });
+
+      const [assignmentUser, hoursMap, penaltyMap, prevPenalty] = await Promise.all([
+        getUser(parsed.data.userId),
+        getApprovedRegiHoursByUserSince(semesterStart),
+        getTotalPenaltyHoursByUser(),
+        getPenaltiesOfUser(parsed.data.userId),
+      ]);
+
+      const requiredHours = assignmentUser ? getRequiredRegiHoursForRole(assignmentUser.role) : 0;
+      const approvedHours = hoursMap[parsed.data.userId] ?? 0;
+      const penaltyHours = penaltyMap[parsed.data.userId] ?? 0;
+      const remainingHours = Math.max(requiredHours - approvedHours, 0);
+
+      if (prevPenalty && remainingHours === 0) {
+        if (penaltyHours <= parsed.data.hours) {
+          await deleteRegiPenalty(parsed.data.userId);
+        } else {
+          prevPenalty.hours = penaltyHours - parsed.data.hours;
+          await editRegiPenalty(prevPenalty);
+        }
+      }
       onCreated?.();
     } catch (err) {
       console.error(err);

@@ -112,6 +112,6 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
     query,
     setQuery,
     load,
-    roles
+    roles,
   };
 };

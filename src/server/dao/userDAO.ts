@@ -38,6 +38,8 @@ type UserRow = {
   on_leave?: boolean | null;
   is_active?: boolean | null;
   created_at?: string | Date | null;
+  role?: string | null;
+  role_id?: number | null;
 };
 
 type ResidentDirectoryUserRow = UserRow & {
@@ -97,7 +99,18 @@ function normalizeOptionalId(value?: string): string | undefined {
   return normalized || undefined;
 }
 
-function toAppUser(row: UserRow): User {
+async function getRoleByRoleId(roleId: number): Promise<string> {
+  const { data, error } = await supabase
+    .from('roles')
+    .select('id, created_at, name')
+    .eq('id', roleId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+
+  return data?.name ?? 'Halv/Halv';
+}
+
+async function toAppUser(row: UserRow): Promise<User> {
   return {
     name: row.name ?? '',
     email: row.email ?? '',
@@ -119,7 +132,8 @@ function toAppUser(row: UserRow): User {
     onLeave: row.on_leave ?? false,
     isActive: row.is_active ?? true,
     createdAt: row.created_at ? new Date(row.created_at) : new Date(0),
-    role: 'Halv/Halv',
+    role: await getRoleByRoleId(row.role_id ?? 5),
+    role_id: row.role_id ?? 5,
   };
 }
 

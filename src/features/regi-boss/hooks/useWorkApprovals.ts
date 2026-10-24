@@ -5,6 +5,7 @@ import {
   deleteRegiPenalty,
   editRegiPenalty,
   getApprovedRegiHoursByUserSince,
+  getPenaltiesOfUser,
   getPendingRegiApprovals,
   getTotalPenaltyHoursByUser,
   rejectRegiLog,
@@ -14,6 +15,15 @@ import { AuthUser } from '../../auth/hooks/useAuth';
 import { getUser } from '../../../server/dao/userDAO';
 import { semesterStart } from './useRegistatus';
 import { getRequiredRegiHoursForRole } from '../../../app/constants/regiRequirements';
+
+export type RegiPunishment = {
+  id: number;
+  user_uuid: string;
+  hours: number;
+  reason: string;
+  assigned_by_uuid: string;
+  created_at: Date;
+};
 
 export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
   const [approvals, setApprovals] = useState<PendingRegiApproval[]>([]);
@@ -68,10 +78,11 @@ export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
       setActionLoadingId(assignmentId);
       await approveRegiLog(assignmentId, user.id);
 
-      const [assignmentUser, hoursMap, penaltyMap] = await Promise.all([
+      const [assignmentUser, hoursMap, penaltyMap, prevPenalty] = await Promise.all([
         getUser(assignmentUserId),
         getApprovedRegiHoursByUserSince(semesterStart),
         getTotalPenaltyHoursByUser(),
+        getPenaltiesOfUser(assignmentUserId),
       ]);
 
       const requiredHours = assignmentUser ? getRequiredRegiHoursForRole(assignmentUser.role) : 0;
@@ -79,10 +90,15 @@ export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
       const penaltyHours = penaltyMap[assignmentUserId] ?? 0;
       const remainingHours = Math.max(requiredHours - approvedHours + penaltyHours, 0);
 
-      if (approvedHours >= requiredHours && remainingHours == penaltyHours) {
-        await deleteRegiPenalty(assignmentUserId);
-      } else if (approvedHours >= requiredHours && penaltyHours > 0) {
-        await editRegiPenalty(assignmentUserId, { hours: penaltyHours - assignmentHours });
+      if (prevPenalty && approvedHours >= requiredHours) {
+        if (remainingHours === penaltyHours || assignmentHours === penaltyHours) {
+          console.log('deleting');
+          await deleteRegiPenalty(assignmentUserId);
+        } else {
+          console.log('reducing');
+          prevPenalty.hours = penaltyHours - assignmentHours;
+          await editRegiPenalty(prevPenalty);
+        }
       }
 
       setApprovals((prev) => prev.filter((approval) => approval.id !== assignmentId));

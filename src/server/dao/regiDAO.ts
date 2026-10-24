@@ -21,6 +21,7 @@ import {
   WorkItemTypeRelation,
 } from '../mappers/regiAssignmentMapper';
 import { Role } from '../../shared/types/user';
+import { RegiPunishment } from '../../features/regi-boss/hooks/useWorkApprovals';
 
 const DEFAULT_REGI_CATEGORY = 'Regi';
 
@@ -347,25 +348,31 @@ export async function getTotalPenaltyHoursByUser(): Promise<Record<string, numbe
   );
 }
 
+export async function getPenaltiesOfUser(id: string): Promise<RegiPunishment | null> {
+  const { data, error } = await supabase
+    .from('regi_penalties')
+    .select('id, user_uuid, hours, reason, assigned_by_uuid, created_at')
+    .eq('user_uuid', id)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 export async function deleteRegiPenalty(id: string): Promise<void> {
   const { error } = await supabase.from('regi_penalties').delete().eq('user_uuid', id);
   if (error) throw new Error(error.message);
 }
 
-export async function editRegiPenalty(
-  user_uuid: string,
-  data: Partial<{
-    hours: number;
-    id: string;
-    reason: string;
-    assigned_by_uuid: string;
-    created_at: Date;
-  }>
-): Promise<void> {
+export async function editRegiPenalty(data: Partial<RegiPunishment>): Promise<void> {
+  (Object.keys(data) as (keyof RegiPunishment)[]).forEach((key) => {
+    if (data[key] === undefined) delete data[key];
+  });
+
   const { error } = await supabase
     .from('regi_penalties')
-    .update({ data })
-    .eq('user_uuid', user_uuid);
+    .update(data)
+    .eq('user_uuid', data.user_uuid);
 
   if (error) throw new Error(error.message);
 }
