@@ -29,6 +29,7 @@ type TaskRow = {
   time_estimate?: number | string | null;
   contact_person_uuid?: string | null;
   max_participants?: number | string | null;
+  image_paths?: string[] | null;
   work_items?: SupabaseJoin<{
     title?: string | null;
     description?: string | null;
@@ -93,6 +94,7 @@ function toAppTask(row: TaskRow): Task {
     date: row.date ?? null,
     hourEstimate: row.time_estimate != null ? Number(row.time_estimate) : null,
     maxParticipants: Math.max(Number(row.max_participants ?? 1), 1),
+    image_paths: row.image_paths ?? [],
     participants: (workItem?.participants ?? []).map(toTaskParticipant),
     createdAt: row.created_at ?? '',
     isArchived: false,
@@ -204,6 +206,7 @@ export async function getTasks(): Promise<Task[]> {
       time_estimate,
       contact_person_uuid,
       max_participants,
+      image_paths,
       work_items (
         title,
         description,

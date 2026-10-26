@@ -51,6 +51,7 @@ export const useTaskManagementData = () => {
         getActiveUsersWithRole(),
       ]);
 
+      console.log(tasksData);
       setTasks(tasksData);
       setCategories(categoriesData);
       setContactPeople(

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Calendar, CheckCircle2, Clock, Pencil, Trash2, User, Users, X } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Calendar, CheckCircle2, Clock, Pencil, Trash2, User, Users, X, File } from 'lucide-react';
 import { getTaskWorkflowState } from '../../../shared/types/regi/tasks';
 import { canManageTasks, canViewAllParticipants } from '../../../shared/permissions';
 import { TaskModalProps } from './types';
 import { formatDateTime } from '../../../shared/utils/date';
+import { ImagePreviewGrid } from '../../../shared/components';
 
 const TaskModal: React.FC<TaskModalProps> = ({
   task,
@@ -188,6 +189,14 @@ const TaskModal: React.FC<TaskModalProps> = ({
                     </p>
                   </div>
                 )}
+              </div>
+
+              <div>
+                <h3 className="text-sm font-medium text-gray-900 mb-2 flex items-center">
+                  <File className="w-4 h-4 mr-1" />
+                  Filer
+                </h3>
+                <ImagePreviewGrid paths={task.image_paths} />
               </div>
             </div>
 

@@ -24,6 +24,7 @@ export const TaskSchema = z.object({
   participants: z.array(TaskParticipantSchema).default([]),
   createdAt: z.string(),
   isArchived: z.boolean().default(false),
+  image_paths: z.array(z.string()).optional(),
 });
 
 export const TaskFormDataSchema = z.object({
