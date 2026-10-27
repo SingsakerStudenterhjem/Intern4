@@ -72,7 +72,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
 
   const confirmDelete = () => {
     if (onDeleteTask && task.id) {
-      onDeleteTask(task.id);
+      onDeleteTask(task.id, task.image_paths);
     }
     setIsDeleting(false);
   };

@@ -23,6 +23,7 @@ import {
 import { canManageCategories, canManageTasks } from '../../../shared/permissions';
 import { useTasks } from './useTasks';
 import { useTaskManagementData } from './useTaskManagementData';
+import { deleteImagesBestEffort } from '../../../server/storage';
 
 type StatusMessage = { type: 'success' | 'error'; text: string };
 
@@ -147,7 +148,7 @@ export const useTaskManagement = () => {
     }
   };
 
-  const handleDeleteTask = async (taskId: string): Promise<void> => {
+  const handleDeleteTask = async (taskId: string, taskImagePaths?: string[]): Promise<void> => {
     if (!canDeleteTasks) {
       showErrorMessage('Du har ikke tillatelse til å slette oppgaver');
       return;
@@ -155,6 +156,9 @@ export const useTaskManagement = () => {
 
     try {
       await deleteTask(taskId);
+      if (taskImagePaths) {
+        await deleteImagesBestEffort(taskImagePaths);
+      }
       await loadData();
       setSelectedTask(null);
       showSuccessMessage('Oppgave slettet!');

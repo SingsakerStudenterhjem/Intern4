@@ -34,7 +34,7 @@ export type TaskModalProps = {
   onLeaveTask?: (taskId: string) => void;
   onCompleteTask?: (taskId: string) => void;
   onEditTask?: (task: Task) => void;
-  onDeleteTask?: (taskId: string) => void;
+  onDeleteTask?: (taskId: string, image_paths: string[] | undefined) => void;
   participantNames?: ParticipantNames;
 };
 
