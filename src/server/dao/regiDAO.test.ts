@@ -7,6 +7,7 @@ import {
   getApprovedRegiHoursByUserSince,
   getRegiLogsByUser,
   isCountableRegiAssignment,
+  commentRegiLog,
 } from './regiDAO';
 import { supabase } from '../supabaseClient';
 import { deleteImages } from '../storage';
@@ -211,7 +212,7 @@ describe('regiDAO', () => {
     expect(result[0].workId).toBe('22');
     expect(result[0].sourceType).toBe('task');
     expect(result[0].description).toBe('Detaljer');
-    expect(result[0].reviewerComment).toBe('Ser bra ut');
+    expect(result[0].comment).toBe('Ser bra ut');
     expect(result[0].date).toEqual(new Date('2026-04-08'));
     expect(result[0].createdAt).toBeInstanceOf(Date);
   });
@@ -276,7 +277,22 @@ describe('regiDAO', () => {
 
     vi.mocked(supabase.from).mockImplementationOnce(() => createOrderedBuilder(rows));
     vi.mocked(getUser).mockResolvedValue({
-      id: '11111111-1111-1111-1111-111111111111',
+      birthDate: undefined,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-expect-error
+      createdAt: '2026-04-10T10:00:00.000Z',
+      onLeave: false,
+      phone: '',
+      profilePicture: undefined,
+      regi_category: '',
+      regi_category_id: 0,
+      role_id: 0,
+      roomNumber: 0,
+      schoolId: undefined,
+      seniority: 0,
+      study: '',
+      studyId: undefined,
+      studyPlace: '',
       name: 'Kari Regi',
       email: 'kari@example.com',
       role: 'Full Regi',
@@ -296,7 +312,8 @@ describe('regiDAO', () => {
     const updateBuilder = createUpdateBuilder();
     vi.mocked(supabase.from).mockImplementationOnce(() => updateBuilder);
 
-    await approveRegiLog('12', '22222222-2222-2222-2222-222222222222', 'Ser bra ut');
+    await approveRegiLog('12', '22222222-2222-2222-2222-222222222222');
+    await commentRegiLog('12', 'Ser bra ut');
 
     expect(updateBuilder.update).toHaveBeenCalledWith({
       approved_state: 1,

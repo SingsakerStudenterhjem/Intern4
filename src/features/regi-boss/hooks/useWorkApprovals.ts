@@ -4,18 +4,13 @@ import {
   approveRegiLog,
   deleteRegiPenalty,
   editRegiPenalty,
-  getApprovedRegiHoursByUserSince,
   getPenaltiesOfUser,
   getPendingRegiApprovals,
-  getTotalPenaltyHoursByUser,
   rejectRegiLog,
   commentRegiLog,
 } from '../../../server/dao/regiDAO';
 import { canApproveWork } from '../../../shared/permissions';
 import { AuthUser } from '../../auth/hooks/useAuth';
-import { getUser } from '../../../server/dao/userDAO';
-import { semesterStart } from './useRegistatus';
-import { getRequiredRegiHoursForRole } from '../../../app/constants/regiRequirements';
 
 export type RegiPunishment = {
   id: number;
@@ -72,33 +67,26 @@ export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
   const approve = async (
     assignmentId: string,
     assignmentUserId: string,
-    assignmentHours: number
+    assignmentHours: number,
+    assignmentCategory: string
   ): Promise<void> => {
     try {
       if (!user) return;
       setActionLoadingId(assignmentId);
       await approveRegiLog(assignmentId, user.id);
 
-      const [assignmentUser, hoursMap, penaltyMap, prevPenalty] = await Promise.all([
-        getUser(assignmentUserId),
-        getApprovedRegiHoursByUserSince(semesterStart),
-        getTotalPenaltyHoursByUser(),
-        getPenaltiesOfUser(assignmentUserId),
-      ]);
+      const prevPenalties = await getPenaltiesOfUser(assignmentUserId);
 
-      const requiredHours = assignmentUser ? getRequiredRegiHoursForRole(assignmentUser.role) : 0;
-      const approvedHours = hoursMap[assignmentUserId] ?? 0;
-      const penaltyHours = penaltyMap[assignmentUserId] ?? 0;
-      const remainingHours = Math.max(requiredHours - approvedHours + penaltyHours, 0);
-
-      if (prevPenalty && approvedHours >= requiredHours) {
-        if (remainingHours === penaltyHours || assignmentHours === penaltyHours) {
-          console.log('deleting');
-          await deleteRegiPenalty(assignmentUserId);
-        } else {
-          console.log('reducing');
-          prevPenalty.hours = penaltyHours - assignmentHours;
-          await editRegiPenalty(prevPenalty);
+      if (assignmentCategory == 'Strafferegi' && prevPenalties) {
+        const spesificMatch = prevPenalties.find((penalty) => penalty.hours === assignmentHours);
+        const higherMatch = prevPenalties.find((penalty) => penalty.hours <= assignmentHours);
+        const lowerMatch = prevPenalties.find((penalty) => penalty.hours >= assignmentHours);
+        if (spesificMatch) await deleteRegiPenalty(spesificMatch.id);
+        else if (!spesificMatch && higherMatch) {
+          if (higherMatch) await deleteRegiPenalty(higherMatch.id);
+        } else if (!spesificMatch && !higherMatch && lowerMatch) {
+          lowerMatch.hours -= assignmentHours;
+          await editRegiPenalty(lowerMatch);
         }
       }
 
@@ -132,7 +120,7 @@ export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
       await commentRegiLog(assignmentId, commment);
       if (selected?.id === assignmentId) setSelected(null);
     } catch (e) {
-      console.log(e);
+      console.error(e);
       setError('Kunne ikke kommentere.');
     } finally {
       setActionLoadingId(null);

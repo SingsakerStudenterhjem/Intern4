@@ -356,7 +356,6 @@ export async function getActiveUsersWithRole(): Promise<BasicUserWithRole[]> {
     .eq('is_active', true)
     .order('name', { ascending: true });
 
-  console.log('Denne', result);
   return mapBasicUsersWithRole(result as unknown as SupabaseResult<BasicUserWithRoleRow>);
 }
 

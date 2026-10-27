@@ -357,19 +357,18 @@ export async function getTotalPenaltyHoursByUser(): Promise<Record<string, numbe
   );
 }
 
-export async function getPenaltiesOfUser(id: string): Promise<RegiPunishment | null> {
+export async function getPenaltiesOfUser(id: string): Promise<RegiPunishment[] | null> {
   const { data, error } = await supabase
     .from('regi_penalties')
     .select('id, user_uuid, hours, reason, assigned_by_uuid, created_at')
-    .eq('user_uuid', id)
-    .maybeSingle();
+    .eq('user_uuid', id);
 
   if (error) throw new Error(error.message);
   return data;
 }
 
-export async function deleteRegiPenalty(id: string): Promise<void> {
-  const { error } = await supabase.from('regi_penalties').delete().eq('user_uuid', id);
+export async function deleteRegiPenalty(id: number): Promise<void> {
+  const { error } = await supabase.from('regi_penalties').delete().eq('id', id);
   if (error) throw new Error(error.message);
 }
 
