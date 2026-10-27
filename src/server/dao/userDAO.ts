@@ -19,6 +19,10 @@ type RoleJoin = {
   name?: string | null;
 };
 
+type RegiCategoryJoin = {
+  name?: string | null;
+};
+
 type UserRow = {
   name?: string | null;
   email?: string | null;
@@ -40,6 +44,8 @@ type UserRow = {
   created_at?: string | Date | null;
   role?: string | null;
   role_id?: number | null;
+  regi_category_id?: number | null;
+  regi_category?: string | null;
 };
 
 type ResidentDirectoryUserRow = UserRow & {
@@ -54,6 +60,7 @@ type BasicUserWithRoleRow = {
   name?: string | null;
   email?: string | null;
   roles?: SupabaseJoin<RoleJoin>;
+  regi_categories?: SupabaseJoin<RegiCategoryJoin>;
   on_leave?: boolean | null;
   is_active?: boolean | null;
 };
@@ -66,6 +73,7 @@ type UserUpdatePayload = {
   school_id?: string;
   profile_picture?: string;
   role_id?: number;
+  regi_category_id?: number;
   study_id?: string;
   seniority?: number;
   room_number?: number;
@@ -110,6 +118,17 @@ async function getRoleByRoleId(roleId: number): Promise<string> {
   return data?.name ?? 'Halv/Halv';
 }
 
+async function getRegiCategoryByRegiCategoryId(regiCategoryId: number): Promise<string> {
+  const { data, error } = await supabase
+    .from('regi_categories')
+    .select('id, created_at, name')
+    .eq('id', regiCategoryId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+
+  return data?.name ?? 'Halv/Halv';
+}
+
 async function toAppUser(row: UserRow): Promise<User> {
   return {
     name: row.name ?? '',
@@ -134,6 +153,8 @@ async function toAppUser(row: UserRow): Promise<User> {
     createdAt: row.created_at ? new Date(row.created_at) : new Date(0),
     role: await getRoleByRoleId(row.role_id ?? 5),
     role_id: row.role_id ?? 5,
+    regi_category_id: row.regi_category_id ?? 2,
+    regi_category: await getRegiCategoryByRegiCategoryId(row.regi_category_id ?? 2),
   };
 }
 
@@ -165,6 +186,29 @@ export async function updateUser(uid: string, data: UpdateUserInput): Promise<vo
     city: data.address?.city,
     country: data.address?.country,
   };
+
+  if (data.regi_category !== undefined) {
+    const { data: regiCategoryRow, error: regiCategoryErr } = await supabase
+      .from('regi_categories')
+      .select('id')
+      .eq('name', data.regi_category)
+      .maybeSingle();
+    if (regiCategoryErr || !regiCategoryRow) throw new Error('Ugyldig rolle');
+    payload.regi_category_id = regiCategoryRow.id;
+    if (
+      data.regi_category == 'Full Regi' ||
+      data.regi_category == 'Full Vakt' ||
+      data.regi_category == 'Halv/Halv'
+    ) {
+      const { data: roleRow, error: roleErr } = await supabase
+        .from('roles')
+        .select('id')
+        .eq('name', data.role)
+        .maybeSingle();
+      if (roleErr || !roleRow) throw new Error('Ugyldig rolle');
+      payload.role_id = roleRow.id;
+    }
+  }
 
   if (data.role !== undefined) {
     const { data: roleRow, error: roleErr } = await supabase
@@ -253,6 +297,7 @@ function toBasicUserWithRole(row: BasicUserWithRoleRow): BasicUserWithRole {
     name: row.name ?? 'Ukjent',
     email: row.email ?? '',
     role: getJoinedName(row.roles) || undefined,
+    regi_category: getJoinedName(row.regi_categories) || undefined,
     onLeave: row.on_leave ?? false,
     isActive: row.is_active ?? false,
   };
@@ -307,10 +352,11 @@ export async function getResidentDirectoryUsers(
 export async function getActiveUsersWithRole(): Promise<BasicUserWithRole[]> {
   const result = await supabase
     .from('users')
-    .select('id, name, email, is_active, on_leave, roles(name)')
+    .select('id, name, email, is_active, on_leave, roles(name), regi_categories(name)')
     .eq('is_active', true)
     .order('name', { ascending: true });
 
+  console.log('Denne', result);
   return mapBasicUsersWithRole(result as unknown as SupabaseResult<BasicUserWithRoleRow>);
 }
 

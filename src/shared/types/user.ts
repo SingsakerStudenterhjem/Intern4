@@ -22,6 +22,8 @@ const UserSchema = z.object({
   roomNumber: z.number().int(),
   role: z.string(),
   role_id: z.number().int(),
+  regi_category_id: z.number().int(),
+  regi_category: z.string(),
   onLeave: z.boolean(),
   isActive: z.boolean(),
   createdAt: z.date(),
@@ -58,6 +60,8 @@ export const UpdateUserInputSchema = z.object({
   studyId: UserSchema.shape.studyId.optional(),
   role: UserSchema.shape.role.optional(),
   role_id: UserSchema.shape.role_id.optional(),
+  regi_category_id: UserSchema.shape.regi_category_id.optional(),
+  regi_category: UserSchema.shape.regi_category.optional(),
   profilePicture: UserSchema.shape.profilePicture.optional(),
   seniority: UserSchema.shape.seniority.optional(),
   roomNumber: UserSchema.shape.roomNumber.optional(),
@@ -72,6 +76,7 @@ export type BasicUserWithRole = {
   name: string;
   email: string;
   role?: string;
+  regi_category?: string;
   onLeave: boolean;
   isActive: boolean;
 };

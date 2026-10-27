@@ -7,7 +7,7 @@ import { updateUser } from '../../../server/dao/userDAO';
 
 const Registatus: React.FC = () => {
   const { user, loading: authLoading } = useAuth();
-  const { filtered, loading, error, query, setQuery, load, roles } = useRegistatus(
+  const { filtered, loading, error, query, setQuery, load, allowedCategories } = useRegistatus(
     user,
     authLoading
   );
@@ -97,15 +97,15 @@ const Registatus: React.FC = () => {
                   </td>
                   <td className="px-4 py-3">
                     <select
-                      defaultValue={row.role}
+                      defaultValue={row.regi_category}
                       onChange={(e) => {
                         e.preventDefault();
-                        (async () => updateUser(row.id, { role: e.target.value }))();
+                        (async () => updateUser(row.id, { regi_category: e.target.value }))();
                       }}
                     >
-                      {roles?.map((role) => (
-                        <option key={role.id} value={role.name}>
-                          {role.name}
+                      {allowedCategories?.map((category) => (
+                        <option key={category.id} value={category.name}>
+                          {category.name}
                         </option>
                       ))}
                     </select>

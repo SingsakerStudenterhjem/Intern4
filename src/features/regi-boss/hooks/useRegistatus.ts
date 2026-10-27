@@ -2,19 +2,19 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { getRequiredRegiHoursForRole } from '../../../app/constants/regiRequirements';
 import { canApproveWork } from '../../../shared/permissions';
 import {
-  getAllRoles,
   getApprovedRegiHoursByUserSince,
   getTotalPenaltyHoursByUser,
 } from '../../../server/dao/regiDAO';
 import { getActiveUsersWithRole } from '../../../server/dao/userDAO';
 import { AuthUser } from '../../auth/hooks/useAuth';
-import { Role } from '../../../shared/types/user';
+import { RegiCategoryWithId, useRegiCategoryManagement } from './useRegiCategoryManagement';
 
 export type RegistatusRow = {
   id: string;
   name: string;
   email: string;
   role?: string;
+  regi_category?: string;
   requiredHours: number;
   approvedHours: number;
   remainingHours: number;
@@ -32,25 +32,25 @@ export const semesterStart = getSemesterStart();
 export const semesterLabel = semesterStart.toLocaleDateString('no-NO');
 
 export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
+  const { categories } = useRegiCategoryManagement(user, authLoading);
   const [rows, setRows] = useState<RegistatusRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
-  const [roles, setRoles] = useState<Role[]>([]);
+  const [allowedCategories, setAllowedCategories] = useState<RegiCategoryWithId[]>([]);
 
   const load = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       setError(null);
 
-      const [activeUsers, hoursMap, penaltyMap, rolesResponse] = await Promise.all([
+      const [activeUsers, hoursMap, penaltyMap] = await Promise.all([
         getActiveUsersWithRole(),
         getApprovedRegiHoursByUserSince(semesterStart),
         getTotalPenaltyHoursByUser(),
-        getAllRoles(),
       ]);
 
-      setRoles(rolesResponse);
+      setAllowedCategories(categories.filter((category) => category.name != 'Utvalget'));
       const nextRows = activeUsers.map((activeUser) => {
         const requiredHours = getRequiredRegiHoursForRole(activeUser.role);
         const approvedHours = hoursMap[activeUser.id] ?? 0;
@@ -62,6 +62,7 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
           name: activeUser.name,
           email: activeUser.email,
           role: activeUser.role ?? 'Halv/Halv',
+          regi_category: activeUser.regi_category ?? 'Halv/Halv',
           requiredHours,
           approvedHours,
           remainingHours,
@@ -112,6 +113,6 @@ export const useRegistatus = (user: AuthUser, authLoading: boolean) => {
     query,
     setQuery,
     load,
-    roles,
+    allowedCategories,
   };
 };

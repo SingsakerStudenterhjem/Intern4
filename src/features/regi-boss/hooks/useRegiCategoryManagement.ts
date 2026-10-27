@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AuthUser } from '../../auth/hooks/useAuth';
 import { canApproveWork } from '../../../shared/permissions';
 
-type RegiCategoryWithId = {
+export type RegiCategoryWithId = {
   id: string;
   createdAt: Date;
   name: string;
