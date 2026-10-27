@@ -119,6 +119,7 @@ function getBaseProjection(row: RegiAssignmentRow) {
     date: toDate(row.performed_at ?? row.created_at),
     createdAt: toDate(row.created_at),
     imagePaths: getImagePaths(row.work_items),
+    comment: row.comment ?? undefined,
   };
 }
 
@@ -131,7 +132,7 @@ export function toRegiLogWithId(row: RegiAssignmentRow, userId: string): RegiLog
     workId: row.work_id ? String(row.work_id) : undefined,
     status: getStatus(row),
     type: row.work_items?.work_categories?.name ?? row.work_items?.type ?? 'misc',
-    reviewerComment: row.comment ?? undefined,
+    comment: row.comment ?? undefined,
   };
 }
 
@@ -160,6 +161,5 @@ export function toRegiLogWithUser(
     category: getCategory(row),
     status: getStatus(row),
     approvedByName: approver?.name,
-    approvalComment: row.comment ?? null,
   };
 }

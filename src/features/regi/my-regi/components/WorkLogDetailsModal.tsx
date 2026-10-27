@@ -94,13 +94,13 @@ const WorkLogDetailsModal: React.FC<WorkLogDetailsModalProps> = ({ log, onClose 
 
           <ImagePreviewGrid paths={log.imagePaths} title="Bilder" />
 
-          {log.reviewerComment && (
+          {log.comment && (
             <div className="space-y-2 rounded-md border border-blue-100 bg-blue-50 p-4">
               <div className="flex items-center gap-2 text-sm font-medium text-blue-900">
                 <MessageSquare className="h-4 w-4" />
                 Kommentar fra regisjef
               </div>
-              <div className="whitespace-pre-wrap text-sm text-blue-900">{log.reviewerComment}</div>
+              <div className="whitespace-pre-wrap text-sm text-blue-900">{log.comment}</div>
             </div>
           )}
         </div>

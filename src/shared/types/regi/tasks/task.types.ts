@@ -8,7 +8,7 @@ export const TaskParticipantSchema = z.object({
   status: TaskAssignmentStatusSchema,
   joinedAt: z.string(),
   hoursUsed: z.number().nullable().optional(),
-  approvalComment: z.string().nullable().optional(),
+  comment: z.string().nullable().optional(),
   approvedByUuid: z.string().uuid().nullable().optional(),
 });
 

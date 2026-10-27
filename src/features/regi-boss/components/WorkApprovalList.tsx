@@ -21,6 +21,7 @@ const WorkApprovalList: React.FC = () => {
     load,
     approve,
     reject,
+    comment,
   } = useWorkApprovals(user, authLoading);
 
   if (authLoading) return null;
@@ -64,6 +65,17 @@ const WorkApprovalList: React.FC = () => {
         >
           <Ban className="w-4 h-4 mr-1.5" />
           Avvis
+        </button>
+        <button
+          disabled={busy}
+          onClick={(e) => {
+            e.stopPropagation();
+            setSelected(approval);
+          }}
+          aria-label={`Kommenter ${approval.title}`}
+          className="inline-flex items-center justify-center px-3 py-2 text-xs font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
+        >
+          Kommenter
         </button>
       </div>
     );
@@ -285,6 +297,7 @@ const WorkApprovalList: React.FC = () => {
           onClose={() => setSelected(null)}
           onApprove={approve}
           onReject={reject}
+          onComment={comment}
           isProcessing={actionLoadingId === selected.id}
         />
       )}

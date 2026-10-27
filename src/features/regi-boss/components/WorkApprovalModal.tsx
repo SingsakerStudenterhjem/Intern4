@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Ban, Calendar, Check, Clock, User, X } from 'lucide-react';
+import { Ban, Calendar, Check, Clock, User, X, MessageCircle } from 'lucide-react';
 import { PendingRegiApproval } from '../../../shared/types/regi';
 import { formatDate, formatDateTime } from '../../../shared/utils/date';
 import { ImagePreviewGrid } from '../../../shared/components';
@@ -9,19 +9,22 @@ interface WorkApprovalModalProps {
   onClose: () => void;
   onApprove: (assignmentId: string, assignedUser: string, assingmentHours: number) => Promise<void>;
   onReject: (assignmentId: string) => Promise<void>;
+  onComment: (assignmentId: string, comment: string) => Promise<void>;
   isProcessing?: boolean;
 }
+
+export type modeType = 'idle' | 'approve' | 'reject' | 'comment';
 
 const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
   approval,
   onClose,
   onApprove,
   onReject,
+  onComment,
   isProcessing = false,
 }) => {
-  const [mode, setMode] = useState<'idle' | 'approve' | 'reject'>('idle');
-  const [approvalComment, setApprovalComment] = useState<string>('');
-
+  const [mode, setMode] = useState<modeType>('idle');
+  const [comment, setComment] = useState('');
   if (!approval) return null;
 
   const confirmApprove = async () => {
@@ -31,6 +34,11 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
 
   const confirmReject = async () => {
     await onReject(approval.id);
+    onClose();
+  };
+
+  const confirmComment = async () => {
+    await onComment(approval.id, comment);
     onClose();
   };
 
@@ -101,6 +109,13 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
             </div>
           </div>
 
+          {approval.comment && (
+            <div className="space-y-2">
+              <div className="text-sm font-medium text-gray-900">Kommentar</div>
+              <div className="text-sm text-gray-800 whitespace-pre-wrap">{approval.comment}</div>
+            </div>
+          )}
+
           <ImagePreviewGrid paths={approval.imagePaths} title="Bilder" />
         </div>
 
@@ -130,6 +145,14 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
                   <Check className="w-4 h-4 mr-2" />
                   Godkjenn
                 </button>
+                <button
+                  disabled={isProcessing}
+                  onClick={() => setMode('comment')}
+                  className="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  <MessageCircle className="w-4 h-4 mr-2" />
+                  Kommenter
+                </button>
               </div>
             </div>
           )}
@@ -137,20 +160,6 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
           {mode === 'approve' && (
             <div className="space-y-3">
               <p className="text-sm text-gray-700">Godkjenn denne registreringen?</p>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Kommentar (valgfritt)
-                </label>
-                <textarea
-                  value={approvalComment}
-                  onChange={(e) => setApprovalComment(e.target.value)}
-                  rows={3}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="F.eks. 'OK, ser bra ut.'"
-                />
-              </div>
-
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => setMode('idle')}
@@ -185,6 +194,36 @@ const WorkApprovalModal: React.FC<WorkApprovalModalProps> = ({
                   className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50"
                 >
                   Avvis
+                </button>
+              </div>
+            </div>
+          )}
+
+          {mode === 'comment' && (
+            <div className="space-y-3">
+              <p className="text-sm text-gray-700">Kommenter denne registreringen?</p>
+              <div className="flex justify-end space-x-3">
+                <textarea
+                  defaultValue={approval.comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  rows={3}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="F.eks. 'OK, ser bra ut.'"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setMode('idle')}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  Avbryt
+                </button>
+                <button
+                  disabled={isProcessing}
+                  onClick={confirmComment}
+                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50"
+                >
+                  Kommenter
                 </button>
               </div>
             </div>

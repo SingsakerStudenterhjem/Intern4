@@ -179,8 +179,8 @@ const RegiLogsPage: React.FC = () => {
                   </td>
                   <td className="p-2 text-sm text-gray-700">
                     {log.approvedByName ?? '—'}
-                    {log.approvalComment && (
-                      <div className="text-xs text-gray-500 mt-1">{log.approvalComment}</div>
+                    {log.comment && (
+                      <div className="text-xs text-gray-500 mt-1">{log.comment}</div>
                     )}
                   </td>
                 </tr>

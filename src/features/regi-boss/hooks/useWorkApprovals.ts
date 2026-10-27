@@ -9,6 +9,7 @@ import {
   getPendingRegiApprovals,
   getTotalPenaltyHoursByUser,
   rejectRegiLog,
+  commentRegiLog,
 } from '../../../server/dao/regiDAO';
 import { canApproveWork } from '../../../shared/permissions';
 import { AuthUser } from '../../auth/hooks/useAuth';
@@ -125,6 +126,19 @@ export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
     }
   };
 
+  const comment = async (assignmentId: string, commment: string): Promise<void> => {
+    try {
+      setActionLoadingId(assignmentId);
+      await commentRegiLog(assignmentId, commment);
+      if (selected?.id === assignmentId) setSelected(null);
+    } catch (e) {
+      console.log(e);
+      setError('Kunne ikke kommentere.');
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   return {
     filtered,
     selected,
@@ -137,5 +151,6 @@ export const useWorkApprovals = (user: AuthUser, authLoading: boolean) => {
     load,
     approve,
     reject,
+    comment,
   };
 };

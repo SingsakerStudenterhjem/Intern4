@@ -76,7 +76,7 @@ function toTaskParticipant(row: TaskParticipantRow): TaskParticipant {
     status: getTaskAssignmentStatus(row),
     joinedAt: row.created_at ?? '',
     hoursUsed: row.hours_used != null ? Number(row.hours_used) : null,
-    approvalComment: row.comment ?? null,
+    comment: row.comment ?? null,
     approvedByUuid: row.approved_by_uuid ? String(row.approved_by_uuid) : null,
   };
 }

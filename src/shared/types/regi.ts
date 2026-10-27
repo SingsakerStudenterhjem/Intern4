@@ -19,6 +19,7 @@ export type RegiRecordBase = {
   createdAt: Date;
   sourceType: RegiSourceType;
   imagePaths?: string[];
+  comment?: string;
 };
 
 export type RegiUserSummary = {
@@ -47,7 +48,6 @@ export type RegiLogWithId = RegiRecordBase & {
   // `date` is when the work happened; `createdAt` is when the row was registered.
   status: WorkStatus;
   type: WorkType;
-  reviewerComment?: string;
 };
 
 export type PendingRegiApproval = RegiRecordBase &
@@ -60,5 +60,4 @@ export type RegiLogWithUser = RegiRecordBase &
     category: string;
     status: WorkStatus;
     approvedByName?: string;
-    approvalComment?: string | null;
   };

@@ -235,7 +235,7 @@ export async function getPendingRegiApprovals(): Promise<PendingRegiApproval[]> 
   const { data, error } = await supabase
     .from('work_assignments')
     .select(
-      'id, user_uuid, hours_used, created_at, performed_at, approved_state, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
+      'id, user_uuid, hours_used, created_at, performed_at, approved_state, comment, work_items(title, description, type, work_categories(name), work_misc(image_paths))'
     )
     .eq('approved_state', 0)
     .order('performed_at', { ascending: false })
@@ -331,6 +331,15 @@ export async function approveRegiLog(assignmentId: string, approvedByUuid: strin
 
 export async function rejectRegiLog(assignmentId: string): Promise<void> {
   await setApprovalState(assignmentId, 2);
+}
+
+export async function commentRegiLog(assignmentId: string, comment: string): Promise<void> {
+  const { error } = await supabase
+    .from('work_assignments')
+    .update({ comment: comment })
+    .eq('id', assignmentId);
+
+  if (error) throw error;
 }
 
 export async function getTotalPenaltyHoursByUser(): Promise<Record<string, number>> {
