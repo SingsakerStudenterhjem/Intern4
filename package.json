@@ -41,5 +41,9 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true,
+    "supabase@2.58.5": true
   }
 }
