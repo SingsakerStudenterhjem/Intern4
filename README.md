@@ -4,6 +4,41 @@ Repo for the internal "internside" system.
 
 React, Tailwind, Vite, Supabase.
 
+## Local development
+
+You need Node.js 20 or newer and Docker Desktop.
+
+1. Install dependencies:
+
+   ```
+   npm install
+   ```
+
+2. Start the local Supabase stack (Docker Desktop must be running):
+
+   ```
+   npx supabase start
+   ```
+
+3. Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_ANON_KEY` to the
+   publishable key shown by `npx supabase status`.
+
+4. Build the local database from the migrations and `supabase/seed.sql`:
+
+   ```
+   npx supabase db reset
+   ```
+
+5. Start the app with `npm run dev` and log in with one of the test users:
+
+   | Email                 | Password     | Role      |
+   | --------------------- | ------------ | --------- |
+   | `admin@singsaker.no`  | `passord123` | Admin     |
+   | `beboer@singsaker.no` | `passord123` | Halv/Halv |
+
+Supabase Studio runs at http://127.0.0.1:54323. `npx supabase db reset` deletes all local
+data and recreates it from the seed. Stop the stack with `npx supabase stop`.
+
 ## Available Scripts
 
 In the project directory, you can run:
